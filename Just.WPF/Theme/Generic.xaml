@@ -1,0 +1,77 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style
+        x:Key="TotalInfoText"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontSize" Value="24" />
+    </Style>
+    <Style
+        x:Key="TotalInfoNumber"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontSize" Value="36" />
+        <Setter Property="Margin" Value="0,10" />
+    </Style>
+
+    <Style x:Key="TableHeaderBorder" TargetType="Border">
+        <Setter Property="BorderBrush" Value="#E8E8E8" />
+        <Setter Property="BorderThickness" Value="0,0,0,2" />
+        <Setter Property="Background" Value="#FAFAFA" />
+    </Style>
+    <Style x:Key="TableBodyBorder" TargetType="Border">
+        <Setter Property="BorderBrush" Value="#E8E8E8" />
+        <Setter Property="BorderThickness" Value="0,0,0,2" />
+    </Style>
+    <Style
+        x:Key="TableHeaderText"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="Margin" Value="10,5" />
+    </Style>
+    <Style x:Key="TableBodyBox" TargetType="Viewbox">
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="MaxHeight" Value="40" />
+    </Style>
+
+    <PathGeometry x:Key="HeaderPathData" Figures="M542.960941 8.613647C310.753882 8.613647 122.337882 188.054588 122.337882 409.238588 122.337882 630.603294 434.236235 963.764706 542.960941 963.764706 651.866353 963.764706 963.764706 630.603294 963.764706 409.238588 963.764706 188.054588 775.408941 8.613647 542.960941 8.613647L542.960941 8.613647ZM475.557647 656.263529C456.523294 675.418353 390.384941 639.939765 328.101647 576.692706 265.697882 513.686588 230.640941 446.945882 249.675294 427.670588 268.649412 408.335059 334.727529 443.873882 397.071059 507.000471 459.294118 570.127059 494.592 636.807529 475.557647 656.263529L475.557647 656.263529ZM609.219765 655.781647C589.944471 636.506353 625.483294 569.886118 688.790588 506.819765 751.977412 443.753412 818.778353 408.274824 838.174118 427.670588 857.449412 446.825412 821.850353 513.445647 758.663529 576.451765 695.416471 639.518118 628.495059 674.876235 609.219765 655.781647L609.219765 655.781647Z" />
+    <Style x:Key="HeaderPath" TargetType="Path">
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="Fill" Value="{DynamicResource MainForeBrush}" />
+        <Setter Property="Data" Value="{DynamicResource HeaderPathData}" />
+    </Style>
+    <PathGeometry x:Key="LogoPathData" Figures="M0,85 51,34 A 25,25 0 0 1 84,2 L64,22 78,36 98,16 A 25,25 0 0 1 66,48 L15,100Z" />
+    <Style x:Key="LogoPath" TargetType="Path">
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="StrokeStartLineCap" Value="Round" />
+        <Setter Property="StrokeEndLineCap" Value="Round" />
+        <Setter Property="StrokeThickness" Value="2" />
+        <Setter Property="Stroke" Value="{DynamicResource MainForeBrush}" />
+        <Setter Property="Data" Value="{DynamicResource LogoPathData}" />
+    </Style>
+    <PathGeometry x:Key="DropDownPathData" Figures="M0,3 5,7 10,3" />
+    <PathGeometry x:Key="DropUpPathData" Figures="M0,7 5,3 10,7" />
+    <Style x:Key="DropDownPath" TargetType="Path">
+        <Setter Property="Margin" Value="3" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="StrokeStartLineCap" Value="Round" />
+        <Setter Property="StrokeEndLineCap" Value="Round" />
+        <Setter Property="StrokeThickness" Value="2" />
+        <Setter Property="Stroke" Value="Black" />
+        <Setter Property="Data" Value="{DynamicResource DropDownPathData}" />
+    </Style>
+    <PathGeometry x:Key="ClosePathData" Figures="M0,0 L1,1 M0,1 L1,0" />
+    <PathGeometry x:Key="MinPathData" Figures="M0,0 1,0" />
+    <PathGeometry x:Key="MaxPathData" Figures="M0,0 1,0 1,1 0,1 0,0" />
+    <PathGeometry x:Key="NormalPathData" Figures="M0,4 10,4 10,14 0,14 0,4 M4,4 4,0 14,0 14,10 10,10" />
+    <Style x:Key="ClosePath" TargetType="Path">
+        <Setter Property="Margin" Value="3" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="StrokeStartLineCap" Value="Round" />
+        <Setter Property="StrokeEndLineCap" Value="Round" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Stroke" Value="Black" />
+        <Setter Property="Data" Value="{DynamicResource ClosePathData}" />
+    </Style>
+</ResourceDictionary>

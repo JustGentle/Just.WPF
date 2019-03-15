@@ -1,0 +1,287 @@
+﻿<Window x:Class="Just.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Just.WPF"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        StateChanged="Window_StateChanged"
+        WindowStyle="None"
+        WindowStartupLocation="CenterScreen"
+        Title="工具箱" Height="600" Width="800">
+    <Window.Style>
+        <!--  WindowStyle="None"时隐藏边框  -->
+        <Style TargetType="Window">
+            <Setter Property="WindowChrome.WindowChrome">
+                <Setter.Value>
+                    <WindowChrome
+                        CaptionHeight="0"
+                        CornerRadius="0"
+                        GlassFrameThickness="1"
+                        NonClientFrameEdges="None"
+                        ResizeBorderThickness="3" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Style>
+    <Window.Resources>
+        <Style x:Key="MovementBorder" TargetType="Border">
+            <Setter Property="Background" Value="#01FFFFFF" />
+            <!--  移动手柄光标  -->
+            <!--<Setter Property="Cursor" Value="SizeAll"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType=Window},Path=WindowState}" Value="Normal">
+                    <Setter Property="Cursor" Value="SizeAll"/>
+                </DataTrigger>
+            </Style.Triggers>-->
+        </Style>
+        <Style x:Key="TitleBorder" TargetType="Border">
+            <Setter Property="Background" Value="#002140" />
+        </Style>
+        <Style x:Key="TopBorder" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#EEEEEE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="0,0,20,0" />
+            <Setter Property="Height" Value="80" />
+        </Style>
+        <Style x:Key="TopButton" TargetType="Border">
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Background" Value="#01F9F9F9" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Panel.ZIndex" Value="1" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F9F9F9" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="MenuBorder" TargetType="Border">
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#EEEEEE" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+        <Style
+            x:Key="MenuItem"
+            BasedOn="{StaticResource TopButton}"
+            TargetType="Border">
+            <Setter Property="Padding" Value="10" />
+            <Style.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                </Style>
+            </Style.Resources>
+        </Style>
+        <Style
+            x:Key="MenuSeparator"
+            BasedOn="{StaticResource TopButton}"
+            TargetType="Border">
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="BorderThickness" Value="0,1,0,0" />
+            <Setter Property="BorderBrush" Value="#EEEEEE" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#00F9F9F9" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <DockPanel
+        Width="Auto"
+        Height="Auto"
+        LastChildFill="True">
+        <!--  左侧菜单  -->
+        <Grid Width="250" DockPanel.Dock="Left">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <!--  可以考虑链接到Web(不能用MouseUp否则与MovementBorder冲突)  -->
+            <!-- MouseLeftButtonDown="AboutMenuItem_MouseUp" -->
+            <Border
+                Cursor="Hand"
+                Style="{DynamicResource TitleBorder}">
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <Path Width="40" Style="{DynamicResource LogoPath}" />
+                    <TextBlock
+                        Margin="10,0,0,0"
+                        FontSize="24"
+                        Foreground="White"
+                        VerticalAlignment="Center"
+                        Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=Title}" />
+                </StackPanel>
+            </Border>
+            <TreeView Name="tvMenu" Grid.Row="1" />
+        </Grid>
+
+        <!--  顶部菜单  -->
+        <Border DockPanel.Dock="Top" Style="{DynamicResource TopBorder}">
+            <Grid>
+                <Border MouseLeftButtonDown="DragMove_MouseDown" Style="{DynamicResource MovementBorder}" />
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <!--  普通菜单按钮  -->
+                    <Border MouseLeftButtonUp="AboutMenuItem_MouseUp" Style="{DynamicResource TopButton}" Visibility="Collapsed">
+                        <TextBlock Text="关于" />
+                    </Border>
+                    <Border Style="{DynamicResource TopButton}" Visibility="Collapsed">
+                        <TextBlock Text="消息" />
+                    </Border>
+
+                    <!--  用户信息和弹出菜单  -->
+                    <Border
+                        x:Name="UserBorder"
+                        MouseUp="UserBorder_MouseUp"
+                        Style="{DynamicResource TopButton}" Visibility="Collapsed">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <Path
+                                    Width="30"
+                                    Margin="5,0"
+                                    Style="{DynamicResource HeaderPath}" />
+                                <!--<TextBlock Text="{x:Static local:UserInfo.UserName}" />-->
+                                <Path
+                                    x:Name="ExpandIconPath"
+                                    Width="10"
+                                    Margin="5,0"
+                                    Style="{DynamicResource DropDownPath}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Popup
+                        x:Name="UserPopup"
+                        Margin="0,100"
+                        AllowsTransparency="True"
+                        HorizontalOffset="{Binding ActualWidth, ElementName=UserBorder}"
+                        Placement="Left"
+                        PlacementTarget="{Binding ElementName=UserBorder}"
+                        StaysOpen="False"
+                        VerticalOffset="{Binding ActualHeight, ElementName=UserBorder}">
+                        <Border Style="{DynamicResource MenuBorder}">
+                            <StackPanel>
+                                <Border x:Name="UserInfoMenuItem" Style="{DynamicResource MenuItem}">
+                                    <TextBlock Text="个人信息" />
+                                </Border>
+                                <Border x:Name="PasswordMenuItem" Style="{DynamicResource MenuItem}">
+                                    <TextBlock Text="修改密码" />
+                                </Border>
+                                <Border Style="{DynamicResource MenuSeparator}" />
+                                <Border
+                                    x:Name="LogoutMenuItem"
+                                    MouseLeftButtonUp="LogoutMenuItem_MouseLeftButtonUp"
+                                    Style="{DynamicResource MenuItem}">
+                                    <TextBlock
+                                        FontWeight="Bold"
+                                        Foreground="Red"
+                                        Text="退出登录" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+
+                    <!--  最小化最大化和关闭按钮(Margin-20使关闭按钮顶边)  -->
+                    <StackPanel
+                        x:Name="ControlBoxPanel"
+                        Margin="0,0,-20,0"
+                        HorizontalAlignment="Right"
+                        Visibility ="Visible"
+                        Orientation="Horizontal">
+                        <Border
+                            x:Name="MinBorder"
+                            MouseLeftButtonUp="MinMenuItem_MouseUp"
+                            Style="{DynamicResource TopButton}">
+                            <Path x:Name="MinPath" Width="10">
+                                <Path.Style>
+                                    <Style BasedOn="{StaticResource ClosePath}" TargetType="Path">
+                                        <Setter Property="Data" Value="{DynamicResource MinPathData}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ElementName=MinBorder, Path=IsMouseOver}" Value="True">
+                                                <Setter Property="Stroke" Value="{DynamicResource MainForeBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
+                        </Border>
+
+                        <Border
+                            x:Name="WinStateBorder"
+                            MouseLeftButtonUp="WinStateMenuItem_MouseUp"
+                            Style="{DynamicResource TopButton}">
+                            <Path x:Name="WinStatePath" Width="10">
+                                <Path.Style>
+                                    <Style BasedOn="{StaticResource ClosePath}" TargetType="Path">
+                                        <Setter Property="Data" Value="{DynamicResource NormalPathData}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ElementName=WinStateBorder, Path=IsMouseOver}" Value="True">
+                                                <Setter Property="Stroke" Value="{DynamicResource MainForeBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=WindowState}" Value="Maximized">
+                                                <Setter Property="Data" Value="{DynamicResource NormalPathData}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=WindowState}" Value="Normal">
+                                                <Setter Property="Data" Value="{DynamicResource MaxPathData}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
+                        </Border>
+
+                        <Border
+                            x:Name="CloseBorder"
+                            MouseLeftButtonUp="CloseMenuItem_MouseUp"
+                            Style="{DynamicResource TopButton}">
+                            <Path x:Name="ClosePath" Width="10">
+                                <Path.Style>
+                                    <Style BasedOn="{StaticResource ClosePath}" TargetType="Path">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ElementName=CloseBorder, Path=IsMouseOver}" Value="True">
+                                                <Setter Property="Stroke" Value="Red" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Path.Style>
+                            </Path>
+                        </Border>
+
+                        <!--  窗口无边框时显示,有边框时隐藏  -->
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=WindowStyle}" Value="None">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  状态栏  -->
+        <Grid
+            Width="Auto"
+            Height="35"
+            Background="#F0F2f5"
+            DockPanel.Dock="Bottom">
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                <TextBlock Margin="10,0" Text="就绪" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                <!--<TextBlock HorizontalAlignment="Right" Text="{x:Static local:UserInfo.DepartmentName}" />-->
+            </StackPanel>
+        </Grid>
+
+        <!--  右侧内容  -->
+        <Grid
+            Width="Auto"
+            Height="Auto"
+            Background="White">
+            <TabControl Name="tbContent" Style="{DynamicResource TabControl_WithClose}" />
+        </Grid>
+    </DockPanel>
+</Window>

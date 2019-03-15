@@ -1,0 +1,37 @@
+﻿<Application x:Class="Just.WPF.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!--  文本样式  -->
+                <ResourceDictionary>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <!--<Setter Property="Foreground" Value="Black"/>-->
+                    </Style>
+                </ResourceDictionary>
+                
+                <!--  刷子颜色  -->
+                <ResourceDictionary Source="/Theme/Brush.xaml" />
+                <!--  Tab页控件  -->
+                <ResourceDictionary Source="/Theme/TabControl_WithClose.xaml" />
+                <!--  滚动条样式  -->
+                <ResourceDictionary Source="/Theme/ScrollBar.xaml" />
+                <!--  数据表样式  -->
+                <ResourceDictionary Source="/Theme/DataGrid.xaml" />
+                <!--  按钮样式  -->
+                <ResourceDictionary Source="/Theme/Button.xaml" />
+                <!--  文本框样式  -->
+                <ResourceDictionary Source="/Theme/TextBox.xaml" />
+                <!--  下拉框样式  -->
+                <ResourceDictionary Source="/Theme/ComboBox.xaml" />
+                <!--  树形样式  -->
+                <ResourceDictionary Source="/Theme/TreeView.xaml" />
+                <!--  公共样式  -->
+                <ResourceDictionary Source="/Theme/Generic.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
