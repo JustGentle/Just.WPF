@@ -4,4 +4,7 @@
     <SolidColorBrush x:Key="FocusedBorderBrush" Color="#34C0E3" />
     <SolidColorBrush x:Key="NormalBorderBrush" Color="#BBBBBB" />
     <SolidColorBrush x:Key="MainForeBrush" Color="#1890FF" />
+
+    <SolidColorBrush x:Key="RedBrush" Color="#F5222D" />
+    <SolidColorBrush x:Key="OrangeBrush" Color="#FF8C00" />
 </ResourceDictionary>

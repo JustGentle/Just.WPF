@@ -9,7 +9,7 @@
         StateChanged="Window_StateChanged"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
-        Title="工具箱" Height="600" Width="800">
+        Title="工具箱" Height="768" Width="1024">
     <Window.Style>
         <!--  WindowStyle="None"时隐藏边框  -->
         <Style TargetType="Window">

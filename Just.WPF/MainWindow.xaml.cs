@@ -1,4 +1,4 @@
-﻿using Just.WPF.SubWindows;
+﻿using Just.WPF.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Just.WPF
 {
@@ -33,6 +34,14 @@ namespace Just.WPF
                 return _Instance;
             }
         }
+        public static void DispatcherInvoke(Action action)
+        {
+            Instance.Dispatcher.Invoke(action);
+        }
+        public static TResult DispatcherInvoke<TResult>(Func<TResult> func)
+        {
+            return Instance.Dispatcher.Invoke(func);
+        }
 
         public MainWindow()
         {
@@ -51,6 +60,8 @@ namespace Just.WPF
             var defaultMenu = menus.FirstOrDefault(menu => menu.ClassName == nameof(RevCleanerCtrl));
             if (defaultMenu != null) ShowWindow(defaultMenu.Header, defaultMenu.ClassName);
         }
+
+
         #endregion
 
         #region 窗口控制

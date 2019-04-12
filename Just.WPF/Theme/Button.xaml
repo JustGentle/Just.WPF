@@ -76,4 +76,13 @@
         <Setter Property="Background" Value="#F5222D" />
         <Setter Property="Foreground" Value="White" />
     </Style>
+
+    <!--  橙色按钮  -->
+    <Style
+        x:Key="OrangeButton"
+        BasedOn="{StaticResource {x:Type Button}}"
+        TargetType="Button">
+        <Setter Property="Background" Value="#FF8C00" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
 </ResourceDictionary>

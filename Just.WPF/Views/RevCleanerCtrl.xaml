@@ -1,9 +1,9 @@
-﻿<UserControl x:Class="Just.WPF.SubWindows.RevCleanerCtrl"
+﻿<UserControl x:Class="Just.WPF.Views.RevCleanerCtrl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Just.WPF.SubWindows"
+             xmlns:local="clr-namespace:Just.WPF.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -21,9 +21,9 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Margin="5,0" VerticalAlignment="Center">站点目录:</TextBlock>
-            <TextBox Grid.Column="1" Margin="5,0,0,0"></TextBox>
-            <Button Grid.Column="2" Margin="-1,0,0,0">...</Button>
-            <Button Grid.Column="3" Margin="5,0" Style="{StaticResource BlueButton}">开始</Button>
+            <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding WebRootFolder}"></TextBox>
+            <Button Grid.Column="2" Margin="-1,0,0,0" Command="{Binding WebRootFolderBrowser}">...</Button>
+            <Button Grid.Column="3" Margin="5,0" Style="{StaticResource BlueButton}" Command="{Binding ClearAction}" Content="{Binding ClearActionName}"></Button>
         </Grid>
         <Grid Grid.Row="1" Margin="0,5">
             <Grid.ColumnDefinitions>
@@ -32,14 +32,14 @@
                 <ColumnDefinition/>
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
-            <CheckBox Margin="5,0" VerticalAlignment="Center" IsChecked="True">清理前确认</CheckBox>
-            <CheckBox Grid.Column="1" Margin="5,0" VerticalAlignment="Center">备份到</CheckBox>
-            <TextBox Grid.Column="2" Margin="5,0,0,0"></TextBox>
-            <Button Grid.Column="3" Margin="-1,0,5,0">...</Button>
+            <CheckBox Margin="5,0" VerticalAlignment="Center" IsChecked="{Binding Preview}">清理前确认</CheckBox>
+            <CheckBox Grid.Column="1" Margin="5,0" VerticalAlignment="Center" IsChecked="{Binding Backup}">备份到</CheckBox>
+            <TextBox Grid.Column="2" Margin="5,0,0,0" Text="{Binding BackupFolder}"></TextBox>
+            <Button Grid.Column="3" Margin="-1,0,5,0" Command="{Binding BackupFolderBrowser}">...</Button>
         </Grid>
-        <ProgressBar Grid.Row="2"/>
+        <ProgressBar Grid.Row="2" Value="{Binding Process}"/>
         <Grid Grid.Row="3">
-            <DataGrid>
+            <DataGrid ItemsSource="{Binding Items}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="原始文件名" Binding="{Binding OrigFile}"/>
                     <DataGridTextColumn Header="映射文件名" Binding="{Binding RevFile}"/>
