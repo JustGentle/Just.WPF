@@ -1,4 +1,5 @@
-﻿using Just.WPF.Views;
+﻿using Just.WPF.ViewModels;
+using Just.WPF.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,7 @@ namespace Just.WPF
                 return _Instance;
             }
         }
+
         public static void DispatcherInvoke(Action action)
         {
             Instance.Dispatcher.Invoke(action);
@@ -43,10 +45,15 @@ namespace Just.WPF
             return Instance.Dispatcher.Invoke(func);
         }
 
+        private readonly HomeModel _vm;
+
         public MainWindow()
         {
             InitializeComponent();
             _Instance = this;
+
+            _vm = HomeModel.Instance;
+            this.DataContext = _vm;
         }
 
         /// <summary>
@@ -56,8 +63,8 @@ namespace Just.WPF
         /// <param name="e"></param>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            GetMenu();
-            var defaultMenu = menus.FirstOrDefault(menu => menu.ClassName == nameof(RevCleanerCtrl));
+            CreateMenu();
+            var defaultMenu = _vm.GetMenuItem(nameof(RevCleanerCtrl));
             if (defaultMenu != null) ShowWindow(defaultMenu.Header, defaultMenu.ClassName);
         }
 
@@ -136,7 +143,7 @@ namespace Just.WPF
         /// </summary>
         /// <param name="title">窗口标题</param>
         /// <param name="code">窗口权限代码(后缀为类名)</param>
-        public void ShowWindow(string title, string code, bool isOpenRecord = false, params object[] args)
+        public void ShowWindow(string title, string code, bool isReOpen = false, params object[] args)
         {
             if (code == null || code == string.Empty)
                 return;
@@ -166,7 +173,7 @@ namespace Just.WPF
             else
             {
                 tab.IsSelected = true;
-                if (isOpenRecord)
+                if (isReOpen)
                     tab.Content = (Activator.CreateInstance(type, args) as UserControl);
             }
         }
@@ -204,18 +211,13 @@ namespace Just.WPF
         #endregion
 
         #region 主菜单
-        private List<dynamic> menus = new List<dynamic>
-        {
-            new { Parent = default(int?), Id = 0, Header = "iOffice10", ClassName = default(string) },
-            new { Parent = (int?)0, Id = 1, Header = "补丁文件清理", ClassName = nameof(RevCleanerCtrl) }
-        };
 
         /// <summary>
         /// 获取菜单
         /// </summary>
-        public void GetMenu()
+        public void CreateMenu()
         {
-            var topMenus = menus.Where(menu => menu.Parent == null);
+            var topMenus = _vm.MainMenu.Where(menu => menu.Parent == null);
             foreach (var menu in topMenus)
             {
                 TreeViewItem item = new TreeViewItem
@@ -224,9 +226,10 @@ namespace Just.WPF
                     Tag = menu.ClassName,
                     Name = "tv_" + menu.Id
                 };
-                var subMenus = menus.Where(m => m.Parent == menu.Id);
-                GetNode(subMenus, item);
+                var subMenus = _vm.MainMenu.Where(m => m.Parent == menu.Id);
+                CreateNode(subMenus, item);
                 item.IsExpanded = true;//主菜单默认展开
+                item.MouseLeftButtonUp += Node_MouseUp;
                 tvMenu.Items.Add(item);
             }
         }
@@ -236,7 +239,7 @@ namespace Just.WPF
         /// </summary>
         /// <param name="data"></param>
         /// <param name="item"></param>
-        private void GetNode(IEnumerable<dynamic> data, TreeViewItem item)
+        private void CreateNode(IEnumerable<MenuNode> data, TreeViewItem item)
         {
             if (data == null) return;
             foreach (var sub in data)
@@ -249,8 +252,25 @@ namespace Just.WPF
                 };
                 node.MouseLeftButtonUp += Node_MouseUp;
                 item.Items.Add(node);
-                GetNode(null, node);
+                CreateNode(null, node);
             }
+        }
+
+        private TreeViewItem GetNode(string tag, ItemsControl parent = null)
+        {
+            parent = parent ?? this.tvMenu;
+            foreach (TreeViewItem item in parent.Items)
+            {
+                if (item.Tag?.ToString() == tag)
+                    return item;
+                if (item.HasItems)
+                {
+                    var node = GetNode(tag, item);
+                    if (node != null)
+                        return node;
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -266,6 +286,26 @@ namespace Just.WPF
             ShowWindow(tv.Header?.ToString(), tv.Tag?.ToString());
         }
 
+        /// <summary>
+        /// 子窗口选择事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TbContent_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0)
+            {
+                var item = e.AddedItems[0] as TabItem;
+                var node = GetNode(item.Tag?.ToString());
+                if(node != null) node.IsSelected = true;
+            }
+            else if (e.RemovedItems.Count > 0)
+            {
+                var item = e.RemovedItems[0] as TabItem;
+                var node = GetNode(item.Tag?.ToString());
+                if (node != null) node.IsSelected = false;
+            }
+        }
         #endregion
 
         #region 顶部菜单

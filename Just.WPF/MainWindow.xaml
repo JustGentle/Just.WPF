@@ -113,7 +113,7 @@
                         Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=Title}" />
                 </StackPanel>
             </Border>
-            <TreeView Name="tvMenu" Grid.Row="1" />
+            <TreeView Name="tvMenu" Grid.Row="1" SelectedValuePath="Id" />
         </Grid>
 
         <!--  顶部菜单  -->
@@ -281,7 +281,7 @@
             Width="Auto"
             Height="Auto"
             Background="White">
-            <TabControl Name="tbContent" Style="{DynamicResource TabControl_WithClose}" />
+            <TabControl Name="tbContent" Style="{DynamicResource TabControl_WithClose}" SelectionChanged="TbContent_SelectionChanged" />
         </Grid>
     </DockPanel>
 </Window>
