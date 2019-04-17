@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Just.WPF.Views"
+             xmlns:GenControls="clr-namespace:GenLibrary.GenControls;assembly=GenLibrary"
+             xmlns:GenClass="clr-namespace:GenLibrary.GenClass;assembly=GenLibrary"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -39,15 +41,31 @@
         </Grid>
         <ProgressBar Grid.Row="2" Value="{Binding Process}"/>
         <Grid Grid.Row="3">
-            <DataGrid ItemsSource="{Binding Items}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="原始文件名" Binding="{Binding OrigFile}"/>
-                    <DataGridTextColumn Header="映射文件名" Binding="{Binding RevFile}"/>
-                    <DataGridTextColumn Header="当前文件" Binding="{Binding CurFile}"/>
-                    <DataGridTextColumn Header="修改时间" Binding="{Binding UpdateTime}"/>
-                    <DataGridCheckBoxColumn Header="保留" Binding="{Binding IsKeep}"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <GenControls:TreeListView DataContext="{Binding Data}">
+                <GenControls:TreeListView.Columns>
+                    <GridViewColumn Width="150" Header="文件名">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid  Width="Auto">
+                                    <Image Width="16" Height="Auto" Margin="0,-3,0,0" Source="{Binding ImagePath}" HorizontalAlignment="Left" />
+                                    <TextBlock x:Name="textBlock" Text="{Binding Name}" Margin="18,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <!--<GridViewColumn Width="150" Header="文件路径" DisplayMemberBinding="{Binding Path}" GenClass:RangeColumn.IsFillColumn="true"/>-->
+                    <GridViewColumn Width="150" Header="修改时间" DisplayMemberBinding="{Binding UpdateTime}"/>
+                    <GridViewColumn Width="150" Header="原始文件" DisplayMemberBinding="{Binding OrigFile}"/>
+                    <GridViewColumn Width="150" Header="映射文件" DisplayMemberBinding="{Binding RevFile}"/>
+                    <GridViewColumn Width="50" Header="保留">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Path=IsKeep,Mode=TwoWay}" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GenControls:TreeListView.Columns>
+            </GenControls:TreeListView>
         </Grid>
     </Grid>
 </UserControl>

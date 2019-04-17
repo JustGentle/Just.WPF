@@ -1,0 +1,20 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    >
+
+    <!--非激活时标题栏的颜色/Win8-->
+    <SolidColorBrush x:Key="TitleBackgroundBrushWin8" Color="#BF2694C7" />
+    <!--激活时标题栏的颜色/Win8-->
+    <SolidColorBrush x:Key="ActiveTitleBackgroundBrushWin8" Color="#D838A5D8" />
+
+    <!--非激活时标题栏的颜色/Win7-->
+    <SolidColorBrush x:Key="TitleBackgroundBrushWin7" Color="#26FFFFFF" />
+    <!--激活时标题栏的颜色/Win7-->
+    <SolidColorBrush x:Key="ActiveTitleBackgroundBrushWin7" Color="#66FFFFFF" />
+    
+    <!--非激活时标题栏的颜色/Win10-->
+    <SolidColorBrush x:Key="TitleBackgroundBrushWin10" Color="Transparent" />
+    <!--激活时标题栏的颜色/Win10-->
+    <SolidColorBrush x:Key="ActiveTitleBackgroundBrushWin10" Color="Transparent" />
+    
+</ResourceDictionary>

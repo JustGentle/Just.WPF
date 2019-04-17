@@ -17,7 +17,7 @@
         </ResourceDictionary>
     </ResourceDictionary.MergedDictionaries>
 
-    <Style TargetType="{x:Type TreeView}">
+    <Style TargetType="{x:Type TreeView}" x:Key="MenuTree">
         <Setter Property="Background" Value="{DynamicResource TreeView.Background}" />
         <Setter Property="FontSize" Value="{DynamicResource TreeView.FontSize}" />
         <Setter Property="BorderThickness" Value="0" />

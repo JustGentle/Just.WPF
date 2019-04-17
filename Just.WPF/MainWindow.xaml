@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Just.WPF"
+        xmlns:cvt="clr-namespace:Just.WPF.Converters"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
         StateChanged="Window_StateChanged"
@@ -87,6 +88,8 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <cvt:BoolToVisibilityConverter x:Key="cvtBtoV"/>
     </Window.Resources>
     <DockPanel
         Width="Auto"
@@ -113,7 +116,7 @@
                         Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=Title}" />
                 </StackPanel>
             </Border>
-            <TreeView Name="tvMenu" Grid.Row="1" SelectedValuePath="Id" />
+            <TreeView Name="tvMenu" Grid.Row="1" Style="{StaticResource MenuTree}" />
         </Grid>
 
         <!--  顶部菜单  -->
@@ -269,10 +272,11 @@
             Background="#F0F2f5"
             DockPanel.Dock="Bottom">
             <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                <TextBlock Margin="10,0" Text="就绪" />
+                <TextBlock Margin="10,0" Text="{Binding StatusText}" />
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <!--<TextBlock HorizontalAlignment="Right" Text="{x:Static local:UserInfo.DepartmentName}" />-->
+                <ProgressBar Margin="5,0" Width="100" Height="10" Value="{Binding StatusProcess}" Visibility="{Binding Path=IsShowStatusProcess,Converter={StaticResource cvtBtoV}}"/>
             </StackPanel>
         </Grid>
 

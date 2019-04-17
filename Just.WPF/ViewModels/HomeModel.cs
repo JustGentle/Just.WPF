@@ -27,6 +27,9 @@ namespace Just.WPF.ViewModels
 
         #region 属性
         public ObservableCollection<MenuNode> MainMenu { get; set; } = new ObservableCollection<MenuNode>();
+        public string StatusText { get; set; } = "就绪";
+        public bool IsShowStatusProcess { get; set; } = false;
+        public int StatusProcess { get; set; } = 0;
         #endregion
 
         #region 方法

@@ -8,14 +8,11 @@ namespace Just.WPF.Views
     /// </summary>
     public partial class RevCleanerCtrl : UserControl
     {
-        private readonly RevCleanerSetting _vm;
+        private readonly RevCleanerSetting _vm = new RevCleanerSetting();
         public RevCleanerCtrl()
         {
             InitializeComponent();
-            _vm = RevCleanerSetting.Instance;
             this.DataContext = _vm;
-
-            _vm.WebRootFolder = System.Environment.CurrentDirectory;
         }
     }
 }

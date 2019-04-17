@@ -1,0 +1,599 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:r="clr-namespace:GenLibrary.GenControls"
+                    xmlns:gn="clr-namespace:GenLibrary.GenClass"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib"
+                    xmlns:GenClass="clr-namespace:GenLibrary.GenClass"
+                    xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero">
+
+    <!-- 绑定节点 -->
+    <HierarchicalDataTemplate x:Key="HierarchicalDataBinding" ItemsSource="{Binding Children}">
+    </HierarchicalDataTemplate>
+    <r:LevelToIndentConverter x:Key="LevelToIndentConverter"/>
+    <!-- 悬停状态的画刷 -->
+    <LinearGradientBrush x:Key="HoverBackgroundBrushKey" EndPoint="0.5,1" StartPoint="0.5,0">
+        <GradientStop Color="#FFA7EFFF"/>
+        <GradientStop Color="#FFAAF0FF" Offset="1"/>
+        <GradientStop Color="#FF9CEDFF" Offset="0.501"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="HoverBorderBrushKey" Color="#FF1B82A8" />
+    <SolidColorBrush x:Key="HoverFontBrushKey" Color="Black" />
+    <!-- 选中(激活)状态的画刷/字体 -->
+    <LinearGradientBrush x:Key="SelectedActiveBackgroundBrushKey" EndPoint="0.5,1" StartPoint="0.5,0">
+        <GradientStop Color="#FFA2D7FD"/>
+        <GradientStop Color="#FF98D4FF" Offset="1"/>
+        <GradientStop Color="#FF98D5FF" Offset="0.513"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="SelectedActiveBorderBrushKey" Color="#FF1B82A8" />
+    <SolidColorBrush x:Key="SelectedActiveFontBrushKey" Color="Black" />
+    <!-- 选中(失效)状态的画刷 -->
+    <LinearGradientBrush x:Key="SelectedInactiveBackgroundBrushKey" EndPoint="0.5,1" StartPoint="0.5,0">
+        <GradientStop Color="#FFA2D7FD"/>
+        <GradientStop Color="#FF98D4FF" Offset="1"/>
+        <GradientStop Color="#FF98D5FF" Offset="0.513"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="SelectedInactiveBorderBrushKey" Color="#FF2896BF" />
+    <!-- 选中(悬停)状态的画刷 -->
+    <LinearGradientBrush x:Key="SelectedHoverBackgroundBrushKey" EndPoint="0.5,1" StartPoint="0.5,0">
+        <GradientStop Color="#FFA2D7FD"/>
+        <GradientStop Color="#FF98D4FF" Offset="1"/>
+        <GradientStop Color="#FF98D5FF" Offset="0.513"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="SelectedHoverBorderBrushKey" Color="#FF1B82A8" />
+    <SolidColorBrush x:Key="SelectedHoverFontBrushKey" Color="Black" />
+    <!-- 列头背景色 -->
+    <RadialGradientBrush x:Key="ColumHeadBackgroundKey"   Center="0.075,0.015" GradientOrigin="-0.1,-0.1" RadiusX="1.05" RadiusY="0.9">
+        <GradientStop Color="#3FE8F8FF" />
+        <GradientStop Offset="1" Color="#66BDE6F5" />
+    </RadialGradientBrush>
+    <!-- 列头分界线颜色 -->
+    <SolidColorBrush x:Key="ColumnHeadSplitColorKey" Color="#FFA5A5A5"/>
+    <!-- 行网格线颜色 -->
+    <SolidColorBrush x:Key="RowGridLineColor" Color="#FFBCBBBB"/>
+    <!-- 列网格线颜色 -->
+    <SolidColorBrush x:Key="ColumnGridLineColor" Color="#FFBCBBBB"/>
+    <!-- 列头鼠标经过时的背景色 -->
+    <LinearGradientBrush x:Key="ColumnHeadHoverBackgroundKey" EndPoint="0.5,1" StartPoint="0.5,0">
+        <GradientStop Color="#FFA7EFFF"/>
+        <GradientStop Color="#FFAAF0FF" Offset="1"/>
+        <GradientStop Color="#FF9CEDFF" Offset="0.501"/>
+    </LinearGradientBrush>
+    <!--Grid Line线偏移转换-->
+    <GenClass:ListViewVerticalLineMarginConverter x:Key="listViewVerticalLineMarginConverter" />
+    <s:Double x:Key="VerticalGridLineOffsetX">1</s:Double>
+    <!--列头模板-->
+    <ControlTemplate x:Key="GridViewColumnHeaderControlTemplate1" TargetType="{x:Type GridViewColumnHeader}">
+        <Grid SnapsToDevicePixels="True">
+            <Border x:Name="HeaderBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,0,1" Background="{TemplateBinding Background}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition MaxHeight="8"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Rectangle x:Name="UpperHighlight" Fill="#FFE3F7FF" Visibility="Collapsed"/>
+                    <Border Padding="{TemplateBinding Padding}" Grid.RowSpan="2">
+                        <!--设置Margin可以设定文本距离左边的间隔-->
+                        <ContentPresenter x:Name="HeaderContent" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" 
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="3,0,0,1" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                </Grid>
+            </Border>
+            <!--<Border x:Name="HeaderHoverBorder" BorderThickness="1,0,1,1" Margin="0"/>
+                 <Border x:Name="HeaderPressBorder" BorderThickness="1,1,1,0" Margin="1,0,0,1"/>-->
+            <Canvas>
+                <!--列头分割线设置-->
+                <Thumb x:Name="PART_HeaderGripper">
+                    <Thumb.Style>
+                        <Style TargetType="{x:Type Thumb}">
+                            <Setter Property="Canvas.Right" Value="-9"/>
+                            <Setter Property="Width" Value="18"/>
+                            <Setter Property="Height" Value="{Binding ActualHeight, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Background" Value="{StaticResource ColumnHeadSplitColorKey}"/>
+
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type Thumb}">
+                                        <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                                            <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Center" Width="1"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Thumb.Style>
+                </Thumb>
+            </Canvas>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <!--列头鼠标经过时的颜色-->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" TargetName="HeaderBorder" Value="{StaticResource ColumnHeadHoverBackgroundKey}"/>
+                <!--<Setter Property="BorderBrush" TargetName="HeaderHoverBorder" Value="#FF88CBEB"/>-->
+                <!--<Setter Property="Background" TargetName="PART_HeaderGripper" Value="Transparent"/>-->
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" TargetName="HeaderBorder">
+                    <Setter.Value>
+                        <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+                            <GradientStop Color="#FF8DD6F7" Offset="0"/>
+                            <GradientStop Color="#FF8AD1F5" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
+                <!--<Setter Property="BorderBrush" TargetName="HeaderHoverBorder" Value="#FF95DAF9"/>
+                     <Setter Property="BorderBrush" TargetName="HeaderPressBorder" Value="#FF7A9EB1"/>-->
+                <Setter Property="Visibility" TargetName="UpperHighlight" Value="Visible"/>
+                <Setter Property="Fill" TargetName="UpperHighlight" Value="#FFBCE4F9"/>
+                <Setter Property="Visibility" TargetName="PART_HeaderGripper" Value="Hidden"/>
+                <!--<Setter Property="Margin" TargetName="HeaderContent" Value="1,1,0,0"/>-->
+            </Trigger>
+            <Trigger Property="Height" Value="Auto">
+                <Setter Property="MinHeight" Value="20"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{StaticResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+    <!--定义列头样式-->
+    <Style x:Key="ColumnHeaderStyle" TargetType="GridViewColumnHeader">
+        <Setter Property="BorderThickness" Value="0,0,1,1" />
+        <Setter Property="BorderBrush" Value="#BBBBBB" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="Background" Value="#F5F5F5" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Padding" Value="4,0" />
+        <Setter Property="Height" Value="40" />
+        
+        <!--可以设定列头的对齐方式-->
+        <!--<Setter Property="HorizontalContentAlignment" Value="Left"/>
+             <Setter Property="Height" Value="24"/>
+             <Setter Property="BorderBrush" Value="{StaticResource ColumnHeadSplitColorKey}"/>
+             <Setter Property="Background" Value="{StaticResource ColumHeadBackgroundKey}"/>-->
+        <Setter Property="Template" Value="{StaticResource GridViewColumnHeaderControlTemplate1}"/>
+    </Style>
+    <!-- 树形列表项风格 -->
+    <Style TargetType="{x:Type r:TreeListViewItem}">
+        <!--让其支持内部可编辑元素聚焦时，当前行被自动选中-->
+        <!--<Setter Property="gn:AutoSelectWhenAnyChildGetsFocus.Enabled" Value="true" />-->
+        <Setter Property="Padding" Value="0" />
+        <!-- 设置TreeViewItem的项被选择后，滚动到可见区域的附加行为 -->
+        <Setter Property="gn:TreeViewItemBehavior.IsBroughtIntoViewWhenSelected" Value="True" />
+        <!-- 将控件的项属性和视图模式属性绑定 -->
+        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+        <Setter Property="FrameworkElement.FocusVisualStyle">
+            <Setter.Value>
+                <Style TargetType="IFrameworkInputElement">
+                    <Style.Resources>
+                        <ResourceDictionary />
+                    </Style.Resources>
+                    <Setter Property="Control.Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <Rectangle RadiusY="2" Stroke="#8E6EA6F5" RadiusX="2" StrokeThickness="1" />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Panel.Background">
+            <!-- 可设置行的背景色 -->
+            <Setter.Value>
+                <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+            </Setter.Value>
+        </Setter>
+        <!-- 可设置行间的水平线颜色 -->
+        <Setter Property="Border.BorderBrush" Value="{StaticResource RowGridLineColor}"/>
+        <Setter Property="Border.BorderThickness" Value="0,0,0,1"/>
+        <!-- 可设置行间的间隙 -->
+        <Setter Property="FrameworkElement.Margin" Value="0"/>
+        <Setter Property="Control.Padding" Value="0"/>
+        <Setter Property="Control.VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="r:TreeListViewItem">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <!--无法设定行内容居中对齐，这里通过设定Padding距离上端为3的间隔，对应行高为18情况下的居中效果-->
+                        <Border x:Name="item" Margin="0" Padding="0,3,0,0" BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="True">
+                            <!--<Border BorderThickness="1" Name="InnerBorder" Padding="0,2,0,0">-->
+                            <Grid>
+                                <!--<Grid.RowDefinitions>
+                                     <RowDefinition MaxHeight="11" />
+                                     <RowDefinition />
+                                     </Grid.RowDefinitions>-->
+                                <Rectangle Visibility="Collapsed" Fill="#75FFFFFF" Name="UpperHighlight" />
+                                <!--设定内容,这里可以设定行高为19-->
+                                <r:TreeGridViewRowPresenter x:Name="PART_Header" Height="{Binding Path=ItemHeight,RelativeSource={RelativeSource AncestorType={x:Type r:TreeListView}}}"
+                                                            FirstColumnIndent="{Binding Level,Converter={StaticResource LevelToIndentConverter},RelativeSource={RelativeSource AncestorType={x:Type r:TreeListViewItem}},ConverterParameter=16}"
+                                                            Content="{TemplateBinding Header}" 
+                                                            Columns="{Binding Path=Columns,RelativeSource={RelativeSource AncestorType={x:Type r:TreeListView}}}">
+                                    <!-- 设置展开折叠按钮 -->
+                                    <r:TreeGridViewRowPresenter.Expander>
+                                        <Grid Height="{Binding Path=ItemHeight,RelativeSource={RelativeSource AncestorType={x:Type r:TreeListView}}}">
+                                            <!--ToggleButton的宽度决定着展开按钮与后面项之间的间距-->
+                                            <ToggleButton Height="16" Width="14" ClickMode="Press" Name="Expander" IsChecked="{Binding Path=IsExpanded,RelativeSource={RelativeSource AncestorType={x:Type r:TreeListViewItem}}}">
+                                                <ToggleButton.Style>
+                                                    <Style TargetType="ToggleButton">
+
+                                                        <Setter Property="UIElement.Focusable" Value="False"/>
+
+                                                        <Setter Property="FrameworkElement.Width" Value="16"/>
+
+                                                        <Setter Property="FrameworkElement.Height" Value="16"/>
+
+
+                                                        <Setter Property="Control.Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="ToggleButton">
+                                                                    <Border Height="16" Width="16" Background="#00FFFFFF">
+                                                                        <!-- 设置收缩按钮 -->
+                                                                        <Path
+                                                                            x:Name="ExpandPath"
+                                                                            Width="10"
+                                                                            Stroke="Gray"
+                                                                            Style="{DynamicResource DropDownPath}">
+                                                                            <Path.RenderTransform>
+                                                                                <RotateTransform CenterX="5" Angle="-90" CenterY="2" />
+                                                                            </Path.RenderTransform>
+                                                                        </Path>
+                                                                        <!--<Path Fill="White" Name="ExpandPath" Stroke="Black">
+                                                                             <Path.Data>
+                                                                             <PathGeometry Figures="M0,0L0,6L6,0z" />
+                                                                             </Path.Data>
+                                                                             <Path.RenderTransform>
+                                                                             <RotateTransform CenterX="3" Angle="135" CenterY="3" />
+                                                                             </Path.RenderTransform>
+                                                                             </Path>-->
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <!-- 设置展开按钮 -->
+                                                                        <Trigger Property="ToggleButton.IsChecked">
+                                                                            <Setter Property="UIElement.RenderTransform" TargetName="ExpandPath">
+                                                                                <Setter.Value>
+                                                                                    <RotateTransform CenterX="5" Angle="0" CenterY="2" />
+                                                                                </Setter.Value>
+                                                                            </Setter>
+                                                                            <!--<Setter Property="Shape.Fill" TargetName="ExpandPath">
+                                                                                <Setter.Value>
+                                                                                    <SolidColorBrush>red</SolidColorBrush>
+                                                                                </Setter.Value>
+                                                                            </Setter>-->
+                                                                            <!--<Setter Property="Shape.Stroke" TargetName="ExpandPath">
+                                                                                <Setter.Value>
+                                                                                    <SolidColorBrush>black</SolidColorBrush>
+                                                                                </Setter.Value>
+                                                                            </Setter>-->
+                                                                            <Trigger.Value>
+                                                                                <s:Boolean>True</s:Boolean>
+                                                                            </Trigger.Value>
+                                                                        </Trigger>
+                                                                        <MultiTrigger>
+                                                                            <!-- 设置展开按钮的鼠标经过时的颜色 -->
+                                                                            <MultiTrigger.Conditions>
+                                                                                <Condition Property="ToggleButton.IsChecked" Value="True" />
+                                                                                <Condition Property="UIElement.IsMouseOver" Value="true" />
+                                                                            </MultiTrigger.Conditions>
+                                                                            <Setter Property="Shape.Stroke" TargetName="ExpandPath" Value="Black"/>
+                                                                        </MultiTrigger>
+                                                                        <MultiTrigger>
+                                                                            <!-- 设置收缩按钮的鼠标经过时的颜色 -->
+                                                                            <MultiTrigger.Conditions>
+                                                                                <Condition Property="ToggleButton.IsChecked" Value="false" />
+                                                                                <Condition Property="UIElement.IsMouseOver" Value="true" />
+                                                                            </MultiTrigger.Conditions>
+                                                                            <Setter Property="Shape.Stroke" TargetName="ExpandPath" Value="Black"/>
+                                                                        </MultiTrigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </ToggleButton.Style>
+                                            </ToggleButton>
+                                        </Grid>
+                                    </r:TreeGridViewRowPresenter.Expander>
+                                </r:TreeGridViewRowPresenter>
+                            </Grid>
+                            <!--</Border>-->
+                        </Border>
+
+                        <ItemsPresenter Grid.Row="1" Name="ItemsHost"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="TreeViewItem.IsExpanded">
+                            <Setter Property="UIElement.Visibility" TargetName="ItemsHost" Value="{x:Static Visibility.Collapsed}" />
+                            <Trigger.Value>
+                                <s:Boolean>False</s:Boolean>
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="ItemsControl.HasItems">
+                            <Setter Property="UIElement.Visibility" TargetName="Expander" Value="{x:Static Visibility.Hidden}" />
+                            <Trigger.Value>
+                                <s:Boolean>False</s:Boolean>
+                            </Trigger.Value>
+                        </Trigger>
+                        <!-- 设置鼠标经过时的风格 -->
+                        <Trigger Property="UIElement.IsMouseOver" SourceName="item" Value="true">
+                            <Setter Property="Panel.Background" TargetName="item" Value="{StaticResource HoverBackgroundBrushKey}"/>
+                            <!--<Setter Property="Border.BorderBrush" TargetName="item" Value="{StaticResource RowGridLineColor}"/>-->
+                            <Setter Property="TreeViewItem.Foreground" Value="{StaticResource HoverFontBrushKey}"/>
+                        </Trigger>
+                        <!-- 设置项被选中时的风格 -->
+                        <Trigger Property="TreeViewItem.IsSelected" Value="true">
+                            <Setter Property="Panel.Background" TargetName="item" Value="{StaticResource SelectedActiveBackgroundBrushKey}"/>
+                            <!--<Setter Property="Border.BorderBrush" TargetName="item" Value="{StaticResource RowGridLineColor}"/>-->
+                            <Setter Property="TreeViewItem.Foreground" Value="{StaticResource SelectedActiveFontBrushKey}"/>
+                            <!--<Setter Property="Border.BorderBrush" TargetName="item" Value="{StaticResource SelectedActiveBackgroundBrushKey}"/>-->
+                        </Trigger>
+                        <!-- 设置项被选中，但未聚焦时的风格 -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="TreeViewItem.IsSelected" Value="true"/>
+                                <Condition Property="TreeViewItem.IsSelectionActive" Value="false"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Panel.Background" TargetName="item" Value="{StaticResource SelectedInactiveBackgroundBrushKey}"/>
+                            <!--<Setter Property="Border.BorderBrush" TargetName="item" Value="{StaticResource RowGridLineColor}"/>-->
+                            <Setter Property="TreeViewItem.Foreground" Value="{StaticResource SelectedActiveFontBrushKey}"/>
+                        </MultiTrigger>
+                        <!-- 设置项被选中，同时鼠标经过时的风格 -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="true"/>
+                                <Condition Property="UIElement.IsMouseOver" Value="true"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Panel.Background" TargetName="item" Value="{StaticResource SelectedHoverBackgroundBrushKey}"/>
+                            <!--<Setter Property="Border.BorderBrush" TargetName="item" Value="{StaticResource SelectedHoverBorderBrushKey}"/>-->
+                            <Setter Property="TreeViewItem.Foreground" Value="{StaticResource SelectedHoverFontBrushKey}"/>
+                        </MultiTrigger>
+                        <!-- 设置控件被禁用时的风格 -->
+                        <Trigger Property="UIElement.IsEnabled" Value="false">
+                            <Setter Property="TextElement.Foreground" TargetName="item">
+                                <Setter.Value>
+                                    <StaticResource ResourceKey="{x:Static SystemColors.GrayTextBrushKey}" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <!--启用虚拟化-->
+        <!--<Setter Property="ItemsPanel">
+             <Setter.Value>
+             <ItemsPanelTemplate>
+             <VirtualizingStackPanel></VirtualizingStackPanel>
+             </ItemsPanelTemplate>
+             </Setter.Value>
+             </Setter>-->
+    </Style>
+    <!-- 滚动视图风格 -->
+    <Style x:Key="scroll">
+        <Setter Property="UIElement.Focusable">
+            <Setter.Value>
+                <s:Boolean>False</s:Boolean>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                    <Grid Background="{TemplateBinding Background}"
+                          SnapsToDevicePixels="true">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <DockPanel Margin="{TemplateBinding Padding}">
+                            <ScrollViewer DockPanel.Dock="Top"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden"
+                                          Focusable="false" BorderBrush="Black">
+
+                                <!--ColumnHeaderContainerStyle="{Binding Path=TemplatedParent.View.ColumnHeaderContainerStyle,RelativeSource={RelativeSource TemplatedParent}}"
+                                     ColumnHeaderTemplate="{Binding Path=TemplatedParent.View.ColumnHeaderTemplate,RelativeSource={RelativeSource TemplatedParent}}"
+                                     ColumnHeaderTemplateSelector="{Binding Path=TemplatedParent.View.ColumnHeaderTemplateSelector,RelativeSource={RelativeSource TemplatedParent}}"
+                                     AllowsColumnReorder="{Binding Path=TemplatedParent.View.AllowsColumnReorder,RelativeSource={RelativeSource TemplatedParent}}"
+                                     ColumnHeaderContextMenu="{Binding Path=TemplatedParent.View.ColumnHeaderContextMenu,RelativeSource={RelativeSource TemplatedParent}}"
+                                     ColumnHeaderToolTip="{Binding Path=TemplatedParent.View.ColumnHeaderToolTip,RelativeSource={RelativeSource TemplatedParent}}"-->
+                                <GridViewHeaderRowPresenter
+                                    Columns="{Binding Path=Columns,RelativeSource={RelativeSource AncestorType={x:Type r:TreeListView}}}"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                    ColumnHeaderContainerStyle="{StaticResource ColumnHeaderStyle}"/>
+                            </ScrollViewer>
+                            <ScrollContentPresenter Name="PART_ScrollContentPresenter"
+                                                    KeyboardNavigation.DirectionalNavigation="Local"
+                                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                    CanContentScroll="{TemplateBinding CanContentScroll}"
+                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                                <!--此处原为Content="{TemplateBinding Content}"，这里取消，然后直接在下方添加了内容绑定设置-->
+                                <ScrollContentPresenter.Content>
+                                    <Grid>
+                                        <ContentControl Content="{TemplateBinding Content}" />
+
+                                        <ItemsControl Margin="{Binding Source={StaticResource VerticalGridLineOffsetX},Converter={StaticResource listViewVerticalLineMarginConverter}}" 
+                                                      ItemsSource="{Binding Path=TemplatedParent.Columns, RelativeSource={RelativeSource TemplatedParent}}"
+                                                      SnapsToDevicePixels="True">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Width="{Binding Path=ActualWidth}" BorderThickness="0,0,1,0" 
+                                                            BorderBrush="{StaticResource ColumnGridLineColor}" SnapsToDevicePixels="True"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <VirtualizingStackPanel Orientation="Horizontal" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </Grid>
+                                    
+                                </ScrollContentPresenter.Content>
+
+                            </ScrollContentPresenter>
+                        </DockPanel>
+                        <ScrollBar Name="PART_HorizontalScrollBar"
+                                   Orientation="Horizontal"
+                                   Grid.Row="1"
+                                   Minimum="0.0"
+                                   Maximum="{TemplateBinding ScrollableWidth}"
+                                   ViewportSize="{TemplateBinding ViewportWidth}"
+                                   Value="{Binding Path=HorizontalOffset,RelativeSource={RelativeSource TemplatedParent},Mode=OneWay}"
+                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                                   Cursor="Arrow"/>
+                        <ScrollBar Name="PART_VerticalScrollBar"
+                                   Orientation="Vertical"
+                                   Grid.Column="1"
+                                   Minimum="0.0"
+                                   Maximum="{TemplateBinding ScrollableHeight}"
+                                   ViewportSize="{TemplateBinding ViewportHeight}"
+                                   Value="{Binding Path=VerticalOffset,RelativeSource={RelativeSource TemplatedParent},Mode=OneWay}"
+                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
+                                   Cursor="Arrow"/>
+                        <DockPanel Grid.Column="1"
+                                   Grid.Row="1"
+                                   Background="{Binding Path=Background,ElementName=PART_VerticalScrollBar}"
+                                   LastChildFill="false">
+                            <Rectangle DockPanel.Dock="Left"
+                                       Width="1"
+                                       Fill="White"
+                                       Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                            <Rectangle DockPanel.Dock="Top"
+                                       Height="1"
+                                       Fill="White"
+                                       Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+                        </DockPanel>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!-- 树形容器风格 -->
+    <Style TargetType="{x:Type r:TreeListView}">
+
+        <Setter Property="Panel.Background">
+            <Setter.Value>
+                <DynamicResource ResourceKey="{x:Static SystemColors.WindowBrushKey}" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Border.BorderBrush" Value="#FF828790"/>
+        <Setter Property="Border.BorderThickness" Value="1,1,1,1"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+        <Setter Property="Control.VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="ItemHeight" Value="30"/>
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <!-- Style="{StaticResource scroll}"-->
+                <ControlTemplate TargetType="r:TreeListView">
+                    <ControlTemplate.Resources>
+                        <!--#region TextBox风格-->
+                        <SolidColorBrush x:Key="TextBox.Static.Border" Color="#FFABAdB3"/>
+                        <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="#FF7EB4EA"/>
+                        <SolidColorBrush x:Key="TextBox.Focus.Border" Color="#FF569DE5"/>
+                        <Style TargetType="{x:Type TextBox}">
+                            <Setter Property="Margin" Value="-2,-4,-8,-1"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="gn:AutoSelectTreeListItemWhenChildIsFocus.Enabled" Value="true"/>
+                            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                            <Setter Property="VerticalAlignment" Value="Stretch"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource TextBox.Static.Border}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Setter Property="AllowDrop" Value="true"/>
+                            <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>
+                            <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+                            <Setter Property="Cursor" Value="Arrow"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type TextBox}">
+                                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsEnabled" Value="false">
+                                                <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="true">
+                                                <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource TextBox.MouseOver.Border}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                                <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource TextBox.Focus.Border}"/>
+                                                <Setter Property="BorderThickness" Value="1"/>
+                                                <Setter Property="Background" Value="#B2F5F5F5"/>
+                                                <Setter Property="Cursor" Value="IBeam"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true"/>
+                                        <Condition Property="IsSelectionActive" Value="false"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
+                                </MultiTrigger>
+                            </Style.Triggers>
+                        </Style>
+
+                        <!--#endregion-->
+
+                    </ControlTemplate.Resources>
+                    <mwt:ListBoxChrome BorderBrush="{TemplateBinding Border.BorderBrush}" BorderThickness="{TemplateBinding Border.BorderThickness}" Name="Bd" Background="{TemplateBinding Panel.Background}" SnapsToDevicePixels="True">
+                        <ScrollViewer Style="{StaticResource scroll}" Background="{TemplateBinding Background}"
+                                      Focusable="false"
+                                      CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}"
+                                      HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                      VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                      Padding="{TemplateBinding Padding}"
+                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                            <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"/>
+                        </ScrollViewer>
+                    </mwt:ListBoxChrome>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="UIElement.IsEnabled">
+                            <Setter Property="Panel.Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+                            <Trigger.Value>
+                                <s:Boolean>False</s:Boolean>
+                            </Trigger.Value>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <!-- 设置属性导航器绑定到0级视图对象的子对象 -->
+        <Setter Property="ItemsSource" Value="{Binding Children}"/>
+        <Setter Property="ItemTemplate" Value="{StaticResource HierarchicalDataBinding}"/>
+        <!--启用虚拟化-->
+        <!--<Setter Property="ItemsPanel">
+             <Setter.Value>
+             <ItemsPanelTemplate>
+             <VirtualizingStackPanel></VirtualizingStackPanel>
+             </ItemsPanelTemplate>
+             </Setter.Value>
+             </Setter>-->
+    </Style>
+
+</ResourceDictionary>

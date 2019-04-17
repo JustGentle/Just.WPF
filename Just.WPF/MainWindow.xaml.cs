@@ -208,6 +208,17 @@ namespace Just.WPF
             }
             return null;
         }
+
+        /// <summary>
+        /// 显示状态文本
+        /// </summary>
+        /// <param name="text"></param>
+        public void ShowStatus(string text = "就绪", bool isProcess = false, int process = 0)
+        {
+            _vm.StatusText = text;
+            _vm.IsShowStatusProcess = isProcess;
+            _vm.StatusProcess = process;
+        }
         #endregion
 
         #region 主菜单
@@ -295,13 +306,13 @@ namespace Just.WPF
         {
             if (e.AddedItems.Count > 0)
             {
-                var item = e.AddedItems[0] as TabItem;
+                if (!(e.AddedItems[0] is TabItem item)) return;
                 var node = GetNode(item.Tag?.ToString());
                 if(node != null) node.IsSelected = true;
             }
             else if (e.RemovedItems.Count > 0)
             {
-                var item = e.RemovedItems[0] as TabItem;
+                if (!(e.RemovedItems[0] is TabItem item)) return;
                 var node = GetNode(item.Tag?.ToString());
                 if (node != null) node.IsSelected = false;
             }

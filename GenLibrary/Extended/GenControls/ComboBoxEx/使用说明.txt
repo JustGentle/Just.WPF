@@ -1,0 +1,24 @@
+﻿1 创建DataTable对象，并建立Column，然后添加数据
+            dtSource.Columns.Add("Type", typeof(string));
+            dtSource.Columns.Add("Description", typeof(string));
+            dtSource.Rows.Add("we1", "srewr1");
+            dtSource.Rows.Add("we2", "srewr2");
+            dtSource.Rows.Add("we3", "srewr3");
+            dtSource.Rows.Add("we4", "srewr4");
+2  创建数据的绑定
+    ComboBoxEx.ItemsSource = dtSource.DefaultView;
+    ComboBoxEx.Text = "we13";
+3  指定ComboBoxEx的DisplayMemberPath为上述创建的列名，然后在DropListControl中添加DataGrid/ListBox/ListView等，如下：
+       <INTHex:ComboBoxEx x:Name="ComboBoxEx" HorizontalAlignment="Left" Height="28" Margin="336,171,0,0" 
+                           VerticalAlignment="Top" Width="262" IsEditable="False" 
+                           DisplayMemberPath="Type">
+            <INTHex:ComboBoxEx.DropListControl>
+                <DataGrid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="Auto" Width="Auto" AutoGenerateColumns="False" IsReadOnly="True"                         
+                         >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Type}" ClipboardContentBinding="{x:Null}" Header="名称" Width="150"/>
+                        <DataGridTextColumn Binding="{Binding Description}" ClipboardContentBinding="{x:Null}" Header="描述" Width="300"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </INTHex:ComboBoxEx.DropListControl>
+        </INTHex:ComboBoxEx>

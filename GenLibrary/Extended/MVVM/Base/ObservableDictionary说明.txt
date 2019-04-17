@@ -1,0 +1,26 @@
+﻿1、ObservableDictionary
+  <1> 该对象在值设定时，如果指定的键不包含在集合内，则执行的是添加操作
+  _observableButtonStyles["Default Style"] = de.Value as Style;
+  如上，如果键中没有"Default Style"，则执行添加操作，否则才是赋值操作
+  <2> ComboBox绑定
+   ComboBox的ItemsSource可以绑定到ObservableDictionary，
+   通过建立它的ItemTemplate(代码引用：ItemTemplate="{StaticResource StyleNameTemplate}")，
+   在里面添加TextBox,然后绑定到"Key"，如下:
+   <DataTemplate x:Key="StyleNameTemplate">
+       <TextBlock Text="{Binding Key}" />
+    </DataTemplate>
+	而选择值可以绑定到字典对应键的Value：
+	SelectedValuePath="Value"
+	这样，ComboBox的下拉列表显示的是字典的Key集合，包括选择的SelectedText，但选择的值SelectedValuePath却是
+	对应Key的Value，最终ComboBox的SelectedValue可被用于其他元素的绑定源用于对应到字典的Value;
+	这里说明一下ComboBox的三个属性SelectedItem/SelectedText/SelectedValue的区别：
+	    SelectedItem指的是绑定到集合中的被选择的成员对象，如果ComboBox绑定到ObservableDictionary，则其成员是"键值对"(KeyValuePair )，
+	也就是ComboBox的每一个项成员其实就是一个"键值对"(KeyValuePair)，因此在它的ItemTemplate中的TextBlock绑定到Key，其实就是绑定到
+	"键值对"的键上，在这里SelectedItem对象是KeyValuePair
+	    SelectedText对应ItemTemplate中的TextBlock中当前被选中的值
+		SelectedValue对应的是集合中的被选择元素(这里是KeyValuePair)的某个属性值，譬如绑定到Value，其实就是绑定到被选择的成员的Value属性上。
+   <3> ListBox的绑定
+    和ComboBox绑定类似，若ItemsSource绑定到ObservableDictionary对象，这时ListBox的每一项就是一个"键值对"(KeyValuePair )，因此ListBox的
+	列绑定就可以绑定到"键值对"(KeyValuePair )的属性Key和Value上。
+
+	 
