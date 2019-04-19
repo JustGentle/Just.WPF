@@ -4,31 +4,27 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Windows.Input;
 using System.Threading;
 using System.Threading.Tasks;
-using Just.WPF.Views;
-using System.Windows.Media;
-using System.Collections.ObjectModel;
-using System;
-using System.Windows.Threading;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using Just.WPF;
 using System.Reflection;
 using System.Resources;
+using GenLibrary.MVVM.Base;
+using System.ComponentModel;
 
-namespace Just.WPF.ViewModels
+namespace Just.WPF.Views
 {
     [AddINotifyPropertyChangedInterface]
-    public class RevCleanerSetting
+    public class RevCleanerVM
     {
         #region 单例
-        private static RevCleanerSetting _Instance;
-        public static RevCleanerSetting Instance
+        private static RevCleanerVM _Instance;
+        public static RevCleanerVM Instance
         {
             get
             {
-                _Instance = _Instance ?? new RevCleanerSetting();
+                _Instance = _Instance ?? new RevCleanerVM();
                 return _Instance;
             }
         }
@@ -86,8 +82,9 @@ namespace Just.WPF.ViewModels
             }
         }
 
-        public ActionStatus Status { get; set; }
-        public string ClearActionName
+        public ActionStep Step { get; set; } = ActionStep.Scan;
+        public ActionStatus Status { get; set; } = ActionStatus.Begin;
+        public string ActionName
         {
             get
             {
@@ -95,12 +92,8 @@ namespace Just.WPF.ViewModels
                 {
                     case ActionStatus.Begin:
                     case ActionStatus.Finished:
-                        return "扫描";
-                    case ActionStatus.Scanning:
-                        return "停止";
-                    case ActionStatus.Scanned:
-                        return "清理";
-                    case ActionStatus.Clearing:
+                        return Step.ToDescription();
+                    case ActionStatus.Doing:
                         return "停止";
                     default:
                         return "开始";
@@ -109,49 +102,66 @@ namespace Just.WPF.ViewModels
         }
 
         private CancellationTokenSource tokenSource;
-        private ICommand _ClearAction;
-        public ICommand ClearAction
+        private ICommand _RevAction;
+        public ICommand RevAction
         {
             get
             {
-                _ClearAction = _ClearAction ?? new RelayCommand<RoutedEventArgs>(_ =>
+                _RevAction = _RevAction ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
-                    switch (Status)
+                    switch (Step)
                     {
-                        case ActionStatus.Begin:
-                        case ActionStatus.Finished:
-                            Scan();
+                        case ActionStep.Scan:
+                            switch (Status)
+                            {
+                                case ActionStatus.Begin:
+                                    Scan();
+                                    break;
+                                case ActionStatus.Doing:
+                                    tokenSource?.Cancel();
+                                    NotifyWin.Warn("停止" + Step.ToDescription());
+                                    break;
+                                case ActionStatus.Finished:
+                                    Clear();
+                                    break;
+                                default:
+                                    break;
+                            }
                             break;
-                        case ActionStatus.Scanning:
-                            Status = ActionStatus.Begin;
-                            tokenSource?.Cancel();
-                            NotifyWin.Warn("停止扫描");
-                            break;
-                        case ActionStatus.Scanned:
-                            Clear();
-                            break;
-                        case ActionStatus.Clearing:
-                            Status = ActionStatus.Scanned;
-                            tokenSource?.Cancel();
-                            NotifyWin.Warn("停止清理");
+                        case ActionStep.Clear:
+                            switch (Status)
+                            {
+                                case ActionStatus.Begin:
+                                    Clear();
+                                    break;
+                                case ActionStatus.Doing:
+                                    tokenSource?.Cancel();
+                                    NotifyWin.Warn("停止" + Step.ToDescription());
+                                    break;
+                                case ActionStatus.Finished:
+                                    Scan();
+                                    break;
+                                default:
+                                    break;
+                            }
                             break;
                         default:
                             break;
                     }
                 });
-                return _ClearAction;
+                return _RevAction;
             }
         }
 
         #region Scan
         private void Scan()
         {
-            Status = ActionStatus.Scanning;
+            Step = ActionStep.Scan;
+            Status = ActionStatus.Doing;
             tokenSource = new CancellationTokenSource();
             Task.Run(() =>
             {
-                Process = total = count = 0;
-                MainWindow.Instance.ShowStatus("扫描初始化...", true, Process);
+                MainWindow.Instance.ShowStatus("扫描初始化...");
                 dist = Path.Combine(WebRootFolder, "dist");
                 if (!Directory.Exists(dist))
                 {
@@ -169,16 +179,18 @@ namespace Just.WPF.ViewModels
                     return;
                 }
                 MainWindow.DispatcherInvoke(() => { Data = new RevFileItem(); });
-                MainWindow.Instance.ShowStatus("读取映射...", true, Process);
+                MainWindow.Instance.ShowStatus("读取映射...");
                 dic = ReadRevmanifest(revmanifest);
                 ScanFolder(dist, Data);
-                if (count == total)
+                if (!tokenSource.IsCancellationRequested)
                 {
-                    Status = ActionStatus.Scanned;
+                    Status = ActionStatus.Finished;
                     MainWindow.DispatcherInvoke(() => { NotifyWin.Info("扫描完成"); });
+                    Step = ActionStep.Clear;
+                    Status = ActionStatus.Begin;
                     if (!Preview)
                     {
-                        ClearAction.Execute(null);
+                        RevAction.Execute(null);
                     }
                 }
                 MainWindow.Instance.ShowStatus();
@@ -206,9 +218,9 @@ namespace Just.WPF.ViewModels
         private Dictionary<string, string> dic;
         private int total = 0;
         private int count = 0;
-        private void ScanFolder(string folder, RevFileItem parent)
+        private RevFileItem ScanFolder(string folder, RevFileItem parent)
         {
-            MainWindow.Instance.ShowStatus($"扫描目录...{folder}", true, Process);
+            MainWindow.Instance.ShowStatus($"扫描目录...{folder}");
             var folderItem = new RevFileItem { ImagePath = @"\Images\folder.png", Name = Path.GetFileName(folder), Path = folder, IsKeep = false, IsExpanded = folder == dist };
             var folders = Directory.GetDirectories(folder).ToList();
             var files = Directory.GetFiles(folder).ToList();
@@ -228,11 +240,13 @@ namespace Just.WPF.ViewModels
             MainWindow.DispatcherInvoke(() => { parent.Children.Add(folderItem); });
             while (folders.Any())
             {
-                ScanFolder(folders.First(), folderItem);
+                var childFolderItem = ScanFolder(folders.First(), folderItem);
+                folderItem.IsKeep = folderItem.IsKeep || childFolderItem.IsKeep;
                 folders.RemoveAt(0);
                 count++;
                 Process = (int)(count * 100.0 / total);
             }
+            return folderItem;
         }
 
         private RevFileItem NewRevFileItem(string file, bool? keep = null)
@@ -261,7 +275,7 @@ namespace Just.WPF.ViewModels
             if (fontExts.Contains(ext))
                 ext = "font";
             var image = $@"\Images\{ext}.png";
-            if(ImageExists(image))
+            if (ImageExists(image))
                 return image;
             return $@"\Images\file.png";
         }
@@ -276,7 +290,6 @@ namespace Just.WPF.ViewModels
 
             return ResourceExists(assembly, resourcePath);
         }
-
         public static bool ResourceExists(Assembly assembly, string resourcePath)
         {
             return GetResourcePaths(assembly)
@@ -320,35 +333,98 @@ namespace Just.WPF.ViewModels
         #region Clear
         private void Clear()
         {
-            Status = ActionStatus.Clearing;
+            Step = ActionStep.Clear;
+            Status = ActionStatus.Doing;
             tokenSource = new CancellationTokenSource();
             Task.Run(() =>
             {
-                Process = 0;
+                if (Backup)
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(BackupFolder);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error($"创建备份目录失败:{BackupFolder}\n{ex.Message}"); });
+                        return;
+                    }
+                }
                 Clear(Data);
-                Process = 100;
-                if (Process == 100)
+                if (!tokenSource.IsCancellationRequested)
                 {
                     Status = ActionStatus.Finished;
                     MainWindow.DispatcherInvoke(() => { NotifyWin.Info("清理完成"); });
+                    Step = ActionStep.Scan;
+                    Status = ActionStatus.Begin;
                 }
             }, tokenSource.Token);
         }
         private void Clear(RevFileItem fileItem)
         {
-            var i = fileItem.Children.Count;
-            while(i > 0)
+            var i = 0;
+            while (i < fileItem.Children.Count)
             {
-                var child = fileItem.Children[--i];
+                var child = fileItem.Children[i];
                 if (child.IsKeep)
                 {
                     Clear(child);
+                    i++;
                 }
                 else
                 {
-                    MainWindow.DispatcherInvoke(() => { fileItem.Children.Remove(child); });
+                    try
+                    {
+                        if (Directory.Exists(child.Path))
+                        {
+                            if (Backup)
+                            {
+                                var bak = Path.Combine(BackupFolder, child.Path.Replace(dist, "").TrimStart('\\'));
+                                MoveDirectory(child.Path, bak);
+                            }   
+                            else
+                                Directory.Delete(child.Path, true);
+                        }
+                        else if (File.Exists(child.Path))
+                        {
+                            if (Backup)
+                            {
+                                var bak = Path.Combine(BackupFolder, child.Path.Replace(dist, "").TrimStart('\\'));
+                                Directory.CreateDirectory(Path.GetDirectoryName(bak));
+                                File.Move(child.Path, bak);
+                            }
+                            else
+                                File.Delete(child.Path);
+                        }
+                        MainWindow.DispatcherInvoke(() => { fileItem.Children.Remove(child); });
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error($"{child.Path}\n{ex.Message}"); });
+                        i++;
+                    }
                 }
             }
+        }
+
+        private void MoveDirectory(string source, string target)
+        {
+            var sourcePath = source.TrimEnd('\\', ' ');
+            var targetPath = target.TrimEnd('\\', ' ');
+            var files = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
+                                 .GroupBy(s => Path.GetDirectoryName(s));
+            foreach (var folder in files)
+            {
+                var targetFolder = folder.Key.Replace(sourcePath, targetPath);
+                Directory.CreateDirectory(targetFolder);
+                foreach (var file in folder)
+                {
+                    var targetFile = Path.Combine(targetFolder, Path.GetFileName(file));
+                    if (File.Exists(targetFile)) File.Delete(targetFile);
+                    File.Move(file, targetFile);
+                }
+            }
+            Directory.Delete(source, true);
         }
         #endregion
 
@@ -357,10 +433,15 @@ namespace Just.WPF.ViewModels
         public enum ActionStatus
         {
             Begin,
-            Scanning,
-            Scanned,
-            Clearing,
+            Doing,
             Finished
+        }
+        public enum ActionStep
+        {
+            [Description("扫描")]
+            Scan,
+            [Description("清理")]
+            Clear
         }
     }
 }

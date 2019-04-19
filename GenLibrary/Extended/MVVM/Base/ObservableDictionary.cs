@@ -657,17 +657,17 @@ namespace GenLibrary.MVVM.Base
         #region Enumerator
 
         [Serializable, StructLayout(LayoutKind.Sequential)]
-        public struct Enumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue>>, IDisposable, IDictionaryEnumerator, IEnumerator
+        public struct Enumerator<TKeyType, TValueType> : IEnumerator<KeyValuePair<TKeyType, TValueType>>, IDisposable, IDictionaryEnumerator, IEnumerator
         {
             #region constructors
 
-            internal Enumerator(ObservableDictionary<TKey, TValue> dictionary, bool isDictionaryEntryEnumerator)
+            internal Enumerator(ObservableDictionary<TKeyType, TValueType> dictionary, bool isDictionaryEntryEnumerator)
             {
                 _dictionary = dictionary;
                 _version = dictionary._version;
                 _index = -1;
                 _isDictionaryEntryEnumerator = isDictionaryEntryEnumerator;
-                _current = new KeyValuePair<TKey, TValue>();
+                _current = new KeyValuePair<TKeyType, TValueType>();
             }
 
             #endregion constructors
@@ -676,7 +676,7 @@ namespace GenLibrary.MVVM.Base
 
             #region public
 
-            public KeyValuePair<TKey, TValue> Current
+            public KeyValuePair<TKeyType, TValueType> Current
             {
                 get
                 {
@@ -703,11 +703,11 @@ namespace GenLibrary.MVVM.Base
                 _index++;
                 if (_index < _dictionary._keyedEntryCollection.Count)
                 {
-                    _current = new KeyValuePair<TKey, TValue>((TKey)_dictionary._keyedEntryCollection[_index].Key, (TValue)_dictionary._keyedEntryCollection[_index].Value);
+                    _current = new KeyValuePair<TKeyType, TValueType>((TKeyType)_dictionary._keyedEntryCollection[_index].Key, (TValueType)_dictionary._keyedEntryCollection[_index].Value);
                     return true;
                 }
                 _index = -2;
-                _current = new KeyValuePair<TKey, TValue>();
+                _current = new KeyValuePair<TKeyType, TValueType>();
                 return false;
             }
 
@@ -750,7 +750,7 @@ namespace GenLibrary.MVVM.Base
                     {
                         return new DictionaryEntry(_current.Key, _current.Value);
                     }
-                    return new KeyValuePair<TKey, TValue>(_current.Key, _current.Value);
+                    return new KeyValuePair<TKeyType, TValueType>(_current.Key, _current.Value);
                 }
             }
 
@@ -758,7 +758,7 @@ namespace GenLibrary.MVVM.Base
             {
                 ValidateVersion();
                 _index = -1;
-                _current = new KeyValuePair<TKey, TValue>();
+                _current = new KeyValuePair<TKeyType, TValueType>();
             }
 
             #endregion IEnumerator implemenation
@@ -794,10 +794,10 @@ namespace GenLibrary.MVVM.Base
 
             #region fields
 
-            private ObservableDictionary<TKey, TValue> _dictionary;
+            private ObservableDictionary<TKeyType, TValueType> _dictionary;
             private int _version;
             private int _index;
-            private KeyValuePair<TKey, TValue> _current;
+            private KeyValuePair<TKeyType, TValueType> _current;
             private bool _isDictionaryEntryEnumerator;
 
             #endregion fields

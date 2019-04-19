@@ -8,6 +8,9 @@
              xmlns:GenClass="clr-namespace:GenLibrary.GenClass;assembly=GenLibrary"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -25,7 +28,7 @@
             <TextBlock Margin="5,0" VerticalAlignment="Center">站点目录:</TextBlock>
             <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding WebRootFolder}"></TextBox>
             <Button Grid.Column="2" Margin="-1,0,0,0" Command="{Binding WebRootFolderBrowser}">...</Button>
-            <Button Grid.Column="3" Margin="5,0" Style="{StaticResource BlueButton}" Command="{Binding ClearAction}" Content="{Binding ClearActionName}"></Button>
+            <Button Grid.Column="3" Margin="5,0" Style="{StaticResource BlueButton}" Command="{Binding RevAction}" Content="{Binding ActionName}"></Button>
         </Grid>
         <Grid Grid.Row="1" Margin="0,5">
             <Grid.ColumnDefinitions>

@@ -1,5 +1,4 @@
-﻿using Just.WPF.ViewModels;
-using Just.WPF.Views;
+﻿using Just.WPF.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,14 +44,14 @@ namespace Just.WPF
             return Instance.Dispatcher.Invoke(func);
         }
 
-        private readonly HomeModel _vm;
+        private readonly MainWindowVM _vm;
 
         public MainWindow()
         {
             InitializeComponent();
             _Instance = this;
 
-            _vm = HomeModel.Instance;
+            _vm = MainWindowVM.Instance;
             this.DataContext = _vm;
         }
 
@@ -235,7 +234,7 @@ namespace Just.WPF
                 {
                     Header = menu.Header,
                     Tag = menu.ClassName,
-                    Name = "tv_" + menu.Id
+                    Name = "tv" + menu.Id.ToString("N")
                 };
                 var subMenus = _vm.MainMenu.Where(m => m.Parent == menu.Id);
                 CreateNode(subMenus, item);
@@ -259,7 +258,7 @@ namespace Just.WPF
                 {
                     Header = sub.Header,
                     Tag = sub.ClassName,
-                    Name = "tv_" + sub.Id
+                    Name = "tv" + sub.Id.ToString("N")
                 };
                 node.MouseLeftButtonUp += Node_MouseUp;
                 item.Items.Add(node);

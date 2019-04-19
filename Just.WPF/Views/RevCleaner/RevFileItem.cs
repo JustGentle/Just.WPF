@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Just.WPF.ViewModels
+namespace Just.WPF.Views
 {
     public class RevFileItem
     {

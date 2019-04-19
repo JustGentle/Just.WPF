@@ -62,9 +62,7 @@ namespace GenLibrary.GenControls
 
         // Using a DependencyProperty as the backing store for ItemHeight.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ItemHeightProperty =
-            DependencyProperty.Register("ItemHeight", typeof(int), typeof(TreeView), new PropertyMetadata(0));
-
-
+            DependencyProperty.Register("ItemHeight", typeof(int), typeof(TreeListView), new PropertyMetadata(0));
 
         #endregion
     }//结束类
