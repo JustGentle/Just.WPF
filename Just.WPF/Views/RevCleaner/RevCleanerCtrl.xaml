@@ -5,17 +5,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Just.WPF.Views"
              xmlns:GenControls="clr-namespace:GenLibrary.GenControls;assembly=GenLibrary"
-             xmlns:GenClass="clr-namespace:GenLibrary.GenClass;assembly=GenLibrary"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:cvt="clr-namespace:Just.WPF.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        
+        <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <cvt:BoolReverseConverter x:Key="BoolReverseConverter"/>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="5"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,5">
@@ -26,27 +27,32 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Margin="5,0" VerticalAlignment="Center">站点目录:</TextBlock>
-            <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding WebRootFolder}"></TextBox>
-            <Button Grid.Column="2" Margin="-1,0,0,0" Command="{Binding WebRootFolderBrowser}">...</Button>
+            <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding WebRootFolder}" IsEnabled="{Binding Doing,Converter={StaticResource BoolReverseConverter}}"></TextBox>
+            <Button Grid.Column="2" Margin="-1,0,0,0" Command="{Binding WebRootFolderBrowser}" IsEnabled="{Binding Doing,Converter={StaticResource BoolReverseConverter}}">...</Button>
             <Button Grid.Column="3" Margin="5,0" Style="{StaticResource BlueButton}" Command="{Binding RevAction}" Content="{Binding ActionName}"></Button>
         </Grid>
-        <Grid Grid.Row="1" Margin="0,5">
+        <Grid Grid.Row="1" Margin="0,5" IsEnabled="{Binding Doing,Converter={StaticResource BoolReverseConverter}}">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
-            <CheckBox Margin="5,0" VerticalAlignment="Center" IsChecked="{Binding Preview}">清理前确认</CheckBox>
-            <CheckBox Grid.Column="1" Margin="5,0" VerticalAlignment="Center" IsChecked="{Binding Backup}">备份到</CheckBox>
-            <TextBox Grid.Column="2" Margin="5,0,0,0" Text="{Binding BackupFolder}"></TextBox>
-            <Button Grid.Column="3" Margin="-1,0,5,0" Command="{Binding BackupFolderBrowser}">...</Button>
+            <CheckBox Margin="5,0" Grid.Column="0" VerticalAlignment="Center" IsChecked="{Binding SimpleIcon}" ToolTip="处理速度更快">简易图标</CheckBox>
+            <CheckBox Margin="5,0" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Preview}">清理前确认</CheckBox>
+            <CheckBox Grid.Column="2" Margin="5,0" VerticalAlignment="Center" IsChecked="{Binding Backup}">备份到：</CheckBox>
+            <TextBox Grid.Column="3" Margin="5,0,0,0" Text="{Binding BackupFolder}" IsEnabled="{Binding Backup}"/>
+            <Button Grid.Column="4" Margin="-1,0,5,0" Command="{Binding BackupFolderBrowser}" IsEnabled="{Binding Backup}">...</Button>
         </Grid>
-        <ProgressBar Grid.Row="2" Value="{Binding Process}"/>
-        <Grid Grid.Row="3">
-            <GenControls:TreeListView DataContext="{Binding Data}">
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="609*"/>
+                <ColumnDefinition Width="191*"/>
+            </Grid.ColumnDefinitions>
+            <GenControls:TreeListView DataContext="{Binding Data}" Grid.ColumnSpan="2">
                 <GenControls:TreeListView.Columns>
-                    <GridViewColumn Width="150" Header="文件名">
+                    <GridViewColumn Width="200" Header="文件名">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid  Width="Auto">
@@ -56,19 +62,22 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <!--<GridViewColumn Width="150" Header="文件路径" DisplayMemberBinding="{Binding Path}" GenClass:RangeColumn.IsFillColumn="true"/>-->
                     <GridViewColumn Width="150" Header="修改时间" DisplayMemberBinding="{Binding UpdateTime}"/>
-                    <GridViewColumn Width="150" Header="原始文件" DisplayMemberBinding="{Binding OrigFile}"/>
-                    <GridViewColumn Width="150" Header="映射文件" DisplayMemberBinding="{Binding RevFile}"/>
-                    <GridViewColumn Width="50" Header="保留">
+                    <GridViewColumn Width="50">
+                        <GridViewColumnHeader ToolTip="√全部保留 □全部删除 ■部分保留">
+                            <TextBlock Foreground="Red">保留</TextBlock>
+                        </GridViewColumnHeader>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <CheckBox IsChecked="{Binding Path=IsKeep,Mode=TwoWay}" VerticalAlignment="Center"/>
+                                <CheckBox IsThreeState="{Binding IsFolder}" IsChecked="{Binding Path=IsKeep,Mode=TwoWay,NotifyOnSourceUpdated=True}" VerticalAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+                    <GridViewColumn Width="150" Header="原始文件" DisplayMemberBinding="{Binding OrigFile}"/>
+                    <GridViewColumn Width="150" Header="映射文件" DisplayMemberBinding="{Binding RevFile}"/>
                 </GenControls:TreeListView.Columns>
             </GenControls:TreeListView>
         </Grid>
+        <local:WaitLayer Grid.Row="2" Visibility="{Binding Doing,Converter={StaticResource BoolToVisibilityConverter}}" Panel.ZIndex="{Binding Doing}" />
     </Grid>
 </UserControl>

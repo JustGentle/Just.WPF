@@ -17,7 +17,7 @@ namespace Just.WPF.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
-                return true;
+                return false;
             return !(bool)value;
         }
     }

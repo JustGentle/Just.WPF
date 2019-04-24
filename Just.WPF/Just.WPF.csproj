@@ -86,8 +86,8 @@
     </Compile>
     <Compile Include="Theme\TabItemCloseButtonBehavior.cs" />
     <Compile Include="Theme\VisualTreeHelperEx.cs" />
-    <Compile Include="Views\TestCtrl.xaml.cs">
-      <DependentUpon>TestCtrl.xaml</DependentUpon>
+    <Compile Include="Views\WaitLayer.xaml.cs">
+      <DependentUpon>WaitLayer.xaml</DependentUpon>
     </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -149,7 +149,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\TestCtrl.xaml">
+    <Page Include="Views\WaitLayer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

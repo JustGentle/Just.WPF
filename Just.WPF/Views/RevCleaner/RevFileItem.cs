@@ -1,7 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using PropertyChanged;
+using System.Collections.ObjectModel;
 
 namespace Just.WPF.Views
 {
+    [AddINotifyPropertyChangedInterface]
     public class RevFileItem
     {
         public string ImagePath { get; set; }
@@ -10,9 +12,10 @@ namespace Just.WPF.Views
         public string OrigFile { get; set; }
         public string RevFile { get; set; }
         public string UpdateTime { get; set; }
-        public bool IsKeep { get; set; }
+        public bool? IsKeep { get; set; }
+        public bool IsFolder { get; set; }
 
-        public ObservableCollection<RevFileItem> Children { get; private set; } = new ObservableCollection<RevFileItem>();
+        public ObservableCollection<RevFileItem> Children { get; set; } = new ObservableCollection<RevFileItem>();
         public bool IsExpanded { get; set; }
     }
 }

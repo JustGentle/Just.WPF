@@ -89,7 +89,7 @@
             </Style.Triggers>
         </Style>
 
-        <cvt:BoolToVisibilityConverter x:Key="cvtBtoV"/>
+        <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
     <DockPanel
         Width="Auto"
@@ -275,8 +275,7 @@
                 <TextBlock Margin="10,0" Text="{Binding StatusText}" />
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                <!--<TextBlock HorizontalAlignment="Right" Text="{x:Static local:UserInfo.DepartmentName}" />-->
-                <ProgressBar Margin="5,0" Width="100" Height="10" Value="{Binding StatusProcess}" Visibility="{Binding Path=IsShowStatusProcess,Converter={StaticResource cvtBtoV}}"/>
+                <ProgressBar Margin="5,0" Width="100" Height="10" Value="{Binding StatusProcess}" Visibility="{Binding IsShowStatusProcess,Converter={StaticResource BoolToVisibilityConverter}}"/>
             </StackPanel>
         </Grid>
 

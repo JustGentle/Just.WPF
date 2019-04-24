@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Resources;
 using GenLibrary.MVVM.Base;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace Just.WPF.Views
 {
@@ -35,8 +36,10 @@ namespace Just.WPF.Views
         public bool Preview { get; set; } = true;
         public bool Backup { get; set; }
         public string BackupFolder { get; set; }
-        public int Process { get; set; }
         public RevFileItem Data { get; set; } = new RevFileItem { IsKeep = true };
+
+        public bool SimpleIcon { get; set; }
+        public bool Doing => Status == ActionStatus.Doing;
         #endregion
 
         #region 方法
@@ -119,7 +122,7 @@ namespace Just.WPF.Views
                                     break;
                                 case ActionStatus.Doing:
                                     tokenSource?.Cancel();
-                                    NotifyWin.Warn("停止" + Step.ToDescription());
+                                    MainWindow.Instance.ShowStatus("停止...");
                                     break;
                                 case ActionStatus.Finished:
                                     Clear();
@@ -136,7 +139,7 @@ namespace Just.WPF.Views
                                     break;
                                 case ActionStatus.Doing:
                                     tokenSource?.Cancel();
-                                    NotifyWin.Warn("停止" + Step.ToDescription());
+                                    MainWindow.Instance.ShowStatus("停止...");
                                     break;
                                 case ActionStatus.Finished:
                                     Scan();
@@ -151,6 +154,19 @@ namespace Just.WPF.Views
                 });
                 return _RevAction;
             }
+        }
+
+        private bool CheckCancel()
+        {
+            if (!tokenSource.IsCancellationRequested)
+                return false;
+            MainWindow.DispatcherInvoke(() =>
+            {
+                NotifyWin.Warn("停止" + Step.ToDescription());
+                Status = ActionStatus.Begin;
+                MainWindow.Instance.ShowStatus("停止");
+            });
+            return true;
         }
 
         #region Scan
@@ -182,7 +198,12 @@ namespace Just.WPF.Views
                 MainWindow.Instance.ShowStatus("读取映射...");
                 dic = ReadRevmanifest(revmanifest);
                 ScanFolder(dist, Data);
-                if (!tokenSource.IsCancellationRequested)
+                if (tokenSource.IsCancellationRequested)
+                {
+                    Status = ActionStatus.Begin;
+                    MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("停止扫描"); });
+                }
+                else
                 {
                     Status = ActionStatus.Finished;
                     MainWindow.DispatcherInvoke(() => { NotifyWin.Info("扫描完成"); });
@@ -216,42 +237,56 @@ namespace Just.WPF.Views
         private string dist;
         private string revmanifest;
         private Dictionary<string, string> dic;
-        private int total = 0;
-        private int count = 0;
         private RevFileItem ScanFolder(string folder, RevFileItem parent)
         {
             MainWindow.Instance.ShowStatus($"扫描目录...{folder}");
-            var folderItem = new RevFileItem { ImagePath = @"\Images\folder.png", Name = Path.GetFileName(folder), Path = folder, IsKeep = false, IsExpanded = folder == dist };
+            var folderItem = new RevFileItem { IsFolder = true, ImagePath = @"\Images\folder.png", Name = Path.GetFileName(folder), Path = folder, IsKeep = false, IsExpanded = folder == dist };
             var folders = Directory.GetDirectories(folder).ToList();
             var files = Directory.GetFiles(folder).ToList();
-            total += folders.Count() + files.Count();
+
+            var items = new List<RevFileItem>();
+            while (folders.Any())
+            {
+                if (tokenSource.IsCancellationRequested) break;
+
+                var childItem = ScanFolder(folders.First(), folderItem);
+                if (folderItem.IsKeep != childItem.IsKeep)
+                {
+                    folderItem.IsKeep = folderItem.Children.Any() ? null : childItem.IsKeep;
+                }
+                folders.RemoveAt(0);
+            }
+            items.AddRange(folderItem.Children);
+
             while (files.Any())
             {
+                if (tokenSource.IsCancellationRequested) break;
+
                 var file = files.First();
                 bool? keep = null;
                 if (file == revmanifest) keep = true;
-                var fileItem = NewRevFileItem(file, keep);
-                folderItem.IsKeep = folderItem.IsKeep || fileItem.IsKeep;
-                MainWindow.DispatcherInvoke(() => { folderItem.Children.Add(fileItem); });
+                var childItem = NewRevFileItem(file, keep);
+                if (folderItem.IsKeep != childItem.IsKeep)
+                {
+                    folderItem.IsKeep = folderItem.Children.Any() ? null : childItem.IsKeep;
+                }
+                items.Add(childItem);
                 files.RemoveAt(0);
-                count++;
-                Process = (int)(count * 100.0 / total);
             }
+
+            //排序:文件夹在前>按修改时间倒序>按名称
+            folderItem.Children = new ObservableCollection<RevFileItem>(
+                items.OrderByDescending(item => item.IsFolder)
+                .ThenByDescending(item => item.UpdateTime)
+                .ThenBy(item => item.Name));
             MainWindow.DispatcherInvoke(() => { parent.Children.Add(folderItem); });
-            while (folders.Any())
-            {
-                var childFolderItem = ScanFolder(folders.First(), folderItem);
-                folderItem.IsKeep = folderItem.IsKeep || childFolderItem.IsKeep;
-                folders.RemoveAt(0);
-                count++;
-                Process = (int)(count * 100.0 / total);
-            }
+
             return folderItem;
         }
 
         private RevFileItem NewRevFileItem(string file, bool? keep = null)
         {
-            var item = new RevFileItem { ImagePath = GetFileIcon(file), Name = Path.GetFileName(file), Path = file, UpdateTime = File.GetLastWriteTime(file).ToString("yyyy-M-d H:m") };
+            var item = new RevFileItem { ImagePath = GetFileIcon(file), Name = Path.GetFileName(file), Path = file, UpdateTime = File.GetLastWriteTime(file).ToString("yyyy-MM-dd HH:mm") };
             var rev = GetRevFile(file);
             if (dic.ContainsKey(rev))
             {
@@ -268,16 +303,33 @@ namespace Just.WPF.Views
             if (keep.HasValue) item.IsKeep = keep.Value;
             return item;
         }
+        private string GetOrigFile(string file)
+        {
+            var result = Regex.Match(file, @"(.+)-[a-z0-9]{10}(\..+)?");
+            if (!result.Success) return string.Empty;
+            return result.Groups[1].Value + result.Groups[2].Value;
+        }
+        private string GetRevFile(string file)
+        {
+            var result = file.StartsWith(dist) ? file.Replace(dist, "").Trim('\\').Replace('\\', '/').ToLower() : file;
+            return result;
+        }
+
         private readonly string[] fontExts = { "otf", "oet", "svg", "ttf", "woff", "woff2", "eot" };
         private string GetFileIcon(string file)
         {
-            var ext = Path.GetExtension(file).TrimStart('.');
-            if (fontExts.Contains(ext))
-                ext = "font";
-            var image = $@"\Images\{ext}.png";
-            if (ImageExists(image))
-                return image;
-            return $@"\Images\file.png";
+            var imgFolder = @"\Images\";
+            var img = "file.png";
+            if (!SimpleIcon)
+            {
+                var ext = Path.GetExtension(file).TrimStart('.');
+                if (fontExts.Contains(ext))
+                    ext = "font";
+                var extImg = imgFolder + ext + ".png";
+                if (ImageExists(extImg))
+                    return extImg;
+            }
+            return imgFolder + img;
         }
         public bool ImageExists(string img)
         {
@@ -295,7 +347,6 @@ namespace Just.WPF.Views
             return GetResourcePaths(assembly)
                 .Contains(resourcePath.ToLowerInvariant());
         }
-
         public static IEnumerable<object> GetResourcePaths(Assembly assembly)
         {
             var culture = System.Threading.Thread.CurrentThread.CurrentCulture;
@@ -316,18 +367,6 @@ namespace Just.WPF.Views
                 resourceManager.ReleaseAllResources();
             }
         }
-        private string GetOrigFile(string file)
-        {
-            var result = Regex.Match(file, @"(.+)-[a-z0-9]{10}(\..+)?");
-            if (!result.Success) return string.Empty;
-            return result.Groups[1].Value + result.Groups[2].Value;
-        }
-        private string GetRevFile(string file)
-        {
-            var result = file.StartsWith(dist) ? file.Replace(dist, "").Trim('\\').Replace('\\', '/').ToLower() : file;
-            return result;
-        }
-
         #endregion
 
         #region Clear
@@ -351,13 +390,19 @@ namespace Just.WPF.Views
                     }
                 }
                 Clear(Data);
-                if (!tokenSource.IsCancellationRequested)
+                if (tokenSource.IsCancellationRequested)
+                {
+                    Status = ActionStatus.Begin;
+                    MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("停止清理"); });
+                }
+                else
                 {
                     Status = ActionStatus.Finished;
                     MainWindow.DispatcherInvoke(() => { NotifyWin.Info("清理完成"); });
                     Step = ActionStep.Scan;
                     Status = ActionStatus.Begin;
                 }
+                MainWindow.Instance.ShowStatus();
             }, tokenSource.Token);
         }
         private void Clear(RevFileItem fileItem)
@@ -365,23 +410,33 @@ namespace Just.WPF.Views
             var i = 0;
             while (i < fileItem.Children.Count)
             {
+                if (tokenSource.IsCancellationRequested) break;
+
                 var child = fileItem.Children[i];
-                if (child.IsKeep)
+                //1.保留 则不处理, 2.未知 则处理子项 3.不保留 则删除
+                if (!child.IsKeep.HasValue)
                 {
                     Clear(child);
+                    if (!child.Children.Any(f => !f.IsKeep ?? false))
+                        child.IsKeep = true;
+                    i++;
+                }
+                else if (child.IsKeep.Value)
+                {
                     i++;
                 }
                 else
                 {
+                    MainWindow.Instance.ShowStatus($"清理...{fileItem.Path}");
                     try
                     {
                         if (Directory.Exists(child.Path))
                         {
                             if (Backup)
                             {
-                                var bak = Path.Combine(BackupFolder, child.Path.Replace(dist, "").TrimStart('\\'));
+                                var bak = Path.Combine(BackupFolder, child.Path.Replace(WebRootFolder, "").TrimStart('\\'));
                                 MoveDirectory(child.Path, bak);
-                            }   
+                            }
                             else
                                 Directory.Delete(child.Path, true);
                         }
@@ -389,7 +444,7 @@ namespace Just.WPF.Views
                         {
                             if (Backup)
                             {
-                                var bak = Path.Combine(BackupFolder, child.Path.Replace(dist, "").TrimStart('\\'));
+                                var bak = Path.Combine(BackupFolder, child.Path.Replace(WebRootFolder, "").TrimStart('\\'));
                                 Directory.CreateDirectory(Path.GetDirectoryName(bak));
                                 File.Move(child.Path, bak);
                             }
@@ -406,11 +461,12 @@ namespace Just.WPF.Views
                 }
             }
         }
-
         private void MoveDirectory(string source, string target)
         {
             var sourcePath = source.TrimEnd('\\', ' ');
             var targetPath = target.TrimEnd('\\', ' ');
+            if (sourcePath.ToLower().Equals(targetPath.ToLower())) return;
+
             var files = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
                                  .GroupBy(s => Path.GetDirectoryName(s));
             foreach (var folder in files)
