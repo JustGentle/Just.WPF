@@ -14,23 +14,11 @@ using GenLibrary.MVVM.Base;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 
-namespace Just.WPF.Views
+namespace Just.WPF.Views.RevCleaner
 {
     [AddINotifyPropertyChangedInterface]
     public class RevCleanerVM
     {
-        #region 单例
-        private static RevCleanerVM _Instance;
-        public static RevCleanerVM Instance
-        {
-            get
-            {
-                _Instance = _Instance ?? new RevCleanerVM();
-                return _Instance;
-            }
-        }
-        #endregion
-
         #region 属性
         public string WebRootFolder { get; set; } = Directory.GetCurrentDirectory();
         public bool Preview { get; set; } = true;
@@ -268,7 +256,7 @@ namespace Just.WPF.Views
                 var childItem = NewRevFileItem(file, keep);
                 if (folderItem.IsKeep != childItem.IsKeep)
                 {
-                    folderItem.IsKeep = folderItem.Children.Any() ? null : childItem.IsKeep;
+                    folderItem.IsKeep = items.Any() ? null : childItem.IsKeep;
                 }
                 items.Add(childItem);
                 files.RemoveAt(0);
@@ -484,6 +472,25 @@ namespace Just.WPF.Views
         }
         #endregion
 
+        #endregion
+
+        #region Setting
+        public void ReadSetting()
+        {
+            WebRootFolder = MainWindow.ReadSetting($"{nameof(RevCleaner)}.{nameof(WebRootFolder)}", WebRootFolder);
+            Preview = MainWindow.ReadSetting($"{nameof(RevCleaner)}.{nameof(Preview)}", Preview);
+            Backup = MainWindow.ReadSetting($"{nameof(RevCleaner)}.{nameof(Backup)}", Backup);
+            BackupFolder = MainWindow.ReadSetting($"{nameof(RevCleaner)}.{nameof(BackupFolder)}", BackupFolder);
+            SimpleIcon = MainWindow.ReadSetting($"{nameof(RevCleaner)}.{nameof(SimpleIcon)}", SimpleIcon);
+        }
+        public void WriteSetting()
+        {
+            MainWindow.WriteSetting($"{nameof(RevCleaner)}.{nameof(WebRootFolder)}", WebRootFolder);
+            MainWindow.WriteSetting($"{nameof(RevCleaner)}.{nameof(Preview)}", Preview);
+            MainWindow.WriteSetting($"{nameof(RevCleaner)}.{nameof(Backup)}", Backup);
+            MainWindow.WriteSetting($"{nameof(RevCleaner)}.{nameof(BackupFolder)}", BackupFolder);
+            MainWindow.WriteSetting($"{nameof(RevCleaner)}.{nameof(SimpleIcon)}", SimpleIcon);
+        }
         #endregion
 
         public enum ActionStatus

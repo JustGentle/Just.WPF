@@ -7,6 +7,7 @@
         xmlns:cvt="clr-namespace:Just.WPF.Converters"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
+        Closed="Window_Closed"
         StateChanged="Window_StateChanged"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
@@ -284,6 +285,7 @@
             Width="Auto"
             Height="Auto"
             Background="White">
+            <TextBlock TextAlignment="Center" Foreground="{DynamicResource DisableForeBrush}">未打开子窗口</TextBlock>
             <TabControl Name="tbContent" Style="{DynamicResource TabControl_WithClose}" SelectionChanged="TbContent_SelectionChanged" />
         </Grid>
     </DockPanel>

@@ -4,20 +4,20 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary>
-            <SolidColorBrush
-                x:Key="TreeView.Foreground"
-                Opacity="0.5"
-                Color="#FFFFFF" />
+        </ResourceDictionary>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="{x:Type TreeView}" x:Key="MenuTree">
+        <Style.Resources>
+            <SolidColorBrush x:Key="TreeView.Foreground" Opacity="0.5" Color="#FFFFFF" />
             <SolidColorBrush x:Key="TreeView.Background" Color="#001529" />
             <SolidColorBrush x:Key="TreeViewItem.Background" Color="#000C17" />
 
             <SolidColorBrush x:Key="TreeView.ForegroundSelected" Color="#FFFFFF" />
             <SolidColorBrush x:Key="TreeView.BackgroundSelected" Color="#1890FF" />
+            
             <sys:Double x:Key="TreeView.FontSize">14</sys:Double>
-        </ResourceDictionary>
-    </ResourceDictionary.MergedDictionaries>
-
-    <Style TargetType="{x:Type TreeView}" x:Key="MenuTree">
+        </Style.Resources>
         <Setter Property="Background" Value="{DynamicResource TreeView.Background}" />
         <Setter Property="FontSize" Value="{DynamicResource TreeView.FontSize}" />
         <Setter Property="BorderThickness" Value="0" />

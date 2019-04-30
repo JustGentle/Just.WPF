@@ -1,4 +1,6 @@
 ﻿using Just.WPF.Views;
+using Just.WPF.Views.MongoDBTool;
+using Just.WPF.Views.RevCleaner;
 using PropertyChanged;
 using System;
 using System.Collections.Generic;
@@ -39,17 +41,19 @@ namespace Just.WPF
         {
             var iOffice10 = new MenuNode { Id = Guid.NewGuid(), Header = "iOffice10" };
             MainMenu.Add(iOffice10);
-            NewMenuItem(typeof(RevCleanerCtrl), iOffice10, true);
-            NewMenuItem(typeof(ChangesetGetterCtrl));
+            NewMenuItem(typeof(RevCleanerCtrl), iOffice10);
+            NewMenuItem(typeof(MongoDBToolCtrl), iOffice10, true);
+            NewMenuItem(typeof(ChangesetGetterCtrl), visible: false);
         }
-        private void NewMenuItem(Type view, MenuNode parent = null, bool startOn = false)
+        private void NewMenuItem(Type view, MenuNode parent = null, bool startOn = false, bool visible = true)
         {
             var menu = new MenuNode
             {
                 Parent = parent?.Id,
                 Id = Guid.NewGuid(),
                 ClassName = view.Name,
-                Header = view.ToDisplayName()
+                Header = view.ToDisplayName(),
+                Visible = visible
             };
             MainMenu.Add(menu);
             if (startOn) StartOn.Add(menu);
@@ -66,6 +70,7 @@ namespace Just.WPF
         {
             return MainMenu.FirstOrDefault(e => e.ClassName == view.Name);
         }
+
         #endregion
     }
     [AddINotifyPropertyChangedInterface]
@@ -75,5 +80,6 @@ namespace Just.WPF
         public Guid? Parent { get; set; }
         public string Header { get; set; }
         public string ClassName { get; set; }
+        public bool Visible { get; set; } = true;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using PropertyChanged;
 using System.Collections.ObjectModel;
 
-namespace Just.WPF.Views
+namespace Just.WPF.Views.RevCleaner
 {
     [AddINotifyPropertyChangedInterface]
     public class RevFileItem

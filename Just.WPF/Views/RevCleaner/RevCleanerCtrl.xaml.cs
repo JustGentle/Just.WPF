@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Windows.Controls;
 
-namespace Just.WPF.Views
+namespace Just.WPF.Views.RevCleaner
 {
     /// <summary>
     /// RevCleanerCtrl.xaml 的交互逻辑
@@ -14,6 +14,12 @@ namespace Just.WPF.Views
         {
             InitializeComponent();
             this.DataContext = _vm;
+            _vm.ReadSetting();
+        }
+
+        private void UserControl_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            _vm.WriteSetting();
         }
     }
 }
