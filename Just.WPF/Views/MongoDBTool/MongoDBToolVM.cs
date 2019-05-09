@@ -19,7 +19,7 @@ namespace Just.WPF.Views.MongoDBTool
 
         public bool Doing { get; set; }
         public string JsonFolder { get; set; } = Directory.GetCurrentDirectory();
-        public string JsFile { get; set; } = "/MongoDBInput.js";
+        public string JsFile { get; set; } = "MongoDBInput.js";
         public string Json { get; set; }
         public string Pattern { get; set; } = @"(?<=var data = \[).*?(?=\];)";
         public string Replacement { get; set; } = "{0}";
