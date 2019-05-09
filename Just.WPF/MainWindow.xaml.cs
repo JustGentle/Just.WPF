@@ -62,6 +62,11 @@ namespace Just.WPF
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (!MessageWin.Confirm("确定退出?") ?? true)
+            {
+                e.Cancel = true;
+                return;
+            }
             CloseAll();
             SaveSetting();
         }

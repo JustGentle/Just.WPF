@@ -1,0 +1,56 @@
+﻿<Window x:Class="Just.WPF.Views.MessageWin"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Just.WPF.Views"
+        xmlns:cvt="clr-namespace:Just.WPF.Converters"
+        mc:Ignorable="d"
+        x:Name="MessageWindow"
+        Title="提示" Width="300" MinHeight="160"
+        SizeToContent="Height"
+        AllowsTransparency="True"
+        FontSize="14"
+        WindowStyle="None"
+        WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+    <Border BorderThickness="1" BorderBrush="{DynamicResource NormalBorderBrush}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+
+            <Border BorderThickness="0,0,0,0.5" BorderBrush="{DynamicResource NormalBorderBrush}"
+                Margin="10,0">
+                <TextBlock Margin="10"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontWeight="Bold"
+                Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:MessageWin}}}"
+                TextAlignment="Center"
+                TextWrapping="Wrap"/>
+            </Border>
+
+            <TextBlock
+            Grid.Row="1"
+            Margin="20,10"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="{Binding Message, RelativeSource={RelativeSource AncestorType={x:Type local:MessageWin}}}"
+            TextAlignment="Center"
+            TextWrapping="Wrap"/>
+
+            <Border Grid.Row="2" BorderThickness="0,0.5,0,0" BorderBrush="{DynamicResource NormalBorderBrush}" Margin="5">
+                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">
+                    <Button Margin="0,0,10,0" Visibility="{Binding IsConfirm,Converter={StaticResource BoolToVisibilityConverter},RelativeSource={RelativeSource AncestorType={x:Type local:MessageWin}}}"
+                            Click="Cancel_Click">取消</Button>
+                    <Button Style="{StaticResource MainButton}" Click="Ok_Click">确定</Button>
+                </WrapPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

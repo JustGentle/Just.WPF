@@ -83,6 +83,9 @@
     <Compile Include="MainWindowVM.cs" />
     <Compile Include="Views\BindingProxy.cs" />
     <Compile Include="Views\IWriteSettings.cs" />
+    <Compile Include="Views\MessageWin.xaml.cs">
+      <DependentUpon>MessageWin.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MongoDBTool\EncodingGetter.cs" />
     <Compile Include="Views\MongoDBTool\MongoDBToolCtrl.xaml.cs">
       <DependentUpon>MongoDBToolCtrl.xaml</DependentUpon>
@@ -117,6 +120,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\ChangesetGetter\ChangesetGetterCtrl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MessageWin.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
