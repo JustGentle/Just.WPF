@@ -78,6 +78,8 @@
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Expansions\CommonExpansion.cs" />
     <Compile Include="MainWindowVM.cs" />
+    <Compile Include="Views\BindingProxy.cs" />
+    <Compile Include="Views\IWriteSettings.cs" />
     <Compile Include="Views\MongoDBTool\EncodingGetter.cs" />
     <Compile Include="Views\MongoDBTool\MongoDBToolCtrl.xaml.cs">
       <DependentUpon>MongoDBToolCtrl.xaml</DependentUpon>

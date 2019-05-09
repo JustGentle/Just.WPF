@@ -28,6 +28,27 @@ namespace Just.WPF.Views.RevCleaner
 
         public bool SimpleIcon { get; set; }
         public bool Doing => Status == ActionStatus.Doing;
+
+        public ActionStep Step { get; set; } = ActionStep.Scan;
+        public ActionStatus Status { get; set; } = ActionStatus.Begin;
+        public string ActionName
+        {
+            get
+            {
+                switch (Status)
+                {
+                    case ActionStatus.Begin:
+                    case ActionStatus.Finished:
+                        return Step.ToDescription();
+                    case ActionStatus.Doing:
+                        return "停止";
+                    default:
+                        return "开始";
+                }
+            }
+        }
+
+        public bool ShowTreeMenu { get; set; }
         #endregion
 
         #region 方法
@@ -73,26 +94,7 @@ namespace Just.WPF.Views.RevCleaner
             }
         }
 
-        public ActionStep Step { get; set; } = ActionStep.Scan;
-        public ActionStatus Status { get; set; } = ActionStatus.Begin;
-        public string ActionName
-        {
-            get
-            {
-                switch (Status)
-                {
-                    case ActionStatus.Begin:
-                    case ActionStatus.Finished:
-                        return Step.ToDescription();
-                    case ActionStatus.Doing:
-                        return "停止";
-                    default:
-                        return "开始";
-                }
-            }
-        }
 
-        private CancellationTokenSource tokenSource;
         private ICommand _RevAction;
         public ICommand RevAction
         {
@@ -144,6 +146,7 @@ namespace Just.WPF.Views.RevCleaner
             }
         }
 
+        private CancellationTokenSource tokenSource;
         private bool CheckCancel()
         {
             if (!tokenSource.IsCancellationRequested)
@@ -472,6 +475,21 @@ namespace Just.WPF.Views.RevCleaner
         }
         #endregion
 
+        #endregion
+
+        #region 菜单
+        private ICommand _CopyPath;
+        public ICommand CopyPath
+        {
+            get
+            {
+                _CopyPath = _CopyPath ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    
+                });
+                return _CopyPath;
+            }
+        }
         #endregion
 
         #region Setting

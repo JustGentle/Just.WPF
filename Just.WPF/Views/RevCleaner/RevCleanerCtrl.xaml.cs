@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using GenLibrary.GenControls;
+using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace Just.WPF.Views.RevCleaner
@@ -7,7 +9,7 @@ namespace Just.WPF.Views.RevCleaner
     /// RevCleanerCtrl.xaml 的交互逻辑
     /// </summary>
     [DisplayName("补丁文件清理")]
-    public partial class RevCleanerCtrl : UserControl
+    public partial class RevCleanerCtrl : UserControl, IWriteSettings
     {
         private readonly RevCleanerVM _vm = new RevCleanerVM();
         public RevCleanerCtrl()
@@ -17,7 +19,30 @@ namespace Just.WPF.Views.RevCleaner
             _vm.ReadSetting();
         }
 
+        private void TreeListView_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _vm.ShowTreeMenu = false;
+            if (e.ChangedButton != System.Windows.Input.MouseButton.Right) return;
+            if (sender is TreeListView tree)
+            {
+                var p = e.GetPosition(tree);
+                if (tree.InputHitTest(p) is DependencyObject item)
+                {
+                    if (VisualTreeHelperEx.FindAncestorByType(item, typeof(TreeListViewItem), true) is TreeListViewItem node)
+                    {
+                        node.IsSelected = true;
+                        _vm.ShowTreeMenu = true;
+                    }
+                }
+            }
+        }
+
         private void UserControl_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            WriteSettings();
+        }
+
+        public void WriteSettings()
         {
             _vm.WriteSetting();
         }

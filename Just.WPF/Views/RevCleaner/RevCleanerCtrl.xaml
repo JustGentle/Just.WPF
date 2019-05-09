@@ -13,6 +13,7 @@
     <UserControl.Resources>
         <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <cvt:BoolReverseConverter x:Key="BoolReverseConverter"/>
+        <local:BindingProxy x:Key="BindingProxy" Data="{Binding}"/>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -47,11 +48,19 @@
             <Button Grid.Column="4" Margin="-1,0,5,0" Command="{Binding BackupFolderBrowser}" IsEnabled="{Binding Backup}">...</Button>
         </Grid>
         <Grid Grid.Row="2">
+            <Grid.Resources>
+                <ContextMenu x:Key="TreeMenu" DataContext="{Binding Data,Source={StaticResource BindingProxy}}">
+                    <MenuItem Header="在文件夹中打开" />
+                    <MenuItem Header="复制路径"/>
+                    <MenuItem Header="复制文件名"/>
+                    <MenuItem Header="复制文件"/>
+                </ContextMenu>
+            </Grid.Resources>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="609*"/>
                 <ColumnDefinition Width="191*"/>
             </Grid.ColumnDefinitions>
-            <GenControls:TreeListView DataContext="{Binding Data}" Grid.ColumnSpan="2">
+            <GenControls:TreeListView DataContext="{Binding Data}" Grid.ColumnSpan="2" MouseDown="TreeListView_MouseDown" ContextMenu="{StaticResource TreeMenu}">
                 <GenControls:TreeListView.Columns>
                     <GridViewColumn Width="200" Header="文件名">
                         <GridViewColumn.CellTemplate>

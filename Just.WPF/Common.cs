@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Just.WPF.Views;
+using System;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
@@ -116,6 +117,21 @@ namespace Just.WPF
             var item = GetTabItem(code);
             if (item == null) return;
             this.tbContent.Items.Remove(item);
+        }
+
+        public void CloseAll()
+        {
+            while (tbContent.HasItems)
+            {
+                //保存设置
+                if(tbContent.Items[0] is TabItem item 
+                    && item.Content is ContentControl content 
+                    && content.Content is IWriteSettings writer)
+                {
+                    writer.WriteSettings();
+                }
+                this.tbContent.Items.RemoveAt(0);
+            }
         }
 
         private TabItem GetTabItem(string code, bool exact = false)

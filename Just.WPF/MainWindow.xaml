@@ -7,7 +7,7 @@
         xmlns:cvt="clr-namespace:Just.WPF.Converters"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
-        Closed="Window_Closed"
+        Closing="Window_Closing"
         StateChanged="Window_StateChanged"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"

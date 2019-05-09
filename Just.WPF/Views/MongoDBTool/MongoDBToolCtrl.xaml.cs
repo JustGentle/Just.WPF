@@ -20,7 +20,7 @@ namespace Just.WPF.Views.MongoDBTool
     /// MongoDBToolCtrl.xaml 的交互逻辑
     /// </summary>
     [DisplayName("MongoDB工具")]
-    public partial class MongoDBToolCtrl : UserControl
+    public partial class MongoDBToolCtrl : UserControl, IWriteSettings
     {
         private readonly MongoDBToolVM _vm = new MongoDBToolVM();
         public MongoDBToolCtrl()
@@ -30,9 +30,14 @@ namespace Just.WPF.Views.MongoDBTool
             _vm.ReadSetting();
         }
 
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        public void WriteSettings()
         {
             _vm.WriteSetting();
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            WriteSettings();
         }
     }
 }
