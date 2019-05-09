@@ -1,13 +1,8 @@
-﻿
-
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                    >
     <ResourceDictionary.MergedDictionaries>
         <!--添加内容-->
-        <ResourceDictionary Source="/GenLibrary;component/Extended/GenWindows/GlassWindow/Themes/Generic.xaml"/>
         <ResourceDictionary Source="/GenLibrary;component/Extended/GenControls/TreeListView/Themes/Generic.xaml"/>
-
-        <ResourceDictionary Source="/GenLibrary;component/Extended/GenControls/ComboBoxEx/Themes/Generic.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
