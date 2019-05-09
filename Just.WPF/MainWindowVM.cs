@@ -32,10 +32,6 @@ namespace Just.WPF
         #endregion
 
         #region 方法
-        JsonSerializerSettings jSettings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore
-        };
         public void LoadMainMenu()
         {
             var json = @"
@@ -67,12 +63,19 @@ namespace Just.WPF
             json = MainWindow.ReadSetting(nameof(MainMenu));
             try
             {
-                var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json);
+                var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json ?? string.Empty) ?? new List<MenuNode>();
                 foreach (var item in nodes)
                 {
                     MainMenu.Add(item);
                 }
-                StartOn = MainMenu.Where(m => m.StartOn).ToList();
+                if (!MainMenu.Any())
+                {
+                    NotifyWin.Warn("主菜单无数据");
+                }
+                else
+                {
+                    StartOn = MainMenu.Where(m => m.StartOn).ToList();
+                }
             }
             catch (Exception ex)
             {
