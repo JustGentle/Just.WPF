@@ -59,12 +59,21 @@
         </Setter>
     </Style>
 
+    <!--  主色按钮  -->
+    <Style
+        x:Key="MainButton"
+        BasedOn="{StaticResource {x:Type Button}}"
+        TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource MainForeBrush}" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
     <!--  蓝色按钮  -->
     <Style
         x:Key="BlueButton"
         BasedOn="{StaticResource {x:Type Button}}"
         TargetType="Button">
-        <Setter Property="Background" Value="#1E94FF" />
+        <Setter Property="Background" Value="{StaticResource BlueBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -73,7 +82,7 @@
         x:Key="RedButton"
         BasedOn="{StaticResource {x:Type Button}}"
         TargetType="Button">
-        <Setter Property="Background" Value="#F5222D" />
+        <Setter Property="Background" Value="{StaticResource RedBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 
@@ -82,7 +91,16 @@
         x:Key="OrangeButton"
         BasedOn="{StaticResource {x:Type Button}}"
         TargetType="Button">
-        <Setter Property="Background" Value="#FF8C00" />
+        <Setter Property="Background" Value="{StaticResource OrangeBrush}" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!--  绿色按钮  -->
+    <Style
+        x:Key="GreenButton"
+        BasedOn="{StaticResource {x:Type Button}}"
+        TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource GreenBrush}" />
         <Setter Property="Foreground" Value="White" />
     </Style>
 </ResourceDictionary>

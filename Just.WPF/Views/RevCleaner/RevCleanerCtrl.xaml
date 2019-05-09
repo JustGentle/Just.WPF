@@ -31,7 +31,7 @@
             <TextBlock Margin="5,0" VerticalAlignment="Center">站点目录:</TextBlock>
             <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding WebRootFolder}" IsEnabled="{Binding Doing,Converter={StaticResource BoolReverseConverter}}"></TextBox>
             <Button Grid.Column="2" Margin="-1,0,0,0" Command="{Binding WebRootFolderBrowser}" IsEnabled="{Binding Doing,Converter={StaticResource BoolReverseConverter}}">...</Button>
-            <Button Grid.Column="3" Margin="5,0" Style="{StaticResource BlueButton}" Command="{Binding RevAction}" Content="{Binding ActionName}"></Button>
+            <Button Grid.Column="3" Margin="5,0" Style="{StaticResource MainButton}" Command="{Binding RevAction}" Content="{Binding ActionName}"></Button>
         </Grid>
         <Grid Grid.Row="1" Margin="0,5" IsEnabled="{Binding Doing,Converter={StaticResource BoolReverseConverter}}">
             <Grid.ColumnDefinitions>

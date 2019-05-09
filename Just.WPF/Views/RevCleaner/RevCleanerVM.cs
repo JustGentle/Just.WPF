@@ -102,44 +102,51 @@ namespace Just.WPF.Views.RevCleaner
             {
                 _RevAction = _RevAction ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
-                    switch (Step)
+                    try
                     {
-                        case ActionStep.Scan:
-                            switch (Status)
-                            {
-                                case ActionStatus.Begin:
-                                    Scan();
-                                    break;
-                                case ActionStatus.Doing:
-                                    tokenSource?.Cancel();
-                                    MainWindow.Instance.ShowStatus("停止...");
-                                    break;
-                                case ActionStatus.Finished:
-                                    Clear();
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        case ActionStep.Clear:
-                            switch (Status)
-                            {
-                                case ActionStatus.Begin:
-                                    Clear();
-                                    break;
-                                case ActionStatus.Doing:
-                                    tokenSource?.Cancel();
-                                    MainWindow.Instance.ShowStatus("停止...");
-                                    break;
-                                case ActionStatus.Finished:
-                                    Scan();
-                                    break;
-                                default:
-                                    break;
-                            }
-                            break;
-                        default:
-                            break;
+                        switch (Step)
+                        {
+                            case ActionStep.Scan:
+                                switch (Status)
+                                {
+                                    case ActionStatus.Begin:
+                                        Scan();
+                                        break;
+                                    case ActionStatus.Doing:
+                                        tokenSource?.Cancel();
+                                        MainWindow.Instance.ShowStatus("停止...");
+                                        break;
+                                    case ActionStatus.Finished:
+                                        Clear();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            case ActionStep.Clear:
+                                switch (Status)
+                                {
+                                    case ActionStatus.Begin:
+                                        Clear();
+                                        break;
+                                    case ActionStatus.Doing:
+                                        tokenSource?.Cancel();
+                                        MainWindow.Instance.ShowStatus("停止...");
+                                        break;
+                                    case ActionStatus.Finished:
+                                        Scan();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error("执行错误：" + ex.Message); });
                     }
                 });
                 return _RevAction;

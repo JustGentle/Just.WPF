@@ -16,41 +16,47 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <local1:WaitLayer Grid.RowSpan="2" Visibility="{Binding Doing,Converter={StaticResource BoolToVisibilityConverter}}" Panel.ZIndex="{Binding Doing}" />
-        <Grid Grid.Row="0" Margin="0,5">
+        <local1:WaitLayer Grid.RowSpan="99" Visibility="{Binding Doing,Converter={StaticResource BoolToVisibilityConverter}}" Panel.ZIndex="{Binding Doing}" />
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock VerticalAlignment="Center">脚本目录:</TextBlock>
+            <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding JsonFolder}"></TextBox>
+            <Button Grid.Column="2" Margin="5,0,0,0" Command="{Binding JsonFolderBrowser}">...</Button>
+            <Button Grid.Column="3" Margin="5,0,0,0" Style="{StaticResource MainButton}" Command="{Binding DoAction}">合并</Button>
+        </Grid>
+        <Grid Grid.Row="1" Margin="0,5,0,0" Visibility="{Binding ShowJs,Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <TextBlock Margin="5,0" VerticalAlignment="Center">脚本目录:</TextBlock>
-            <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding JsonFolder}"></TextBox>
-            <Button Grid.Column="2" Margin="5,0,0,0" Command="{Binding JsonFolderBrowser}">...</Button>
-
-            <TextBlock Grid.Row="1" Margin="5,0" VerticalAlignment="Center">执行脚本:</TextBlock>
-            <TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,0,0" Text="{Binding JsFile}"></TextBox>
-            <Button Grid.Row="1" Grid.Column="2" Margin="5,5,0,0" Command="{Binding JsFileBrowser}">...</Button>
-
-            <TextBlock Grid.Row="2" Margin="5,0" VerticalAlignment="Center">替换正则:</TextBlock>
-            <Grid Grid.Row="2" Grid.Column="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" Margin="5,5,0,0" Text="{Binding Pattern}"></TextBox>
-                <TextBox Grid.Column="1" Margin="5,5,0,0" Text="{Binding Replacement}"></TextBox>
-            </Grid>
-            
-
-            <Button Grid.Row="3" Grid.Column="3" Margin="5,5,0,0" Style="{StaticResource BlueButton}" Command="{Binding DoAction}">合并</Button>
+            <TextBlock Grid.Column="0" VerticalAlignment="Center">执行脚本:</TextBlock>
+            <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding JsFile}"></TextBox>
+            <Button Grid.Column="2" Margin="5,0,0,0" Command="{Binding JsFileBrowser}">...</Button>
         </Grid>
-        <TextBox Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Text="{Binding Json}"/>
+        <Grid Grid.Row="2" Margin="0,5,0,0" Visibility="{Binding ShowJs,Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" VerticalAlignment="Center">替换正则:</TextBlock>
+            <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding Pattern}"></TextBox>
+            <TextBox Grid.Column="2" Margin="5,0,0,0" Text="{Binding Replacement}"></TextBox>
+        </Grid>
+        <Grid Grid.Row="9" Margin="0,5,0,0">
+            <TextBox VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Text="{Binding Json}"/>
+            <Button Style="{StaticResource GreenButton}" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding CopyJson}">复制</Button>
+        </Grid>
     </Grid>
 </UserControl>

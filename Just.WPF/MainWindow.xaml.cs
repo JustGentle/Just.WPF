@@ -140,6 +140,7 @@ namespace Just.WPF
         /// </summary>
         public void CreateMenu()
         {
+            _vm.LoadMainMenu();
             var topMenus = _vm.MainMenu.Where(menu => menu.Parent == null);
             foreach (var menu in topMenus)
             {
@@ -147,7 +148,8 @@ namespace Just.WPF
                 {
                     Header = menu.Header,
                     Tag = menu.ClassName,
-                    Name = "tv" + menu.Id.ToString("N")
+                    Name = "tv" + menu.Id,
+                    Visibility = menu.Visible ? Visibility.Visible : Visibility.Collapsed
                 };
                 var subMenus = _vm.MainMenu.Where(m => m.Parent == menu.Id);
                 CreateNode(subMenus, item);
@@ -171,7 +173,8 @@ namespace Just.WPF
                 {
                     Header = sub.Header,
                     Tag = sub.ClassName,
-                    Name = "tv" + sub.Id.ToString("N")
+                    Name = "tv" + sub.Id,
+                    Visibility = sub.Visible ? Visibility.Visible : Visibility.Collapsed
                 };
                 node.MouseLeftButtonUp += Node_MouseUp;
                 item.Items.Add(node);

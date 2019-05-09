@@ -1,19 +1,20 @@
 
 //处理选项
 var options = {
-    all: true, //true: 针对所有数据，false: 仅针对输入数据
-    //type: {value: 0, display: "仅检查数据"}
-    //type: {value: 1, display: "检查并新增"}
-    type: {value: 2, display: "检查并同步"}//新增+更新+删除
+    "执行新增": true,
+    "执行更新": true,
+    "移除重复": true,
+    "删除多余": true,
+    "显示相同": true
 }
 
 //检查结果
 var result = {
-    "新增": [], //新增数据
-    "更新": {}, //差异数据
-    "重复": {}, //重复数据
-    "多余": [], //多余数据
-    "相同": [] //相同数据
+    "新增": [],
+    "更新": {},
+    "重复": {},
+    "多余": [],
+    "相同": []
 }
 
 // 输入开关选项数据
@@ -27,7 +28,7 @@ var sysCache = db.getCollection('CacheSysProfileMode');
 function onAdd(item){
     delete item._id;
     result["新增"].push(item);
-    if(options.type.value){
+    if(options["执行新增"]){
         sysCache.insert(item);
     }
 }
@@ -38,23 +39,30 @@ function onDup(item, dup){
         "移除": []
     };
     result["重复"][key]["移除"].push(dup);
-    if(options.type.value === 2 && dup._id){
+    if(options["移除重复"] && dup._id){
         sysCache.remove(dup);
     }
 }
 function onEq(item, eq){
-    result["相同"].push(eq);
+	if(options["显示相同"]){
+    	result["相同"].push(eq);
+	}
 }
 function onDiff(item, diff){
     delete item._id;
     result["更新"] = {"原": diff, "新": item};
-    if(options.type.value === 2){
-        sysCache.update(diff, {$set: item});
+    if(options["执行更新"]){
+        //部分属性值不更新
+        var copy = JSON.parse(JSON.stringify(item));
+        if(copy.ValueType === diff.ValueType) {
+            copy.ItemValue = diff.ItemValue;
+        }
+        sysCache.update(diff, {$set: copy});
     }
 }
 function onNot(not){
     result["多余"].push(not);
-    if(options.type.value === 2){
+    if(options["删除多余"]){
         sysCache.remove(not);
     }
 }
@@ -155,6 +163,26 @@ if(options.all){
         if(!found)
             onAdd(item);
     }
+}
+
+if(!options["执行新增"]){
+	result["新增(未执行)"] = result["新增"];
+	delete result["新增"];
+}
+if(!options["执行更新"]){
+	result["更新(未执行)"] = result["更新"];
+	delete result["更新"];
+}
+if(!options["移除重复"]){
+	result["重复(未移除)"] = result["重复"];
+	delete result["重复"];
+}
+if(!options["删除多余"]){
+	result["多余(未删除)"] = result["多余"];
+	delete result["多余"];
+}
+if(!options["显示相同"]){
+	delete result["相同"];
 }
 //输出结果
 print(result);

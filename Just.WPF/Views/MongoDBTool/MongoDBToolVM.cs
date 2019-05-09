@@ -23,6 +23,7 @@ namespace Just.WPF.Views.MongoDBTool
         public string Json { get; set; }
         public string Pattern { get; set; } = @"(?<=var data = \[).*?(?=\];)";
         public string Replacement { get; set; } = "{0}";
+        public bool ShowJs { get; set; } = false;
 
         private ICommand _JsonFolderBrowser;
         public ICommand JsonFolderBrowser
@@ -63,6 +64,24 @@ namespace Just.WPF.Views.MongoDBTool
             }
         }
 
+        private ICommand _CopyJson;
+        public ICommand CopyJson
+        {
+            get
+            {
+                _CopyJson = _CopyJson ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    if (string.IsNullOrEmpty(Json)) return;
+                    MainWindow.DispatcherInvoke(() =>
+                    {
+                        Clipboard.SetText(Json);
+                        NotifyWin.Info("已复制到剪贴板", "合并结果");
+                    });
+                });
+                return _CopyJson;
+            }
+        }
+
         private StringBuilder json;
         private ICommand _DoAction;
         public ICommand DoAction
@@ -75,14 +94,17 @@ namespace Just.WPF.Views.MongoDBTool
                     {
                         MainWindow.Instance.ShowStatus("开始...");
                         Doing = true;
-                        json = new StringBuilder();
-                        Scan(JsonFolder);
-                        Json = Format(json.ToString());
-                        MainWindow.DispatcherInvoke(() => 
+                        try
                         {
-                            Clipboard.SetText(Json);
-                            NotifyWin.Info("已复制到剪贴板", "合并完成");
-                        });
+                            json = new StringBuilder();
+                            Scan(JsonFolder);
+                            Json = Format(json.ToString());
+                            CopyJson.Execute(_);
+                        }
+                        catch (Exception ex)
+                        {
+                            MainWindow.DispatcherInvoke(() => { NotifyWin.Error("合并错误：" + ex.Message); });
+                        }
                         Doing = false;
                         MainWindow.Instance.ShowStatus();
                     });
@@ -96,7 +118,7 @@ namespace Just.WPF.Views.MongoDBTool
             MainWindow.Instance.ShowStatus("扫描..." + folder);
             if (!Directory.Exists(folder))
             {
-                MainWindow.DispatcherInvoke(() => { NotifyWin.Error("目录不存在：" + JsonFolder); });
+                MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("目录不存在：" + JsonFolder); });
                 return;
             }
             var folders = Directory.GetDirectories(folder);
@@ -140,6 +162,7 @@ namespace Just.WPF.Views.MongoDBTool
             JsFile = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(JsFile)}", JsFile);
             Pattern = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(Pattern)}", Pattern);
             Replacement = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(Replacement)}", Replacement);
+            ShowJs = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(ShowJs)}", ShowJs);
         }
         public void WriteSetting()
         {

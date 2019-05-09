@@ -1,11 +1,10 @@
 ﻿using Just.WPF.Views;
-using Just.WPF.Views.MongoDBTool;
-using Just.WPF.Views.RevCleaner;
 using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace Just.WPF
 {
@@ -22,10 +21,6 @@ namespace Just.WPF
                 return _Instance;
             }
         }
-        public MainWindowVM()
-        {
-            LoadMainMenu();
-        }
         #endregion
 
         #region 属性
@@ -37,34 +32,56 @@ namespace Just.WPF
         #endregion
 
         #region 方法
+        JsonSerializerSettings jSettings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore
+        };
         public void LoadMainMenu()
         {
-            var iOffice10 = new MenuNode { Id = Guid.NewGuid(), Header = "iOffice10" };
-            MainMenu.Add(iOffice10);
-            NewMenuItem(typeof(RevCleanerCtrl), iOffice10);
-            NewMenuItem(typeof(MongoDBToolCtrl), iOffice10, true);
-            NewMenuItem(typeof(ChangesetGetterCtrl), visible: false);
-        }
-        private void NewMenuItem(Type view, MenuNode parent = null, bool startOn = false, bool visible = true)
-        {
-            var menu = new MenuNode
+            var json = @"
+[
+  {
+    'Id': 'iOffice10',
+    'Header': 'iOffice10'
+  },
+  {
+    'Id': 'RevCleaner',
+    'Parent': 'iOffice10',
+    'Header': '补丁文件清理',
+    'ClassName': 'RevCleanerCtrl'
+  },
+  {
+    'Id': 'MongoDBTool',
+    'Parent': 'iOffice10',
+    'Header': 'MongoDB工具',
+    'ClassName': 'MongoDBToolCtrl'
+  },
+  {
+    'Id': 'ChangesetGetter',
+    'Header': '变更集抽取',
+    'ClassName': 'ChangesetGetterCtrl',
+    'Visible': false
+  }
+]
+";
+            json = MainWindow.ReadSetting(nameof(MainMenu));
+            try
             {
-                Parent = parent?.Id,
-                Id = Guid.NewGuid(),
-                ClassName = view.Name,
-                Header = view.ToDisplayName(),
-                Visible = visible
-            };
-            MainMenu.Add(menu);
-            if (startOn) StartOn.Add(menu);
+                var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json);
+                foreach (var item in nodes)
+                {
+                    MainMenu.Add(item);
+                }
+                StartOn = MainMenu.Where(m => m.StartOn).ToList();
+            }
+            catch (Exception ex)
+            {
+                NotifyWin.Error("加载主菜单错误:" + ex.Message);
+            }
         }
-        public MenuNode GetMenuItem(Guid id)
+        public MenuNode GetMenuItem(string id)
         {
             return MainMenu.FirstOrDefault(e => e.Id == id);
-        }
-        public MenuNode GetMenuItem(string className)
-        {
-            return MainMenu.FirstOrDefault(e => e.ClassName == className);
         }
         public MenuNode GetMenuItem(Type view)
         {
@@ -76,10 +93,11 @@ namespace Just.WPF
     [AddINotifyPropertyChangedInterface]
     public class MenuNode
     {
-        public Guid Id { get; set; }
-        public Guid? Parent { get; set; }
+        public string Id { get; set; }
+        public string Parent { get; set; }
         public string Header { get; set; }
         public string ClassName { get; set; }
         public bool Visible { get; set; } = true;
+        public bool StartOn { get; set; }
     }
 }
