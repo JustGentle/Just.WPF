@@ -43,8 +43,8 @@
     </Style>
     <Style TargetType="ScrollBar">
         <Setter Property="Background" Value="#22000000" />
-        <Setter Property="MinWidth" Value="12" />
-        <Setter Property="Width" Value="12" />
+        <Setter Property="MinWidth" Value="10" />
+        <Setter Property="Width" Value="10" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
@@ -86,8 +86,8 @@
             <Trigger Property="Orientation" Value="Horizontal">
                 <Setter Property="Width" Value="Auto" />
                 <Setter Property="MinWidth" Value="0" />
-                <Setter Property="Height" Value="12" />
-                <Setter Property="MinHeight" Value="12" />
+                <Setter Property="Height" Value="10" />
+                <Setter Property="MinHeight" Value="10" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ScrollBar}">

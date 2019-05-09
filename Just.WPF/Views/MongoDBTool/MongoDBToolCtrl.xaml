@@ -56,7 +56,7 @@
         </Grid>
         <Grid Grid.Row="9" Margin="0,5,0,0">
             <TextBox VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Text="{Binding Json}"/>
-            <Button Style="{StaticResource GreenButton}" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding CopyJson}">复制</Button>
+            <Button Style="{StaticResource GreenButton}" Margin="20" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding CopyJson}">复制</Button>
         </Grid>
     </Grid>
 </UserControl>
