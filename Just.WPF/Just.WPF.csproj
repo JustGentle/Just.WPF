@@ -220,9 +220,7 @@
   <ItemGroup>
     <Resource Include="Images\font.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="hongfan.ico" />
   </ItemGroup>
