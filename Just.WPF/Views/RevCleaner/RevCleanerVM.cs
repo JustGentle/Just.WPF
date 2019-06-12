@@ -250,7 +250,7 @@ namespace Just.WPF.Views.RevCleaner
                 var childItem = ScanFolder(folders.First(), folderItem);
                 if (folderItem.IsKeep != childItem.IsKeep)
                 {
-                    folderItem.IsKeep = folderItem.Children.Any() ? null : childItem.IsKeep;
+                    folderItem.IsKeep = folderItem.Children.Count > 1 ? null : childItem.IsKeep;
                 }
                 folders.RemoveAt(0);
             }
