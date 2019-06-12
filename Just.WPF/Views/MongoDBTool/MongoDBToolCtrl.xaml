@@ -6,8 +6,9 @@
              xmlns:local="clr-namespace:Just.WPF.Views.MongoDBTool"
              xmlns:cvt="clr-namespace:Just.WPF.Converters"
              xmlns:local1="clr-namespace:Just.WPF.Views"
+             xmlns:GenControls="clr-namespace:GenLibrary.GenControls;assembly=GenLibrary"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
+             d:DesignHeight="580" d:DesignWidth="730"
              Unloaded="UserControl_Unloaded">
     <UserControl.Resources>
         <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -15,7 +16,6 @@
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition/>
@@ -32,31 +32,55 @@
             <TextBlock VerticalAlignment="Center">脚本目录:</TextBlock>
             <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding JsonFolder}"></TextBox>
             <Button Grid.Column="2" Margin="5,0,0,0" Command="{Binding JsonFolderBrowser}">...</Button>
-            <Button Grid.Column="3" Margin="5,0,0,0" Style="{StaticResource MainButton}" Command="{Binding DoAction}">合并</Button>
+            <Button Grid.Column="3" Margin="5,0,0,0" Style="{StaticResource MainButton}" Command="{Binding Merge}">合并</Button>
         </Grid>
-        <Grid Grid.Row="1" Margin="0,5,0,0" Visibility="{Binding ShowJs,Converter={StaticResource BoolToVisibilityConverter}}">
+        <Grid Grid.Row="1" Margin="0,5,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" VerticalAlignment="Center">执行脚本:</TextBlock>
-            <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding JsFile}"></TextBox>
-            <Button Grid.Column="2" Margin="5,0,0,0" Command="{Binding JsFileBrowser}">...</Button>
-        </Grid>
-        <Grid Grid.Row="2" Margin="0,5,0,0" Visibility="{Binding ShowJs,Converter={StaticResource BoolToVisibilityConverter}}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" VerticalAlignment="Center">替换正则:</TextBlock>
-            <TextBox Grid.Column="1" Margin="5,0,0,0" Text="{Binding Pattern}"></TextBox>
-            <TextBox Grid.Column="2" Margin="5,0,0,0" Text="{Binding Replacement}"></TextBox>
+            <WrapPanel Orientation="Horizontal">
+                <TextBlock>链接地址:</TextBlock>
+                <TextBox Margin="5,0,0,0" Width="200" Text="{Binding MongoDBAddress}"></TextBox>
+                <CheckBox Margin="5,0" VerticalAlignment="Center"  IsChecked="{Binding IsAdd}">执行新增</CheckBox>
+                <CheckBox Margin="5,0" VerticalAlignment="Center" IsChecked="{Binding IsUpdate}">执行更新</CheckBox>
+                <CheckBox Margin="5,0" VerticalAlignment="Center" IsChecked="{Binding IsRemoveDup}">移除重复</CheckBox>
+                <CheckBox Margin="5,0" VerticalAlignment="Center" IsChecked="{Binding IsDeleteOver}">删除多余</CheckBox>
+                <CheckBox Margin="5,0" VerticalAlignment="Center" IsChecked="{Binding IsShowSame}">显示相同</CheckBox>
+            </WrapPanel>
+            <Button Grid.Column="3" Margin="5,0,0,0" Style="{StaticResource MainButton}" Command="{Binding Execute}">同步</Button>
         </Grid>
         <Grid Grid.Row="9" Margin="0,5,0,0">
             <TextBox VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Text="{Binding Json}"/>
-            <Button Style="{StaticResource GreenButton}" Margin="20" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding CopyJson}">复制</Button>
+            <GenControls:TreeListView DataContext="{Binding Tree}" Grid.ColumnSpan="2">
+                <GenControls:TreeListView.Columns>
+                    <GridViewColumn Width="200" Header="属性名">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid  Width="Auto">
+                                    <Image Width="16" Height="Auto" Margin="0,-3,0,0" Source="{Binding ImagePath}" HorizontalAlignment="Left" />
+                                    <TextBlock x:Name="textBlock" Text="{Binding Key}" Margin="18,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="150" Header="属性值" DisplayMemberBinding="{Binding Value}"/>
+                    <GridViewColumn Width="50" Header="类型" DisplayMemberBinding="{Binding Type}"/>
+                    <GridViewColumn Width="50">
+                        <GridViewColumnHeader ToolTip="√执行 □排除">
+                            <TextBlock Foreground="Red">执行</TextBlock>
+                        </GridViewColumnHeader>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Path=IsEnable,Mode=TwoWay,NotifyOnSourceUpdated=True}" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="150" Header="文件名" DisplayMemberBinding="{Binding FileName}"/>
+                    <GridViewColumn Width="150" Header="修改时间" DisplayMemberBinding="{Binding UpdateTime}"/>
+                </GenControls:TreeListView.Columns>
+            </GenControls:TreeListView>
+            <Button Style="{StaticResource GreenButton}" Margin="5" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding CopyJson}" Visibility="Collapsed">复制</Button>
         </Grid>
     </Grid>
 </UserControl>

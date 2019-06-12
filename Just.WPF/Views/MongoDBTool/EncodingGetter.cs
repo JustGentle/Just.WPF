@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
 
@@ -11,14 +10,14 @@ namespace Just.WPF.Views.MongoDBTool
     public class EncodingGetter
     {
         /// <summary> 
-        /// 给定文件的路径，读取文件的二进制数据，判断文件的编码类型 
+        /// 给定文件的路径，判断文件的编码类型 
         /// </summary> 
-        /// <param name=“FILE_NAME“>文件路径</param> 
+        /// <param name="filename">文件路径</param> 
         /// <returns>文件的编码类型</returns> 
-        public static System.Text.Encoding GetType(string FILE_NAME)
+        public static Encoding GetEncoding(string filename)
         {
-            FileStream fs = new FileStream(FILE_NAME, FileMode.Open, FileAccess.Read);
-            Encoding r = GetType(fs);
+            FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            Encoding r = GetEncoding(fs);
             fs.Close();
             return r;
         }
@@ -26,40 +25,66 @@ namespace Just.WPF.Views.MongoDBTool
         /// <summary> 
         /// 通过给定的文件流，判断文件的编码类型 
         /// </summary> 
-        /// <param name=“fs“>文件流</param> 
+        /// <param name="fs">文件流</param> 
         /// <returns>文件的编码类型</returns> 
-        public static System.Text.Encoding GetType(FileStream fs)
+        public static Encoding GetEncoding(FileStream fs)
         {
-            byte[] Unicode = new byte[] { 0xFF, 0xFE, 0x41 };
-            byte[] UnicodeBIG = new byte[] { 0xFE, 0xFF, 0x00 };
-            byte[] UTF8 = new byte[] { 0xEF, 0xBB, 0xBF }; //带BOM 
-            Encoding reVal = Encoding.Default;
-
             BinaryReader r = new BinaryReader(fs, System.Text.Encoding.Default);
             int i;
             int.TryParse(fs.Length.ToString(), out i);
             byte[] ss = r.ReadBytes(i);
-            if (IsUTF8Bytes(ss) || (ss[0] == 0xEF && ss[1] == 0xBB && ss[2] == 0xBF))
-            {
-                reVal = Encoding.UTF8;
-            }
-            else if (ss[0] == 0xFE && ss[1] == 0xFF && ss[2] == 0x00)
-            {
-                reVal = Encoding.BigEndianUnicode;
-            }
-            else if (ss[0] == 0xFF && ss[1] == 0xFE && ss[2] == 0x41)
-            {
-                reVal = Encoding.Unicode;
-            }
+            var result = GetEncoding(ss);
             r.Close();
-            return reVal;
+            return result;
+        }
 
+        /// <summary>
+        /// 给定字节集，判断文件的编码类型
+        /// </summary>
+        /// <param name="bytes">字节集</param>
+        /// <returns>文件的编码类型</returns>
+        public static Encoding GetEncoding(byte[] bytes)
+        {
+            byte[] Unicode = new byte[] { 0xFF, 0xFE, 0x41 };
+            byte[] UnicodeBIG = new byte[] { 0xFE, 0xFF, 0x00 };
+            byte[] UTF8BOM = new byte[] { 0xEF, 0xBB, 0xBF }; //带BOM 
+            Encoding result = Encoding.Default;
+
+            if (IsStartWithBytes(bytes,UnicodeBIG))
+            {
+                result = Encoding.BigEndianUnicode;
+            }
+            else if (IsStartWithBytes(bytes, Unicode))
+            {
+                result = Encoding.Unicode;
+            }
+            else if (IsStartWithBytes(bytes, UTF8BOM) || IsUTF8Bytes(bytes))
+            {
+                result = Encoding.UTF8;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 判断字节数组是否以另一数组开头
+        /// </summary>
+        /// <param name="data">要判断的数组</param>
+        /// <param name="start">开头数组</param>
+        /// <returns></returns>
+        private static bool IsStartWithBytes(byte[] data, byte[] start)
+        {
+            if (data.Length < start.Length) return false;
+            for (int i = 0; i < start.Length; i++)
+            {
+                if (data[i] != start[i]) return false;
+            }
+            return true;
         }
 
         /// <summary> 
         /// 判断是否是不带 BOM 的 UTF8 格式 
         /// </summary> 
-        /// <param name=“data“></param> 
+        /// <param name="data"></param> 
         /// <returns></returns> 
         private static bool IsUTF8Bytes(byte[] data)
         {

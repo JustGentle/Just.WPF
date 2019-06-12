@@ -34,6 +34,7 @@ namespace Just.WPF
         #region 方法
         public void LoadMainMenu()
         {
+#if DEBUG
             var json = @"
 [
   {
@@ -60,7 +61,9 @@ namespace Just.WPF
   }
 ]
 ";
-            json = MainWindow.ReadSetting(nameof(MainMenu));
+#else
+            var json = MainWindow.ReadSetting(nameof(MainMenu));
+#endif
             try
             {
                 var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json ?? string.Empty) ?? new List<MenuNode>();
@@ -91,7 +94,7 @@ namespace Just.WPF
             return MainMenu.FirstOrDefault(e => e.ClassName == view.Name);
         }
 
-        #endregion
+#endregion
     }
     [AddINotifyPropertyChangedInterface]
     public class MenuNode
