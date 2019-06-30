@@ -191,80 +191,83 @@ namespace Just.WPF.Views.MongoDBTool
                     MainWindow.Instance.ShowStatus("同步...");
                     try
                     {
-                        //查询原数据
-                        var timeoutMS = 3000;
-                        mongo = new MongoDBHelper(
-                            $"mongodb://{MongoDBAddress}/?serverSelectionTimeoutMS={timeoutMS};connectTimeoutMS={timeoutMS};socketTimeoutMS={timeoutMS}",
-                            "iOffice10Cache", 
-                            nameof(CacheSysProfileMode));
-                        var collection = mongo.Find<CacheSysProfileMode>();
-                        //备份
-                        Backup(collection, nameof(CacheSysProfileMode));
-
-                        MainWindow.Instance.ShowStatus("执行...");
-                        //初始化
-                        InitExecutionTree();
-                        var sames = new List<CacheSysProfileMode>();
-                        var dups = new List<CacheSysProfileMode>();
-                        var news = new List<CacheSysProfileMode>();
-                        //对比差异
-                        collection.ForEach(next =>
+                        if((!IsAdd && !IsDeleteOver && !IsRemoveDup && !IsUpdate) || MessageWin.Confirm("同步将会立刻影响系统数据，执行前自动完整备份，确定同步？") == true)
                         {
-                            CacheSysProfileMode found = null;
-                            for (int i = 0; i < SysProfiles.Count; i++)
+                            //查询原数据
+                            var timeoutMS = 3000;
+                            mongo = new MongoDBHelper(
+                                $"mongodb://{MongoDBAddress}/?serverSelectionTimeoutMS={timeoutMS};connectTimeoutMS={timeoutMS};socketTimeoutMS={timeoutMS}",
+                                "iOffice10Cache",
+                                nameof(CacheSysProfileMode));
+                            var collection = mongo.Find<CacheSysProfileMode>();
+                            //备份
+                            Backup(collection, nameof(CacheSysProfileMode));
+
+                            MainWindow.Instance.ShowStatus("执行...");
+                            //初始化
+                            InitExecutionTree();
+                            var sames = new List<CacheSysProfileMode>();
+                            var dups = new List<CacheSysProfileMode>();
+                            var news = new List<CacheSysProfileMode>();
+                            //对比差异
+                            collection.ForEach(next =>
                             {
-                                var item = SysProfiles[i];
-                                if (Same(item, next))
+                                CacheSysProfileMode found = null;
+                                for (int i = 0; i < SysProfiles.Count; i++)
                                 {
-                                    if (found == null)
+                                    var item = SysProfiles[i];
+                                    if (Same(item, next))
                                     {
-                                        if (sames.Contains(item))
+                                        if (found == null)
                                         {
-                                            OnDup(item, next);
+                                            if (sames.Contains(item))
+                                            {
+                                                OnDup(item, next);
+                                            }
+                                            else
+                                            {
+                                                if (Equals(item, next))
+                                                    OnEq(item, next);
+                                                else
+                                                    OnDiff(item, next);
+                                                sames.Add(item);
+                                            }
+                                            found = next;
                                         }
                                         else
                                         {
-                                            if (Equals(item, next))
-                                                OnEq(item, next);
-                                            else
-                                                OnDiff(item, next);
-                                            sames.Add(item);
+                                            dups.Add(item);
+                                            item.Id = ObjectId.Empty;
+                                            OnDup(found, item);
                                         }
-                                        found = next;
-                                    }
-                                    else
-                                    {
-                                        dups.Add(item);
-                                        item.Id = ObjectId.Empty;
-                                        OnDup(found, item);
                                     }
                                 }
-                            }
-                            if (found == null)
-                                OnNot(next);
-                        });
-                        //新增
-                        for (int i = 0; i < SysProfiles.Count; i++)
-                        {
-                            var item = SysProfiles[i];
-                            if (sames.Contains(item) || dups.Contains(item)) continue;
-                            CacheSysProfileMode dup = news.FirstOrDefault(e => Same(item, e));
-                            if (dup != null)
+                                if (found == null)
+                                    OnNot(next);
+                            });
+                            //新增
+                            for (int i = 0; i < SysProfiles.Count; i++)
                             {
-                                OnDup(dup, item);
+                                var item = SysProfiles[i];
+                                if (sames.Contains(item) || dups.Contains(item)) continue;
+                                CacheSysProfileMode dup = news.FirstOrDefault(e => Same(item, e));
+                                if (dup != null)
+                                {
+                                    OnDup(dup, item);
+                                }
+                                else
+                                {
+                                    OnAdd(item);
+                                    news.Add(item);
+                                }
                             }
-                            else
+                            //统计数量
+                            for (int i = 0; i < Tree.Children.Count; i++)
                             {
-                                OnAdd(item);
-                                news.Add(item);
+                                UpdateValueByChildrenCount(Tree.Children[i]);
                             }
+                            MainWindow.DispatcherInvoke(() => { NotifyWin.Info("同步成功"); });
                         }
-                        //统计数量
-                        for (int i = 0; i < Tree.Children.Count; i++)
-                        {
-                            UpdateValueByChildrenCount(Tree.Children[i]);
-                        }
-                        MainWindow.DispatcherInvoke(() => { NotifyWin.Info("同步成功"); });
                     }
                     catch(TimeoutException ex)
                     {
