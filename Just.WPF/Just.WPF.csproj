@@ -99,6 +99,7 @@
     <Compile Include="Common.cs" />
     <Compile Include="Converters\BoolReverseConverter.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Converters\ValueToBoolConverter.cs" />
     <Compile Include="Converters\ValueToVisibilityConverter.cs" />
     <Compile Include="Expansions\CommonExpansion.cs" />
     <Compile Include="MainWindowVM.cs" />

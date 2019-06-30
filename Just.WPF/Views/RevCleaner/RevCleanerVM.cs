@@ -22,11 +22,11 @@ namespace Just.WPF.Views.RevCleaner
         #region 属性
         public string WebRootFolder { get; set; } = Directory.GetCurrentDirectory();
         public bool Preview { get; set; } = true;
-        public bool Backup { get; set; }
+        public bool Backup { get; set; } = true;
         public string BackupFolder { get; set; }
         public RevFileItem Data { get; set; } = new RevFileItem { IsKeep = true };
 
-        public bool SimpleIcon { get; set; }
+        public bool SimpleIcon { get; set; } = true;
         public bool Doing => Status == ActionStatus.Doing;
 
         public ActionStep Step { get; set; } = ActionStep.Scan;
@@ -48,7 +48,6 @@ namespace Just.WPF.Views.RevCleaner
             }
         }
 
-        public bool ShowTreeMenu { get; set; }
         #endregion
 
         #region 方法
@@ -383,6 +382,7 @@ namespace Just.WPF.Views.RevCleaner
                     }
                     catch (System.Exception ex)
                     {
+                        Status = ActionStatus.Begin;
                         MainWindow.DispatcherInvoke(() => { NotifyWin.Error($"创建备份目录失败:{BackupFolder}\n{ex.Message}"); });
                         return;
                     }
@@ -485,16 +485,186 @@ namespace Just.WPF.Views.RevCleaner
         #endregion
 
         #region 菜单
+        static string _findText = string.Empty;
+        private ICommand _Find;
+        public ICommand Find
+        {
+            get
+            {
+                _Find = _Find ?? new RelayCommand<RevFileItem>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    MainWindow.DispatcherInvoke(() =>
+                    {
+                        var text = MessageWin.Input(_findText);
+                        if (string.IsNullOrEmpty(text)) return;
+                        _findText = text;
+                        var result = FindNextItem(_, _findText);
+                        if (result == null)
+                        {
+                            NotifyWin.Warn("未找到任何结果", "查找");
+                        }
+                    });
+                });
+                return _Find;
+            }
+        }
+        private ICommand _FindNext;
+        public ICommand FindNext
+        {
+            get
+            {
+                _FindNext = _FindNext ?? new RelayCommand<RevFileItem>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    var result = FindNextItem(_, _findText);
+                    if (result == null)
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("未找到任何结果", "查找"); });
+                    }
+                });
+                return _FindNext;
+            }
+        }
+        private RevFileItem GetSelectedItem(RevFileItem node = null)
+        {
+            node = node ?? Data;
+            if (node.IsSelected) return node;
+            if (node.Children?.Any() ?? false)
+            {
+                foreach (var child in node.Children)
+                {
+                    var result = GetSelectedItem(child);
+                    if (result != null) return result;
+                }
+            }
+            return null;
+        }
+        private RevFileItem FindNextItem(RevFileItem item, string findText)
+        {
+            item = item ?? Data;
+            RevFileItem result = null;
+            if (item.Children?.Any() ?? false)
+            {
+                foreach (var child in item.Children)
+                {
+                    result = FindItem(child, findText);
+                    if (result != null)
+                    {
+                        item.IsExpanded = true;
+                        return result;
+                    }
+                }
+            }
+            var parent = GetParentItem(item);
+            if(parent != null)
+            {
+                var startIndex = parent.Children.IndexOf(item) + 1;
+                for (int i = startIndex; i < parent.Children.Count; i++)
+                {
+                    var child = parent.Children[i];
+                    result = FindItem(child, findText);
+                    if (result != null)
+                    {
+                        parent.IsExpanded = true;
+                        return result;
+                    }
+                }
+            }
+            return result;
+        }
+        private RevFileItem GetParentItem(RevFileItem item, RevFileItem node = null)
+        {
+            RevFileItem result = null;
+            node = node ?? Data;
+            foreach (var child in node.Children)
+            {
+                if (child.Equals(item)) return node;
+                result = GetParentItem(item, child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+        private RevFileItem FindItem(RevFileItem item, string findText)
+        {
+            RevFileItem result = null;
+            if (item.Name?.ToLower().Contains(findText.ToLower()) ?? false)
+            {
+                item.IsSelected = true;
+                return item;
+            }
+            if(item.Children?.Any()?? false)
+            {
+                foreach (var child in item.Children)
+                {
+                    result = FindItem(child, findText);
+                    if (result != null)
+                    {
+                        item.IsExpanded = true;
+                        return result;
+                    }
+                }
+            }
+            return result;
+        }
+
+        private ICommand _OpenLocation;
+        public ICommand OpenLocation
+        {
+            get
+            {
+                _OpenLocation = _OpenLocation ?? new RelayCommand<RevFileItem>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    if (string.IsNullOrEmpty(_?.Path)) return;
+                    if (!Directory.Exists(_.Path) && !File.Exists(_.Path))
+                    {
+                        MainWindow.DispatcherInvoke(() =>
+                        {
+                            NotifyWin.Warn(_.Path, "路径不存在");
+                        });
+                    }
+                    System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo("Explorer.exe");
+                    psi.Arguments = $"/e,/select,\"{_.Path}\"";
+                    System.Diagnostics.Process.Start(psi);
+                });
+                return _OpenLocation;
+            }
+        }
         private ICommand _CopyPath;
         public ICommand CopyPath
         {
             get
             {
-                _CopyPath = _CopyPath ?? new RelayCommand<RoutedEventArgs>(_ =>
+                _CopyPath = _CopyPath ?? new RelayCommand<RevFileItem>(_ =>
                 {
-                    
+                    _ = _ ?? GetSelectedItem();
+                    if (string.IsNullOrEmpty(_?.Path)) return;
+                    MainWindow.DispatcherInvoke(() =>
+                    {
+                        Clipboard.SetText(_.Path);
+                        NotifyWin.Info(_.Path, "复制路径");
+                    });
                 });
                 return _CopyPath;
+            }
+        }
+        private ICommand _CopyName;
+        public ICommand CopyName
+        {
+            get
+            {
+                _CopyName = _CopyName ?? new RelayCommand<RevFileItem>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    if (string.IsNullOrEmpty(_?.Name)) return;
+                    MainWindow.DispatcherInvoke(() =>
+                    {
+                        Clipboard.SetText(_.Name);
+                        NotifyWin.Info(_.Name, "复制文件名");
+                    });
+                });
+                return _CopyName;
             }
         }
         #endregion

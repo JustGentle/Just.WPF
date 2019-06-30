@@ -59,6 +59,8 @@ namespace Just.WPF.Views
         public static readonly DependencyProperty MessageProperty =
             DependencyProperty.Register("Message", typeof(string), typeof(NotifyWin), new PropertyMetadata(string.Empty));
 
+
+
         private void NotifyWindow_Loaded(object sender, RoutedEventArgs e)
         {
             notifyTop = (NotifyTops.Any() ? NotifyTops.Max() : 0) + this.ActualHeight;

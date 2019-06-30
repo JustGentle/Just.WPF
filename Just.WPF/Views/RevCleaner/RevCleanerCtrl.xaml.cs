@@ -21,17 +21,17 @@ namespace Just.WPF.Views.RevCleaner
 
         private void TreeListView_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            _vm.ShowTreeMenu = false;
             if (e.ChangedButton != System.Windows.Input.MouseButton.Right) return;
             if (sender is TreeListView tree)
             {
+                //右键选中
                 var p = e.GetPosition(tree);
                 if (tree.InputHitTest(p) is DependencyObject item)
                 {
                     if (VisualTreeHelperEx.FindAncestorByType(item, typeof(TreeListViewItem), true) is TreeListViewItem node)
                     {
                         node.IsSelected = true;
-                        _vm.ShowTreeMenu = true;
+                        return;
                     }
                 }
             }

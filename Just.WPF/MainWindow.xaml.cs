@@ -247,7 +247,7 @@ namespace Just.WPF
         /// <param name="e"></param>
         private void AboutMenuItem_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            MessageBox.Show(this.Title, "关于", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageWin.Info(this.Title, "关于");
             e.Handled = true;
         }
 
@@ -269,7 +269,7 @@ namespace Just.WPF
         /// <param name="e"></param>
         private void LogoutMenuItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (MessageBox.Show("确定要退出登录?", "提示", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+            if (MessageWin.Confirm("确定要退出登录?") != true)
                 return;
             //string output = HttpHelper.GetUrl("/Auth/LoginOut", null, UserInfo.Token);
             //this.CloseWithoutAsk = true;

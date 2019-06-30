@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Just.WPF.Views"
+        xmlns:cvt="clr-namespace:Just.WPF.Converters"
         mc:Ignorable="d"
         x:Name="NotifyWindow"
         Title="提示" Width="300" MinHeight="100"
