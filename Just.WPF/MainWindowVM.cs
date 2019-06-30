@@ -48,16 +48,27 @@ namespace Just.WPF
     'ClassName': 'RevCleanerCtrl'
   },
   {
-    'Id': 'MongoDBTool',
+    'Id': 'MongoDBSync',
     'Parent': 'iOffice10',
-    'Header': 'MongoDB工具',
+    'Header': 'MongoDB同步',
     'ClassName': 'MongoDBToolCtrl'
+  },
+  {
+    'Id': 'ConfigManager',
+    'Parent': 'iOffice10',
+    'Header': '配置文件管理',
+    'ClassName': 'ConfigManagerCtrl'
+  },
+  {
+    'Id': 'WebsiteMapper',
+    'Header': '站点文件映射',
+    'ClassName': 'WebsiteMapperCtrl'
   },
   {
     'Id': 'ChangesetGetter',
     'Header': '变更集抽取',
     'ClassName': 'ChangesetGetterCtrl',
-    'Visible': false
+    'Visible': true
   }
 ]
 ";
