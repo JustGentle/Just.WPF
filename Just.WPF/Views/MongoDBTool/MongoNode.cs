@@ -17,6 +17,7 @@ namespace Just.WPF.Views.MongoDBTool
         public string UpdateTime { get; set; }
         public MongoNodeCollection Children { get; set; } = new MongoNodeCollection();
         public bool IsExpanded { get; set; }
+        public bool IsSelected { get; set; }
 
         public MongoNode this[string key]
         {

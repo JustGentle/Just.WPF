@@ -23,6 +23,22 @@ namespace Just.WPF.Views.MongoDBTool
         public string JsonFolder { get; set; } = Directory.GetCurrentDirectory();
         public MongoNode Tree { get; set; } = new MongoNode();
 
+        #region 视图
+        public bool IsJsonView { get; set; } = false;
+        private ICommand _SwitchView = null;
+        public ICommand SwitchView
+        {
+            get
+            {
+                _SwitchView = _SwitchView ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    IsJsonView = !IsJsonView;
+                });
+                return _SwitchView;
+            }
+        }
+        #endregion
+
         #region 合并
         public string Json { get; set; }
         public ObservableCollection<CacheSysProfileMode> SysProfiles { get; set; }
@@ -515,6 +531,141 @@ namespace Just.WPF.Views.MongoDBTool
         }
         #endregion
 
+        #region 菜单
+        static string _findText = string.Empty;
+        private ICommand _Find;
+        public ICommand Find
+        {
+            get
+            {
+                _Find = _Find ?? new RelayCommand<MongoNode>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    MainWindow.DispatcherInvoke(() =>
+                    {
+                        var text = MessageWin.Input(_findText);
+                        if (string.IsNullOrEmpty(text)) return;
+                        _findText = text;
+                        var result = FindNextItem(_, _findText);
+                        if (result == null)
+                        {
+                            NotifyWin.Warn("未找到任何结果", "查找");
+                        }
+                    });
+                });
+                return _Find;
+            }
+        }
+        private ICommand _FindNext;
+        public ICommand FindNext
+        {
+            get
+            {
+                _FindNext = _FindNext ?? new RelayCommand<MongoNode>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    var result = FindNextItem(_, _findText);
+                    if (result == null)
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("未找到任何结果", "查找"); });
+                    }
+                });
+                return _FindNext;
+            }
+        }
+        private MongoNode GetSelectedItem(MongoNode node = null)
+        {
+            node = node ?? Tree;
+            if (node.IsSelected) return node;
+            if (node.Children?.Any() ?? false)
+            {
+                foreach (var child in node.Children)
+                {
+                    var result = GetSelectedItem(child);
+                    if (result != null) return result;
+                }
+            }
+            return null;
+        }
+        private MongoNode FindNextItem(MongoNode item, string findText)
+        {
+            item = item ?? Tree;
+            MongoNode result = null;
+            if (item.Children?.Any() ?? false)
+            {
+                foreach (var child in item.Children)
+                {
+                    result = FindItem(child, findText);
+                    if (result != null)
+                    {
+                        item.IsExpanded = true;
+                        return result;
+                    }
+                }
+            }
+            return FindParentNext(item, findText);
+        }
+        private MongoNode FindParentNext(MongoNode item, string findText)
+        {
+            MongoNode result = null;
+            var parent = GetParentItem(item);
+            if (parent != null)
+            {
+                var startIndex = parent.Children.IndexOf(item) + 1;
+                for (int i = startIndex; i < parent.Children.Count; i++)
+                {
+                    var child = parent.Children[i];
+                    result = FindItem(child, findText);
+                    if (result != null)
+                    {
+                        parent.IsExpanded = true;
+                        return result;
+                    }
+                }
+                return FindParentNext(parent, findText);
+            }
+            return result;
+        }
+        private MongoNode GetParentItem(MongoNode item, MongoNode node = null)
+        {
+            MongoNode result = null;
+            node = node ?? Tree;
+            foreach (var child in node.Children)
+            {
+                if (child.Equals(item)) return node;
+                result = GetParentItem(item, child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+        private MongoNode FindItem(MongoNode item, string findText)
+        {
+            MongoNode result = null;
+            if (item.Key?.ToLower().Contains(findText.ToLower()) ?? false)
+            {
+                item.IsSelected = true;
+                return item;
+            }
+            if (item.Value?.ToLower().Contains(findText.ToLower()) ?? false)
+            {
+                item.IsSelected = true;
+                return item;
+            }
+            if (item.Children?.Any() ?? false)
+            {
+                foreach (var child in item.Children)
+                {
+                    result = FindItem(child, findText);
+                    if (result != null)
+                    {
+                        item.IsExpanded = true;
+                        return result;
+                    }
+                }
+            }
+            return result;
+        }
+        #endregion
 
         public void ReadSetting()
         {

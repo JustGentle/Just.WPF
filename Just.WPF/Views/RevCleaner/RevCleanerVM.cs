@@ -556,8 +556,13 @@ namespace Just.WPF.Views.RevCleaner
                     }
                 }
             }
+            return FindParentNext(item, findText);
+        }
+        private RevFileItem FindParentNext(RevFileItem item, string findText)
+        {
+            RevFileItem result = null;
             var parent = GetParentItem(item);
-            if(parent != null)
+            if (parent != null)
             {
                 var startIndex = parent.Children.IndexOf(item) + 1;
                 for (int i = startIndex; i < parent.Children.Count; i++)
@@ -570,6 +575,7 @@ namespace Just.WPF.Views.RevCleaner
                         return result;
                     }
                 }
+                return FindParentNext(parent, findText);
             }
             return result;
         }
