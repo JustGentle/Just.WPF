@@ -13,7 +13,7 @@
     <UserControl.Resources>
         <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <cvt:BoolReverseConverter x:Key="BoolReverseConverter"/>
-        <local:BindingProxy x:Key="BindingProxy" Data="{Binding}"/>
+        <cvt:ValueToVisibilityConverter x:Key="ValueToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -48,19 +48,11 @@
             <Button Grid.Column="4" Margin="-1,0,5,0" Command="{Binding BackupFolderBrowser}" IsEnabled="{Binding Backup}">...</Button>
         </Grid>
         <Grid Grid.Row="2">
-            <Grid.Resources>
-                <ContextMenu x:Key="TreeMenu" DataContext="{Binding Data,Source={StaticResource BindingProxy}}">
-                    <MenuItem Header="在文件夹中打开" />
-                    <MenuItem Header="复制路径"/>
-                    <MenuItem Header="复制文件名"/>
-                    <MenuItem Header="复制文件"/>
-                </ContextMenu>
-            </Grid.Resources>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="609*"/>
                 <ColumnDefinition Width="191*"/>
             </Grid.ColumnDefinitions>
-            <GenControls:TreeListView DataContext="{Binding Data}" Grid.ColumnSpan="2" MouseDown="TreeListView_MouseDown" ContextMenu="{StaticResource TreeMenu}">
+            <GenControls:TreeListView DataContext="{Binding Data}" Grid.ColumnSpan="2" MouseDown="TreeListView_MouseDown">
                 <GenControls:TreeListView.Columns>
                     <GridViewColumn Width="200" Header="文件名">
                         <GridViewColumn.CellTemplate>
@@ -86,6 +78,14 @@
                     <GridViewColumn Width="150" Header="原始文件" DisplayMemberBinding="{Binding OrigFile}"/>
                     <GridViewColumn Width="150" Header="映射文件" DisplayMemberBinding="{Binding RevFile}"/>
                 </GenControls:TreeListView.Columns>
+                <GenControls:TreeListView.ContextMenu>
+                    <ContextMenu Visibility="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.SelectedItem,Converter={StaticResource ValueToVisibilityConverter}}">
+                        <MenuItem Header="在文件夹中打开"/>
+                        <MenuItem Header="复制路径"/>
+                        <MenuItem Header="复制文件名"/>
+                        <MenuItem Header="复制文件"/>
+                    </ContextMenu>
+                </GenControls:TreeListView.ContextMenu>
             </GenControls:TreeListView>
         </Grid>
         <local:WaitLayer Grid.Row="2" Visibility="{Binding Doing,Converter={StaticResource BoolToVisibilityConverter}}" Panel.ZIndex="{Binding Doing}" />
