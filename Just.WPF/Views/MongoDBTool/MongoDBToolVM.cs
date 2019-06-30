@@ -176,7 +176,11 @@ namespace Just.WPF.Views.MongoDBTool
                     try
                     {
                         //查询原数据
-                        mongo = new MongoDBHelper($"mongodb://{MongoDBAddress}", "iOffice10Cache", nameof(CacheSysProfileMode));
+                        var timeoutMS = 3000;
+                        mongo = new MongoDBHelper(
+                            $"mongodb://{MongoDBAddress}/?serverSelectionTimeoutMS={timeoutMS};connectTimeoutMS={timeoutMS};socketTimeoutMS={timeoutMS}",
+                            "iOffice10Cache", 
+                            nameof(CacheSysProfileMode));
                         var collection = mongo.Find<CacheSysProfileMode>();
                         //备份
                         Backup(collection, nameof(CacheSysProfileMode));
@@ -245,6 +249,10 @@ namespace Just.WPF.Views.MongoDBTool
                             UpdateValueByChildrenCount(Tree.Children[i]);
                         }
                         MainWindow.DispatcherInvoke(() => { NotifyWin.Info("同步成功"); });
+                    }
+                    catch(TimeoutException ex)
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error("连接超时!"); });
                     }
                     catch (Exception ex)
                     {
