@@ -29,7 +29,7 @@
     </Window.Style>
     <Window.Resources>
         <Style x:Key="MovementBorder" TargetType="Border">
-            <Setter Property="Background" Value="#01FFFFFF" />
+            <Setter Property="Background" Value="{StaticResource NearTransparentBrush}" />
             <!--  移动手柄光标  -->
             <!--<Setter Property="Cursor" Value="SizeAll"/>
             <Setter Property="Cursor" Value="Arrow"/>

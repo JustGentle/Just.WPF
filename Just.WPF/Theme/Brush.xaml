@@ -10,6 +10,9 @@
     <SolidColorBrush x:Key="DisableBackBrush" Color="#F5F5F5" />
 
 
+    <SolidColorBrush x:Key="NormalForeBrush" Color="#000000" />
     <SolidColorBrush x:Key="MainForeBrush" Color="#1890FF" />
     <SolidColorBrush x:Key="DisableForeBrush" Color="#BBBBBB" />
+
+    <SolidColorBrush x:Key="NearTransparentBrush" Color="#01FFFFFF" />
 </ResourceDictionary>

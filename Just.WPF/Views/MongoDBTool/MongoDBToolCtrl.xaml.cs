@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GenLibrary.GenControls;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -38,6 +39,24 @@ namespace Just.WPF.Views.MongoDBTool
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             WriteSettings();
+        }
+
+        private void TreeListView_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != System.Windows.Input.MouseButton.Right) return;
+            if (sender is TreeListView tree)
+            {
+                //右键选中
+                var p = e.GetPosition(tree);
+                if (tree.InputHitTest(p) is DependencyObject item)
+                {
+                    if (VisualTreeHelperEx.FindAncestorByType(item, typeof(TreeListViewItem), true) is TreeListViewItem node)
+                    {
+                        node.IsSelected = true;
+                        return;
+                    }
+                }
+            }
         }
     }
 }

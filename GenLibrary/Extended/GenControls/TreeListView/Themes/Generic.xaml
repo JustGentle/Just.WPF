@@ -165,6 +165,7 @@
         <!-- 将控件的项属性和视图模式属性绑定 -->
         <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
         <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+        <Setter Property="Foreground" Value="{Binding Foreground}" />
         <Setter Property="FrameworkElement.FocusVisualStyle">
             <Setter.Value>
                 <Style TargetType="IFrameworkInputElement">

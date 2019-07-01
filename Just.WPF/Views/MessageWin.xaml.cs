@@ -147,5 +147,11 @@ namespace Just.WPF.Views
             //    OKBtn.Focus();
             //}
         }
+
+        private void Border_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            this.DragMove();//拖拽移动窗口
+            e.Handled = true;
+        }
     }
 }

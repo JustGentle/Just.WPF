@@ -45,7 +45,7 @@
             <StopStoryboard BeginStoryboardName="SBFadeOut"/>
         </EventTrigger>
     </Window.Triggers>
-    <Border BorderThickness="1" BorderBrush="{DynamicResource NormalBorderBrush}">
+    <Border BorderThickness="1" BorderBrush="{DynamicResource NormalBorderBrush}" Background="{StaticResource NearTransparentBrush}" MouseLeftButtonDown="Border_MouseLeftButtonDown">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>

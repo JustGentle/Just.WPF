@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Just.WPF.Views.MongoDBTool
 {
@@ -92,6 +93,11 @@ namespace Just.WPF.Views.MongoDBTool
                 {
                     Task.Run(() =>
                     {
+                        if (string.IsNullOrWhiteSpace(JsonFolder))
+                        {
+                            MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("脚本目录不能为空"); });
+                            return;
+                        }
                         MainWindow.Instance.ShowStatus("开始合并...");
                         Doing = true;
                         try
@@ -144,7 +150,7 @@ namespace Just.WPF.Views.MongoDBTool
                 var caches = ReadMongoJson(text);
                 foreach (var cache in caches)
                 {
-                    if (!SysProfiles.Any(c => Same(c, cache)))
+                    if (!SysProfiles.Any(c => Equals(c, cache)))
                     {
                         MainWindow.DispatcherInvoke(() => { SysProfiles.Add(cache); });
                         //移除_id
@@ -198,11 +204,21 @@ namespace Just.WPF.Views.MongoDBTool
                 _execute = _execute ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
                     if (SysProfiles == null) return;
+                    if (Tree.Children[0].IsEnable != true)
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("数据冲突，请修正后再执行！(已标红显示)"); });
+                        return;
+                    }
+                    if (string.IsNullOrWhiteSpace(MongoDBAddress))
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("链接地址不能为空"); });
+                        return;
+                    }
                     Doing = true;
                     MainWindow.Instance.ShowStatus("同步...");
                     try
                     {
-                        if(!HasDBAction || MessageWin.Confirm("同步将会立刻影响系统数据，执行前自动完整备份，确定同步？") == true)
+                        if (!HasDBAction || MessageWin.Confirm("同步将会立刻影响系统数据，执行前自动完整备份，确定同步？") == true)
                         {
                             //查询原数据
                             var timeoutMS = 3000;
@@ -280,13 +296,17 @@ namespace Just.WPF.Views.MongoDBTool
                             MainWindow.DispatcherInvoke(() => { NotifyWin.Info(HasDBAction ? "同步成功" : "检查完成"); });
                         }
                     }
-                    catch(TimeoutException ex)
+                    catch (TimeoutException)
                     {
-                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error("连接超时!"); });
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error("连接超时！", "同步错误"); });
+                    }
+                    catch (MongoConfigurationException ex)
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error("请检查【链接地址】是否正确！\n" + ex.Message, "同步错误"); });
                     }
                     catch (Exception ex)
                     {
-                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error("同步错误：" + ex.Message); });
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error(ex.Message, "同步错误"); });
                     }
                     MainWindow.Instance.ShowStatus();
                     Doing = false;
@@ -423,16 +443,16 @@ namespace Just.WPF.Views.MongoDBTool
                     key = $"[{parent.Children.Count}]";
                 }
             }
-            var node = new MongoNode { Key = key, IsEnable = parent.IsEnable ?? true };
+            var node = new MongoNode { Key = key, IsEnable = parent.IsEnable ?? true, Foreground = (SolidColorBrush)Application.Current.FindResource("NormalForeBrush") };
             if (value == null)
             {
                 node.Value = "null";
                 node.Type = "Null";
                 node.ImagePath = @"\Images\null.png";
             }
-            else if(value is ObjectId id)
+            else if (value is ObjectId id)
             {
-                if(id == ObjectId.Empty)
+                if (id == ObjectId.Empty)
                 {
                     node = null;
                 }
@@ -485,20 +505,33 @@ namespace Just.WPF.Views.MongoDBTool
             else
             {
                 var props = value.GetType().GetProperties();
-                node.Value = $"{{{props.Length}}}";
+                node.Value = string.Empty;// $"{{{props.Length}}}";
                 node.ImagePath = @"\Images\obj.png";
                 node.Type = nameof(Object);
                 if (value is CacheSysProfileMode cache)
                 {
                     node.Value += cache.Display;
-                    node.IsEnable = !parent.Children.Any(n => n.Key == node.Key);
+                    var exists = parent.Children.Where(n => n.Key == node.Key);
+                    if (exists.Any())
+                    {
+                        foreach (var item in exists)
+                        {
+                            item.IsEnable = false;
+                            item.Foreground = (SolidColorBrush)Application.Current.FindResource("RedBrush");
+                        }
+                        node.IsEnable = false;
+                        node.Foreground = (SolidColorBrush)Application.Current.FindResource("RedBrush");
+                    }
                 }
                 foreach (var item in props)
                 {
                     AddTreeNode(item.Name, item.GetValue(value), node);
                 }
             }
-            if (node != null) MainWindow.DispatcherInvoke(() => { parent.Children.Add(node); });
+            if (node != null) MainWindow.DispatcherInvoke(() =>
+            {
+                parent.Children.Add(node);
+            });
             return node;
         }
         private MongoNode AddBsonValueNode(string key, BsonValue v, MongoNode parent)
@@ -559,7 +592,7 @@ namespace Just.WPF.Views.MongoDBTool
         #endregion
 
         #region 菜单
-        static string _findText = string.Empty;
+        public static string FindText { get; set; } = string.Empty;
         private ICommand _Find;
         public ICommand Find
         {
@@ -570,10 +603,10 @@ namespace Just.WPF.Views.MongoDBTool
                     _ = _ ?? GetSelectedItem();
                     MainWindow.DispatcherInvoke(() =>
                     {
-                        var text = MessageWin.Input(_findText);
+                        var text = MessageWin.Input(FindText);
                         if (string.IsNullOrEmpty(text)) return;
-                        _findText = text;
-                        var result = FindNextItem(_, _findText);
+                        FindText = text;
+                        var result = FindNextItem(_, FindText);
                         if (result == null)
                         {
                             NotifyWin.Warn("未找到任何结果", "查找");
@@ -591,7 +624,7 @@ namespace Just.WPF.Views.MongoDBTool
                 _FindNext = _FindNext ?? new RelayCommand<MongoNode>(_ =>
                 {
                     _ = _ ?? GetSelectedItem();
-                    var result = FindNextItem(_, _findText);
+                    var result = FindNextItem(_, FindText);
                     if (result == null)
                     {
                         MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("未找到任何结果", "查找"); });

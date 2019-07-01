@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Media;
 
 namespace Just.WPF.Views.MongoDBTool
 {
@@ -18,6 +19,7 @@ namespace Just.WPF.Views.MongoDBTool
         public MongoNodeCollection Children { get; set; } = new MongoNodeCollection();
         public bool IsExpanded { get; set; }
         public bool IsSelected { get; set; }
+        public Brush Foreground { get; set; }
 
         public MongoNode this[string key]
         {

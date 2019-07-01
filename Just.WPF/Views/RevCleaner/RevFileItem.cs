@@ -18,5 +18,9 @@ namespace Just.WPF.Views.RevCleaner
         public ObservableCollection<RevFileItem> Children { get; set; } = new ObservableCollection<RevFileItem>();
         public bool IsExpanded { get; set; }
         public bool IsSelected { get; set; }
+
+
+        public int FileCount = 0;
+        public int FolderCount = 0;
     }
 }

@@ -19,6 +19,7 @@ namespace Just.WPF.Converters
             CollapseWhenInvisible = collapsewhenInvisible;
         }
         public bool CollapseWhenInvisible { get; set; }
+        public bool Reverse { get; set; }
 
         public Visibility FalseVisible
         {
@@ -38,15 +39,19 @@ namespace Just.WPF.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
-                return Visibility.Visible;
-            return (bool)value ? Visibility.Visible : FalseVisible;
+                return Reverse ? FalseVisible : Visibility.Visible;
+            var trueOrFalse = (bool)value;
+            if (Reverse) trueOrFalse = !trueOrFalse;
+            return trueOrFalse ? Visibility.Visible : FalseVisible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null)
-                return true;
-            return ((Visibility)value == Visibility.Visible);
+                return !Reverse;
+            var trueOrFalse = ((Visibility)value == Visibility.Visible);
+            if (Reverse) trueOrFalse = !trueOrFalse;
+            return trueOrFalse;
         }
     }
 }

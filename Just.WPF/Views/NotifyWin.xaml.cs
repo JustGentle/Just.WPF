@@ -88,5 +88,10 @@ namespace Just.WPF.Views
             NotifyTops.Remove(notifyTop);
         }
 
+        private void Border_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            this.DragMove();
+            e.Handled = true;
+        }
     }
 }

@@ -247,8 +247,8 @@ namespace Just.WPF.Views.RevCleaner
                 Path = folder,
                 IsKeep = false,
                 IsExpanded = folder == dist,
-                OrigFile = $"[{files.Count} 个文件]",
-                RevFile = $"[{folders.Count} 个文件夹]",
+                FileCount = files.Count,
+                FolderCount = folders.Count
             };
 
             var items = new List<RevFileItem>();
@@ -280,6 +280,11 @@ namespace Just.WPF.Views.RevCleaner
                 items.Add(childItem);
                 files.RemoveAt(0);
             }
+            //统计信息
+            parent.FileCount += folderItem.FileCount;
+            parent.FolderCount += folderItem.FolderCount;
+            folderItem.OrigFile = $"[{folderItem.FileCount} 个文件]";
+            folderItem.RevFile = $"[{folderItem.FolderCount} 个文件夹]";
 
             //排序:文件夹在前>按修改时间倒序>按名称
             folderItem.Children = new ObservableCollection<RevFileItem>(
@@ -384,8 +389,24 @@ namespace Just.WPF.Views.RevCleaner
             tokenSource = new CancellationTokenSource();
             Task.Run(() =>
             {
+                bool? isConfirm = null;
+                MainWindow.DispatcherInvoke(() =>
+                {
+                    isConfirm = MessageWin.Confirm("即将删除多余补丁文件，是否确定？");
+                });
+                if (isConfirm != true)
+                {
+                    Status = ActionStatus.Begin;
+                    return;
+                }
                 if (Backup)
                 {
+                    if (string.IsNullOrWhiteSpace(BackupFolder))
+                    {
+                        Status = ActionStatus.Begin;
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn($"备份目录不能为空"); });
+                        return;
+                    }
                     try
                     {
                         Directory.CreateDirectory(BackupFolder);
@@ -609,7 +630,7 @@ namespace Just.WPF.Views.RevCleaner
                 item.IsSelected = true;
                 return item;
             }
-            if(item.Children?.Any()?? false)
+            if (item.Children?.Any() ?? false)
             {
                 foreach (var child in item.Children)
                 {
