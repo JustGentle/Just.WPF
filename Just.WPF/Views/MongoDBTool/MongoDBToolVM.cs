@@ -140,13 +140,17 @@ namespace Just.WPF.Views.MongoDBTool
                 var endcoding = EncodingGetter.GetEncoding(item);
                 var text = File.ReadAllText(item, endcoding);
                 text = text.Trim();
+
                 var caches = ReadMongoJson(text);
                 foreach (var cache in caches)
                 {
-                    if (!SysProfiles.Any(c => Equals(c, cache)))
+                    if (!SysProfiles.Any(c => Same(c, cache)))
                     {
                         MainWindow.DispatcherInvoke(() => { SysProfiles.Add(cache); });
-                        json.AppendLine(text);
+                        //移除_id
+                        var j = MongoDBHelper.ToJson(cache);
+                        j = Regex.Replace(j, @"\s*""_id""[^\r\n]*", "");
+                        json.AppendLine(j);
                     }
                 }
             }

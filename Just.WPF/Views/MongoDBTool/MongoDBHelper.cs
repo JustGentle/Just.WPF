@@ -149,7 +149,7 @@ namespace Just.WPF.Views.MongoDBTool
         }
         public static string ToJson<T>(T doc)
         {
-            return doc.ToJson();
+            return doc.ToJson(new MongoDB.Bson.IO.JsonWriterSettings { Indent = true });
         }
         #endregion
     }
