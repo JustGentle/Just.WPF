@@ -430,6 +430,19 @@ namespace Just.WPF.Views.MongoDBTool
                 node.Type = "Null";
                 node.ImagePath = @"\Images\null.png";
             }
+            else if(value is ObjectId id)
+            {
+                if(id == ObjectId.Empty)
+                {
+                    node = null;
+                }
+                else
+                {
+                    node.Value = value.ToString();
+                    node.Type = value.GetType().Name;
+                    node.ImagePath = @"\Images\id.png";
+                }
+            }
             else if (value is string || value is bool || value is int || value is long || value is double || value is decimal || value is ObjectId)
             {
                 node.Value = value.ToString();
