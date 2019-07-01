@@ -237,9 +237,19 @@ namespace Just.WPF.Views.RevCleaner
         private RevFileItem ScanFolder(string folder, RevFileItem parent)
         {
             MainWindow.Instance.ShowStatus($"扫描目录...{folder}");
-            var folderItem = new RevFileItem { IsFolder = true, ImagePath = @"\Images\folder.png", Name = Path.GetFileName(folder), Path = folder, IsKeep = false, IsExpanded = folder == dist };
             var folders = Directory.GetDirectories(folder).ToList();
             var files = Directory.GetFiles(folder).ToList();
+            var folderItem = new RevFileItem
+            {
+                IsFolder = true,
+                ImagePath = @"\Images\folder.png",
+                Name = Path.GetFileName(folder),
+                Path = folder,
+                IsKeep = false,
+                IsExpanded = folder == dist,
+                OrigFile = $"[{files.Count} 个文件]",
+                RevFile = $"[{folders.Count} 个文件夹]",
+            };
 
             var items = new List<RevFileItem>();
             while (folders.Any())
