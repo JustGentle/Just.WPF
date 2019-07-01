@@ -184,7 +184,7 @@
                         Width="50"
                         DisplayMemberBinding="{Binding Type}"
                         Header="类型" />
-                    <GridViewColumn Width="50">
+                    <!--<GridViewColumn Width="50">
                         <GridViewColumnHeader ToolTip="√执行 □排除">
                             <TextBlock Foreground="Red">执行</TextBlock>
                         </GridViewColumnHeader>
@@ -193,7 +193,7 @@
                                 <CheckBox VerticalAlignment="Center" IsChecked="{Binding Path=IsEnable, Mode=TwoWay, NotifyOnSourceUpdated=True}" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
+                    </GridViewColumn>-->
                     <!--<GridViewColumn Width="150" Header="文件名" DisplayMemberBinding="{Binding FileName}"/>
                     <GridViewColumn Width="150" Header="修改时间" DisplayMemberBinding="{Binding UpdateTime}"/>-->
                 </GenControls:TreeListView.Columns>
