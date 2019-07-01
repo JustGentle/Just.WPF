@@ -176,6 +176,13 @@ namespace Just.WPF.Views.MongoDBTool
         public bool IsRemoveDup { get; set; } = true;
         public bool IsDeleteOver { get; set; } = false;
         public bool IsShowSame { get; set; } = true;
+        public bool HasDBAction
+        {
+            get
+            {
+                return IsAdd || IsUpdate || IsRemoveDup || IsDeleteOver;
+            }
+        }
 
         private MongoDBHelper mongo = null;
 
@@ -191,7 +198,7 @@ namespace Just.WPF.Views.MongoDBTool
                     MainWindow.Instance.ShowStatus("同步...");
                     try
                     {
-                        if((!IsAdd && !IsDeleteOver && !IsRemoveDup && !IsUpdate) || MessageWin.Confirm("同步将会立刻影响系统数据，执行前自动完整备份，确定同步？") == true)
+                        if(!HasDBAction || MessageWin.Confirm("同步将会立刻影响系统数据，执行前自动完整备份，确定同步？") == true)
                         {
                             //查询原数据
                             var timeoutMS = 3000;
@@ -266,7 +273,7 @@ namespace Just.WPF.Views.MongoDBTool
                             {
                                 UpdateValueByChildrenCount(Tree.Children[i]);
                             }
-                            MainWindow.DispatcherInvoke(() => { NotifyWin.Info("同步成功"); });
+                            MainWindow.DispatcherInvoke(() => { NotifyWin.Info(HasDBAction ? "同步成功" : "检查完成"); });
                         }
                     }
                     catch(TimeoutException ex)
@@ -295,7 +302,7 @@ namespace Just.WPF.Views.MongoDBTool
         }
         private void Backup(IEnumerable<CacheSysProfileMode> collection, string collectionName)
         {
-            if (!IsAdd && !IsDeleteOver && !IsRemoveDup && !IsUpdate) return;
+            if (!HasDBAction) return;
             MainWindow.Instance.ShowStatus("备份...");
             var names = mongo.Database.ListCollectionNames().ToList().Where(n => n.StartsWith(collectionName));
             var bak = $"{collectionName}_{DateTime.Now:yyMMddHHmmssfff}";

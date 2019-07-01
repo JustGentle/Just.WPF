@@ -112,8 +112,17 @@
                 Grid.Column="3"
                 Margin="5,0,0,0"
                 Command="{Binding Execute}"
-                Style="{StaticResource MainButton}">
-                同步
+                IsEnabled="{Binding SysProfiles,Converter={StaticResource ValueToBoolConverter}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource MainButton}">
+                        <Setter Property="Content" Value="同步"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasDBAction}" Value="False">
+                                <Setter Property="Content" Value="检查"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
             </Button>
         </Grid>
         <Grid Grid.Row="2" Margin="0,5,0,0">
@@ -124,7 +133,8 @@
                 <Button
                     Margin="2,0"
                     Padding="3"
-                    Command="{Binding SwitchView}">
+                    Command="{Binding SwitchView}"
+                    IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}">
                     <Button.Style>
                         <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
                             <Setter Property="Content" Value="查看脚本" />
@@ -139,7 +149,8 @@
                 <Button
                     Padding="3"
                     Command="{Binding CopyJson}"
-                    Style="{StaticResource MainButton}">
+                    Style="{StaticResource MainButton}"
+                    IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}">
                     复制脚本
                 </Button>
             </StackPanel>
@@ -193,7 +204,7 @@
                             CommandParameter="{Binding}"
                             Header="复制脚本"
                             InputGestureText="Ctrl+C"
-                            IsEnabled="{Binding Converter={StaticResource ValueToBoolConverter}}" />
+                            IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}" />
                         <Separator />
                         <MenuItem
                             Command="{Binding PlacementTarget.Parent.DataContext.Find, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
