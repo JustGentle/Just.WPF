@@ -38,4 +38,18 @@
         <Setter Property="Stroke" Value="Black" />
         <Setter Property="Data" Value="{DynamicResource ClosePathData}" />
     </Style>
+    <PathGeometry x:Key="FilePathData" Figures="M0,0 20,0 30,10 30,36 0,36Z M20,0 20,10 30,10"/>
+    <Style x:Key="FilePath" TargetType="Path">
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Stroke" Value="Black" />
+        <Setter Property="Data" Value="{DynamicResource FilePathData}"/>
+    </Style>
+    <PathGeometry x:Key="FolderPathData" Figures="M0,0 10,0 15,5 36,5 36,32 0,32Z"/>
+    <Style x:Key="FolderPath" TargetType="Path">
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Stroke" Value="Black" />
+        <Setter Property="Data" Value="{DynamicResource FolderPathData}"/>
+    </Style>
 </ResourceDictionary>

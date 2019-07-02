@@ -79,6 +79,7 @@
     <Compile Include="Extended\GenControls\TreeListView\TreeGridViewRowPresenter.cs" />
     <Compile Include="Extended\GenControls\TreeListView\TreeListView.cs" />
     <Compile Include="Extended\GenControls\TreeListView\TreeListViewItem.cs" />
+    <Compile Include="Extended\GenControls\TreeListView\ValueToBoolConverter.cs" />
     <Compile Include="Extended\MVVM\Base\DelegateCommand.cs" />
     <Compile Include="Extended\MVVM\Base\EventAttachCommandFull\Attachment.cs" />
     <Compile Include="Extended\MVVM\Base\EventAttachCommandFull\CommandBase.cs" />

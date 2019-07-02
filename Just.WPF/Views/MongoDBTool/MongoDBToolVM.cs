@@ -21,7 +21,7 @@ namespace Just.WPF.Views.MongoDBTool
     public class MongoDBToolVM
     {
         public bool Doing { get; set; }
-        public string JsonFolder { get; set; } = Directory.GetCurrentDirectory();
+        public string JsonPath { get; set; } = Directory.GetCurrentDirectory();
         public MongoNode Tree { get; set; } = new MongoNode();
 
         #region 视图
@@ -40,9 +40,31 @@ namespace Just.WPF.Views.MongoDBTool
         }
         #endregion
 
-        #region 合并
+        #region 读取
         public string Json { get; set; }
         public ObservableCollection<CacheSysProfileMode> SysProfiles { get; set; }
+
+        private ICommand _JsonFileBrowser;
+        public ICommand JsonFileBrowser
+        {
+            get
+            {
+                _JsonFileBrowser = _JsonFileBrowser ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    var dlg = new CommonOpenFileDialog
+                    {
+                        Multiselect = true
+                    };
+                    dlg.Filters.Add(new CommonFileDialogFilter("脚本文件", "*.txt;*.json"));
+
+                    if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
+                    {
+                        this.JsonPath = string.Join(",", dlg.FileNames);
+                    }
+                });
+                return _JsonFileBrowser;
+            }
+        }
 
         private ICommand _JsonFolderBrowser;
         public ICommand JsonFolderBrowser
@@ -58,7 +80,7 @@ namespace Just.WPF.Views.MongoDBTool
 
                     if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
                     {
-                        this.JsonFolder = dlg.FileName;
+                        this.JsonPath = dlg.FileName;
                     }
                 });
                 return _JsonFolderBrowser;
@@ -76,7 +98,7 @@ namespace Just.WPF.Views.MongoDBTool
                     MainWindow.DispatcherInvoke(() =>
                     {
                         Clipboard.SetText(Json);
-                        NotifyWin.Info("已复制到剪贴板", "合并结果");
+                        NotifyWin.Info("已复制到剪贴板", "读取结果");
                     });
                 });
                 return _CopyJson;
@@ -84,80 +106,102 @@ namespace Just.WPF.Views.MongoDBTool
         }
 
         private StringBuilder json;
-        private ICommand _Merge;
-        public ICommand Merge
+        private ICommand _ReadJson;
+        public ICommand ReadJson
         {
             get
             {
-                _Merge = _Merge ?? new RelayCommand<RoutedEventArgs>(_ =>
+                _ReadJson = _ReadJson ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
                     Task.Run(() =>
                     {
-                        if (string.IsNullOrWhiteSpace(JsonFolder))
+                        if (string.IsNullOrWhiteSpace(JsonPath))
                         {
-                            MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("脚本目录不能为空"); });
+                            MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("脚本路径不能为空"); });
                             return;
                         }
-                        MainWindow.Instance.ShowStatus("开始合并...");
+                        MainWindow.Instance.ShowStatus("开始读取...");
                         Doing = true;
                         try
                         {
                             json = new StringBuilder();
                             SysProfiles = new ObservableCollection<CacheSysProfileMode>();
-                            Scan(JsonFolder);
+                            Scan(JsonPath);
                             Json = Format(json.ToString());
                             CopyJson.Execute(_);
                             MainWindow.DispatcherInvoke(() => { Tree = new MongoNode(); });
                             MainWindow.Instance.ShowStatus("加载树...");
-                            var merge = AddTreeNode("{合并}", SysProfiles, Tree);
-                            merge.Children = new MongoNodeCollection(merge.Children.ToList().OrderBy(n => n.Key));
-                            merge.SetEnableByChildren();
-                            merge.IsExpanded = true;
+                            var node = AddTreeNode("[读取结果]", SysProfiles, Tree);
+                            node.Children = new MongoNodeCollection(node.Children.ToList().OrderBy(n => n.Key));
+                            node.SetEnableByChildren();
+                            node.IsExpanded = true;
 
                         }
                         catch (Exception ex)
                         {
-                            MainWindow.DispatcherInvoke(() => { NotifyWin.Error("合并错误：" + ex.Message); });
+                            MainWindow.DispatcherInvoke(() => { NotifyWin.Error("读取错误：" + ex.Message); });
                         }
                         Doing = false;
                         MainWindow.Instance.ShowStatus();
                     });
                 });
-                return _Merge;
+                return _ReadJson;
             }
         }
 
-        private void Scan(string folder)
+        private void Scan(string path)
         {
-            MainWindow.Instance.ShowStatus("扫描..." + folder);
-            if (!Directory.Exists(folder))
+            MainWindow.Instance.ShowStatus("扫描..." + path);
+            if (path.Contains(",") || File.Exists(path))
             {
-                MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("目录不存在：" + JsonFolder); });
+                var fs = path.Split(',');
+                foreach (var item in fs)
+                {
+                    ScanFile(item);
+                }
                 return;
             }
-            var folders = Directory.GetDirectories(folder);
+            if (!Directory.Exists(path))
+            {
+                MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("路径不存在：" + JsonPath); });
+                return;
+            }
+            var folders = Directory.GetDirectories(path);
             foreach (var item in folders)
             {
                 Scan(item);
             }
-            var files = Directory.GetFiles(folder);
+            var files = Directory.GetFiles(path,"*.txt");
             foreach (var item in files)
             {
-                var endcoding = EncodingGetter.GetEncoding(item);
-                var text = File.ReadAllText(item, endcoding);
-                text = text.Trim();
+                ScanFile(item);
+            }
+            files = Directory.GetFiles(path, "*.json");
+            foreach (var item in files)
+            {
+                ScanFile(item);
+            }
+        }
+        private void ScanFile(string file)
+        {
+            var endcoding = EncodingGetter.GetEncoding(file);
+            var text = File.ReadAllText(file, endcoding);
+            text = text.Trim();
 
-                var caches = ReadMongoJson(text);
-                foreach (var cache in caches)
+            var caches = ReadMongoJson(text);
+            foreach (var cache in caches)
+            {
+                if(string.IsNullOrEmpty( cache.Mode) || string.IsNullOrEmpty(cache.Item))
                 {
-                    if (!SysProfiles.Any(c => Equals(c, cache)))
-                    {
-                        MainWindow.DispatcherInvoke(() => { SysProfiles.Add(cache); });
-                        //移除_id
-                        var j = MongoDBHelper.ToJson(cache);
-                        j = Regex.Replace(j, @"\s*""_id""[^\r\n]*", "");
-                        json.AppendLine(j);
-                    }
+                    continue;
+                }
+                if (!SysProfiles.Any(c => Equals(c, cache)))
+                {
+                    MainWindow.DispatcherInvoke(() => { SysProfiles.Add(cache); });
+                    //移除_id
+                    var j = MongoDBHelper.ToJson(cache);
+                    j = Regex.Replace(j, @"\s*""_id""[^\r\n]*", "");
+                    json.AppendLine(j);
                 }
             }
         }
@@ -206,7 +250,9 @@ namespace Just.WPF.Views.MongoDBTool
                     if (SysProfiles == null) return;
                     if (Tree.Children[0].IsEnable != true)
                     {
-                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("数据冲突，请修正后再执行！(已标红显示)"); });
+                        var node = Tree.Children[0].Children.FirstOrDefault(n => n.IsEnable != true);
+                        if (node != null) node.IsSelected = true;
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("数据冲突，请修正后再执行！"); });
                         return;
                     }
                     if (string.IsNullOrWhiteSpace(MongoDBAddress))
@@ -218,7 +264,7 @@ namespace Just.WPF.Views.MongoDBTool
                     MainWindow.Instance.ShowStatus("同步...");
                     try
                     {
-                        if (!HasDBAction || MessageWin.Confirm("同步将会立刻影响系统数据，执行前自动完整备份，确定同步？") == true)
+                        if (!HasDBAction || MessageWin.Confirm("同步将会立刻影响系统数据，执行前自动【完整备份】，确定同步？") == true)
                         {
                             //查询原数据
                             var timeoutMS = 3000;
@@ -327,6 +373,7 @@ namespace Just.WPF.Views.MongoDBTool
         private void Backup(IEnumerable<CacheSysProfileMode> collection, string collectionName)
         {
             if (!HasDBAction) return;
+            if (!collection?.Any() ?? true) return;
             MainWindow.Instance.ShowStatus("备份...");
             var names = mongo.Database.ListCollectionNames().ToList().Where(n => n.StartsWith(collectionName));
             var bak = $"{collectionName}_{DateTime.Now:yyMMddHHmmssfff}";
@@ -359,6 +406,7 @@ namespace Just.WPF.Views.MongoDBTool
                 || item.Category != eqItem.Category
                 || item.Visible != eqItem.Visible
                 || item.EnumValue?.ToJson() != eqItem.EnumValue?.ToJson()
+                || item.DynamicValue?.ToJson() != eqItem.DynamicValue?.ToJson()
             );
         }
 
@@ -443,7 +491,7 @@ namespace Just.WPF.Views.MongoDBTool
                     key = $"[{parent.Children.Count}]";
                 }
             }
-            var node = new MongoNode { Key = key, IsEnable = parent.IsEnable ?? true, Foreground = (SolidColorBrush)Application.Current.FindResource("NormalForeBrush") };
+            var node = new MongoNode { Key = key, IsEnable = parent.IsEnable ?? true };
             if (value == null)
             {
                 node.Value = "null";
@@ -600,20 +648,33 @@ namespace Just.WPF.Views.MongoDBTool
             {
                 _Find = _Find ?? new RelayCommand<MongoNode>(_ =>
                 {
-                    _ = _ ?? GetSelectedItem();
+                    if (string.IsNullOrEmpty(FindText)) return;
+                    var result = FindNextItem(null, FindText);
+                    if (result == null)
+                    {
+                        NotifyWin.Warn("未找到任何结果", "查找");
+                    }
+                });
+                return _Find;
+            }
+        }
+        private ICommand _FindDialog;
+        public ICommand FindDialog
+        {
+            get
+            {
+                _FindDialog = _FindDialog ?? new RelayCommand<MongoNode>(_ =>
+                {
+                    if (IsJsonView) return;
                     MainWindow.DispatcherInvoke(() =>
                     {
                         var text = MessageWin.Input(FindText);
                         if (string.IsNullOrEmpty(text)) return;
                         FindText = text;
-                        var result = FindNextItem(_, FindText);
-                        if (result == null)
-                        {
-                            NotifyWin.Warn("未找到任何结果", "查找");
-                        }
+                        Find.Execute(_);
                     });
                 });
-                return _Find;
+                return _FindDialog;
             }
         }
         private ICommand _FindNext;
@@ -623,14 +684,35 @@ namespace Just.WPF.Views.MongoDBTool
             {
                 _FindNext = _FindNext ?? new RelayCommand<MongoNode>(_ =>
                 {
+                    if (IsJsonView) return;
+                    if (string.IsNullOrEmpty(FindText)) return;
                     _ = _ ?? GetSelectedItem();
                     var result = FindNextItem(_, FindText);
                     if (result == null)
                     {
-                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("未找到任何结果", "查找"); });
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("未找到下一个", "查找"); });
                     }
                 });
                 return _FindNext;
+            }
+        }
+        private ICommand _FindPrev;
+        public ICommand FindPrev
+        {
+            get
+            {
+                _FindPrev = _FindPrev ?? new RelayCommand<MongoNode>(_ =>
+                {
+                    if (IsJsonView) return;
+                    if (string.IsNullOrEmpty(FindText)) return;
+                    _ = _ ?? GetSelectedItem();
+                    var result = FindNextItem(_, FindText, true);
+                    if (result == null)
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("未找到上一个", "查找"); });
+                    }
+                });
+                return _FindPrev;
             }
         }
         private MongoNode GetSelectedItem(MongoNode node = null)
@@ -647,15 +729,16 @@ namespace Just.WPF.Views.MongoDBTool
             }
             return null;
         }
-        private MongoNode FindNextItem(MongoNode item, string findText)
+        private MongoNode FindNextItem(MongoNode item, string findText, bool previous = false)
         {
             item = item ?? Tree;
             MongoNode result = null;
             if (item.Children?.Any() ?? false)
             {
-                foreach (var child in item.Children)
+                var list = previous ? item.Children.Reverse() : item.Children;
+                foreach (var child in list)
                 {
-                    result = FindItem(child, findText);
+                    result = FindItem(child, findText, previous);
                     if (result != null)
                     {
                         item.IsExpanded = true;
@@ -663,26 +746,26 @@ namespace Just.WPF.Views.MongoDBTool
                     }
                 }
             }
-            return FindParentNext(item, findText);
+            return FindParentNext(item, findText, previous);
         }
-        private MongoNode FindParentNext(MongoNode item, string findText)
+        private MongoNode FindParentNext(MongoNode item, string findText, bool previous = false)
         {
             MongoNode result = null;
             var parent = GetParentItem(item);
             if (parent != null)
             {
                 var startIndex = parent.Children.IndexOf(item) + 1;
-                for (int i = startIndex; i < parent.Children.Count; i++)
+                var list = previous ? parent.Children.Take(startIndex - 1).Reverse() : parent.Children.Skip(startIndex);
+                foreach (var child in list)
                 {
-                    var child = parent.Children[i];
-                    result = FindItem(child, findText);
+                    result = FindItem(child, findText, previous);
                     if (result != null)
                     {
                         parent.IsExpanded = true;
                         return result;
                     }
                 }
-                return FindParentNext(parent, findText);
+                return FindParentNext(parent, findText, previous);
             }
             return result;
         }
@@ -698,7 +781,7 @@ namespace Just.WPF.Views.MongoDBTool
             }
             return null;
         }
-        private MongoNode FindItem(MongoNode item, string findText)
+        private MongoNode FindItem(MongoNode item, string findText, bool previous = false)
         {
             MongoNode result = null;
             if (item.Key?.ToLower().Contains(findText.ToLower()) ?? false)
@@ -713,9 +796,10 @@ namespace Just.WPF.Views.MongoDBTool
             }
             if (item.Children?.Any() ?? false)
             {
-                foreach (var child in item.Children)
+                var list = previous ? item.Children.Reverse() : item.Children;
+                foreach (var child in list)
                 {
-                    result = FindItem(child, findText);
+                    result = FindItem(child, findText, previous);
                     if (result != null)
                     {
                         item.IsExpanded = true;
@@ -729,7 +813,7 @@ namespace Just.WPF.Views.MongoDBTool
 
         public void ReadSetting()
         {
-            JsonFolder = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(JsonFolder)}", JsonFolder);
+            JsonPath = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(JsonPath)}", JsonPath);
             MongoDBAddress = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(MongoDBAddress)}", MongoDBAddress);
             IsAdd = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(IsAdd)}", IsAdd);
             IsUpdate = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(IsUpdate)}", IsUpdate);
@@ -739,7 +823,7 @@ namespace Just.WPF.Views.MongoDBTool
         }
         public void WriteSetting()
         {
-            MainWindow.WriteSetting($"{nameof(MongoDBTool)}.{nameof(JsonFolder)}", JsonFolder);
+            MainWindow.WriteSetting($"{nameof(MongoDBTool)}.{nameof(JsonPath)}", JsonPath);
             MainWindow.WriteSetting($"{nameof(MongoDBTool)}.{nameof(MongoDBAddress)}", MongoDBAddress);
             MainWindow.WriteSetting($"{nameof(MongoDBTool)}.{nameof(IsAdd)}", IsAdd);
             MainWindow.WriteSetting($"{nameof(MongoDBTool)}.{nameof(IsUpdate)}", IsUpdate);

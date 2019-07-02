@@ -108,7 +108,8 @@
                 Cursor="Hand"
                 Style="{DynamicResource TitleBorder}">
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                    <Path Width="40" Style="{DynamicResource LogoPath}" />
+                    <Image Source="/hongfan.ico" Stretch="Uniform" Height="32"/>
+                    <!--<Path Height="32" Style="{DynamicResource LogoPath}" />-->
                     <TextBlock
                         Margin="10,0,0,0"
                         FontSize="24"

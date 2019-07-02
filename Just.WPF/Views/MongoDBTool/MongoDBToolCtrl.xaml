@@ -25,9 +25,10 @@
             Modifiers="Ctrl" />
         <KeyBinding
             Key="F"
-            Command="{Binding Find}"
+            Command="{Binding FindDialog}"
             Modifiers="Ctrl" />
         <KeyBinding Key="F3" Command="{Binding FindNext}" />
+        <KeyBinding Key="F3" Modifiers="Alt" Command="{Binding FindPrev}" />
     </UserControl.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
@@ -47,24 +48,37 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock VerticalAlignment="Center">脚本目录:</TextBlock>
+            <TextBlock VerticalAlignment="Center">脚本路径:</TextBlock>
             <TextBox
                 Grid.Column="1"
                 Margin="5,0,0,0"
-                Text="{Binding JsonFolder}" />
+                Text="{Binding JsonPath}" />
             <Button
                 Grid.Column="2"
                 Margin="5,0,0,0"
-                Command="{Binding JsonFolderBrowser}">
-                ...
+                Padding="5,0"
+                Command="{Binding JsonFolderBrowser}"
+                ToolTip="选择文件夹">
+                <Image Source="/Images/folder.png" Height="22"/>
+                <!--<Path Style="{DynamicResource FolderPath}" Height="12"/>-->
             </Button>
             <Button
                 Grid.Column="3"
+                Margin="-1,0,0,0"
+                Padding="5,0"
+                Command="{Binding JsonFileBrowser}"
+                ToolTip="选择文件">
+                <Image Source="/Images/file.png" Height="22"/>
+                <!--<Path Style="{DynamicResource FilePath}" Height="12"/>-->
+            </Button>
+            <Button
+                Grid.Column="4"
                 Margin="5,0,0,0"
-                Command="{Binding Merge}"
+                Command="{Binding ReadJson}"
                 Style="{StaticResource MainButton}">
-                合并
+                读取
             </Button>
         </Grid>
         <Grid Grid.Row="1" Margin="0,5,0,0">
@@ -87,7 +101,8 @@
                 <CheckBox
                     Margin="5,0"
                     VerticalAlignment="Center"
-                    IsChecked="{Binding IsUpdate}">
+                    IsChecked="{Binding IsUpdate}"
+                    ToolTip="根据关键字,保留当前开关值,更新其他字段（如默认值,显示文字等）">
                     执行更新
                 </CheckBox>
                 <CheckBox
@@ -99,13 +114,15 @@
                 <CheckBox
                     Margin="5,0"
                     VerticalAlignment="Center"
-                    IsChecked="{Binding IsDeleteOver}">
+                    IsChecked="{Binding IsDeleteOver}"
+                    ToolTip="不在所选脚本中的数据将被删除">
                     删除多余
                 </CheckBox>
                 <CheckBox
                     Margin="5,0"
                     VerticalAlignment="Center"
-                    IsChecked="{Binding IsShowSame}">
+                    IsChecked="{Binding IsShowSame}"
+                    ToolTip="显示与脚本完全一致的数据">
                     显示相同
                 </CheckBox>
             </WrapPanel>
@@ -120,6 +137,7 @@
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding HasDBAction}" Value="False">
                                 <Setter Property="Content" Value="检查"/>
+                                <Setter Property="ToolTip" Value="仅检查差异数据,不执行同步"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -131,8 +149,14 @@
                         Orientation="Horizontal"
                         Visibility="{Binding IsJsonView,Converter={StaticResource BoolReverseToVisibilityConverter}}">
                 <TextBlock>查找:</TextBlock>
-                <TextBox Width="300" Margin="5,0,0,0" Text="{Binding FindText}"/>
-                <Button Style="{StaticResource BlueButton}" Margin="5,0,0,0" Command="{Binding FindNext}">下一个</Button>
+                <TextBox Width="300" Margin="5,0,0,0" Text="{Binding FindText,UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding Find}" Key="Enter"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Style="{StaticResource BlueButton}" Margin="5,0,0,0" Command="{Binding Find}" ToolTip="从头查找（Ctrl+F）">查找</Button>
+                <Button Margin="5,0,0,0" Command="{Binding FindNext}" ToolTip="从当前选中位置向下查找（F3）">下一个</Button>
+                <Button Margin="5,0,0,0" Command="{Binding FindPrev}" ToolTip="从当前选中位置向上查找（Alt+F3）">上一个</Button>
             </StackPanel>
             <StackPanel
                 HorizontalAlignment="Right"
@@ -214,7 +238,7 @@
                             IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}" />
                         <Separator />
                         <MenuItem
-                            Command="{Binding PlacementTarget.Parent.DataContext.Find, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            Command="{Binding PlacementTarget.Parent.DataContext.FindDialog, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                             CommandParameter="{Binding}"
                             Header="查找"
                             InputGestureText="Ctrl+F" />
@@ -223,6 +247,11 @@
                             CommandParameter="{Binding}"
                             Header="查找下一个"
                             InputGestureText="F3" />
+                        <MenuItem
+                            Command="{Binding PlacementTarget.Parent.DataContext.FindPrev, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding}"
+                            Header="查找上一个"
+                            InputGestureText="Alt+F3" />
                     </ContextMenu>
                 </GenControls:TreeListView.ContextMenu>
             </GenControls:TreeListView>

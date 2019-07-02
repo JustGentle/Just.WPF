@@ -139,7 +139,14 @@ namespace Just.WPF.Views.MongoDBTool
             var matches = Regex.Matches(json, pattern);
             foreach (Match item in matches)
             {
-                result.Add(FromJson<T>(item.Value));
+                try
+                {
+                    result.Add(FromJson<T>(item.Value));
+                }
+                catch (Exception)
+                {
+                    //throw;
+                }
             }
             return result;
         }
