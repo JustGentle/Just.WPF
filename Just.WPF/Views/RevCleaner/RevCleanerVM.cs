@@ -145,6 +145,7 @@ namespace Just.WPF.Views.RevCleaner
                     }
                     catch (System.Exception ex)
                     {
+                        Logger.Error("清理补丁错误", ex);
                         MainWindow.DispatcherInvoke(() => { NotifyWin.Error("执行错误：" + ex.Message); });
                     }
                 });
@@ -413,6 +414,7 @@ namespace Just.WPF.Views.RevCleaner
                     }
                     catch (System.Exception ex)
                     {
+                        Logger.Error($"创建备份目录失败:{BackupFolder}", ex);
                         Status = ActionStatus.Begin;
                         MainWindow.DispatcherInvoke(() => { NotifyWin.Error($"创建备份目录失败:{BackupFolder}\n{ex.Message}"); });
                         return;
@@ -484,6 +486,7 @@ namespace Just.WPF.Views.RevCleaner
                     }
                     catch (System.Exception ex)
                     {
+                        Logger.Error($"清理补丁文件错误:{child.Path}", ex);
                         MainWindow.DispatcherInvoke(() => { NotifyWin.Error($"{child.Path}\n{ex.Message}"); });
                         i++;
                     }

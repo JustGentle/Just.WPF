@@ -143,9 +143,9 @@ namespace Just.WPF.Views.MongoDBTool
                 {
                     result.Add(FromJson<T>(item.Value));
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //throw;
+                    Logger.Error($"Json转换错误:\n{item.Value}", ex);
                 }
             }
             return result;

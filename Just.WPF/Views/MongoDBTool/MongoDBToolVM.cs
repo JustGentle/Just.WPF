@@ -139,6 +139,7 @@ namespace Just.WPF.Views.MongoDBTool
                         }
                         catch (Exception ex)
                         {
+                            Logger.Error("脚本读取错误", ex);
                             MainWindow.DispatcherInvoke(() => { NotifyWin.Error("读取错误：" + ex.Message); });
                         }
                         Doing = false;
@@ -342,16 +343,19 @@ namespace Just.WPF.Views.MongoDBTool
                             MainWindow.DispatcherInvoke(() => { NotifyWin.Info(HasDBAction ? "同步成功" : "检查完成"); });
                         }
                     }
-                    catch (TimeoutException)
+                    catch (TimeoutException ex)
                     {
+                        Logger.Error("MongoDB连接超时", ex);
                         MainWindow.DispatcherInvoke(() => { NotifyWin.Error("连接超时！", "同步错误"); });
                     }
                     catch (MongoConfigurationException ex)
                     {
+                        Logger.Error("MongoDB链接地址错误", ex);
                         MainWindow.DispatcherInvoke(() => { NotifyWin.Error("请检查【链接地址】是否正确！\n" + ex.Message, "同步错误"); });
                     }
                     catch (Exception ex)
                     {
+                        Logger.Error("MongoDB同步错误", ex);
                         MainWindow.DispatcherInvoke(() => { NotifyWin.Error(ex.Message, "同步错误"); });
                     }
                     MainWindow.Instance.ShowStatus();

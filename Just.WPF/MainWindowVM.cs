@@ -75,6 +75,7 @@ namespace Just.WPF
 #else
             var json = MainWindow.ReadSetting(nameof(MainMenu));
 #endif
+            Logger.Debug(json);
             try
             {
                 var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json ?? string.Empty) ?? new List<MenuNode>();
@@ -93,6 +94,7 @@ namespace Just.WPF
             }
             catch (Exception ex)
             {
+                Logger.Error("加载主菜单错误", ex);
                 NotifyWin.Error("加载主菜单错误:" + ex.Message);
             }
         }
