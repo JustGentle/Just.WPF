@@ -1,8 +1,10 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System.Collections.Generic;
 
 namespace Just.WPF.Views.MongoDBTool
 {
+    [BsonIgnoreExtraElements]
     public class CacheSysProfileMode
     {
         public ObjectId Id { get; set; }
