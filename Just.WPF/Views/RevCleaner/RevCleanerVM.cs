@@ -20,7 +20,17 @@ namespace Just.WPF.Views.RevCleaner
     public class RevCleanerVM
     {
         #region 属性
-        public string WebRootFolder { get; set; } = Directory.GetCurrentDirectory();
+        private string _WebRootFolder = Directory.GetCurrentDirectory();
+        public string WebRootFolder
+        {
+            get => _WebRootFolder;
+            set
+            {
+                _WebRootFolder = value;
+                Step = ActionStep.Scan;
+                Data = new RevFileItem { IsKeep = true };
+            }
+        }
         public bool Preview { get; set; } = true;
         public bool Backup { get; set; } = true;
         public string BackupFolder { get; set; }
