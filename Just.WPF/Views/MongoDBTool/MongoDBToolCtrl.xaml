@@ -57,7 +57,7 @@
                 Text="{Binding JsonPath}" />
             <Button
                 Grid.Column="2"
-                Margin="5,0,0,0"
+                Margin="-1,0,0,0"
                 Padding="5,0"
                 Command="{Binding JsonFolderBrowser}"
                 ToolTip="选择文件夹">
