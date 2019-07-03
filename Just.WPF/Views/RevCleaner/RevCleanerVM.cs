@@ -498,7 +498,14 @@ namespace Just.WPF.Views.RevCleaner
                             if (Backup)
                             {
                                 var bak = Path.Combine(BackupFolder, child.Path.Replace(WebRootFolder, "").TrimStart('\\'));
-                                Directory.CreateDirectory(Path.GetDirectoryName(bak));
+                                var dir = Path.GetDirectoryName(bak);
+                                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                                if (File.Exists(bak))
+                                {
+                                    //bak = GetFilePathNotExists(bak);
+                                    File.SetAttributes(bak, FileAttributes.Normal);
+                                    File.Delete(bak);
+                                }
                                 File.Move(child.Path, bak);
                             }
                             else
@@ -530,6 +537,19 @@ namespace Just.WPF.Views.RevCleaner
             }
             fileItem.UpdateCountInfo();
         }
+        private string GetFilePathNotExists(string filePath)
+        {
+            var dir = Path.GetDirectoryName(filePath);
+            var fileName = Path.GetFileNameWithoutExtension(filePath);
+            var extension = Path.GetExtension(filePath);
+            var index = 0;
+            while (File.Exists(filePath))
+            {
+                index++;
+                filePath = Path.Combine(dir, $"{fileName} ({index}){extension}");
+            }
+            return filePath;
+        }
         private void MoveDirectory(string source, string target)
         {
             var sourcePath = source.TrimEnd('\\', ' ');
@@ -545,9 +565,17 @@ namespace Just.WPF.Views.RevCleaner
                 foreach (var file in folder)
                 {
                     var targetFile = Path.Combine(targetFolder, Path.GetFileName(file));
-                    if (File.Exists(targetFile)) File.Delete(targetFile);
+                    if (File.Exists(targetFile))
+                    {
+                        File.SetAttributes(targetFile, FileAttributes.Normal);
+                        File.Delete(targetFile);
+                    }
                     File.Move(file, targetFile);
                 }
+            }
+            foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
             }
             Directory.Delete(source, true);
         }
