@@ -22,5 +22,11 @@ namespace Just.WPF.Views.RevCleaner
 
         public int FileCount = 0;
         public int FolderCount = 0;
+        public void UpdateCountInfo()
+        {
+            if (!IsFolder) return;
+            OrigFile = $"[{FileCount} 个文件]";
+            RevFile = $"[{FolderCount} 个文件夹]";
+        }
     }
 }
