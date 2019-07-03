@@ -255,7 +255,7 @@ namespace Just.WPF.Views.MongoDBTool
             {
                 _execute = _execute ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
-                    if (SysProfiles?.Any() ?? true) return;
+                    if (!SysProfiles?.Any() ?? true) return;
                     if (Tree.Children[0].IsEnable != true)
                     {
                         var node = Tree.Children[0].Children.FirstOrDefault(n => n.IsEnable != true);
@@ -428,9 +428,11 @@ namespace Just.WPF.Views.MongoDBTool
             {
                 mongo.InsertOne(item);
             }
-
-            var parent = Tree["新增"];
-            AddTreeNode(null, item, parent);
+            
+            if(IsAdd || !HasDBAction)
+            {
+                AddTreeNode(null, item, Tree["新增"]);
+            }
         }
         private void OnDup(CacheSysProfileMode item, CacheSysProfileMode dup)
         {
@@ -439,23 +441,18 @@ namespace Just.WPF.Views.MongoDBTool
                 mongo.DeleteOne<CacheSysProfileMode>(e => e.Id == dup.Id);
             }
 
-            var key = item.Mode + ':' + item.Item;
-            var parent = Tree["重复"];
-            var child = parent[key];
-            if (child == null)
+            if (IsRemoveDup || !HasDBAction)
             {
-                AddTreeNode(key, new { 保留 = item, 移除 = new List<CacheSysProfileMode>() }, parent).IsExpanded = true; ;
-            }
-            child = parent[key]["移除"];
-            AddTreeNode($"[{child.Children.Count}]", dup, child);
-            UpdateValueByChildrenCount(child);
-        }
-        private void OnEq(CacheSysProfileMode item, CacheSysProfileMode eq)
-        {
-            if (IsShowSame)
-            {
-                var parent = Tree["相同"];
-                AddTreeNode(null, eq, parent);
+                var key = item.Mode + ':' + item.Item;
+                var parent = Tree["重复"];
+                var child = parent[key];
+                if (child == null)
+                {
+                    AddTreeNode(key, new { 保留 = item, 移除 = new List<CacheSysProfileMode>() }, parent).IsExpanded = true; ;
+                }
+                child = parent[key]["移除"];
+                AddTreeNode($"[{child.Children.Count}]", dup, child);
+                UpdateValueByChildrenCount(child);
             }
         }
         private void OnDiff(CacheSysProfileMode item, CacheSysProfileMode diff)
@@ -471,10 +468,12 @@ namespace Just.WPF.Views.MongoDBTool
                 copy.Id = diff.Id;
                 mongo.ReplaceOne(e => e.Id == diff.Id, copy);
             }
-
-            var key = item.Mode + ':' + item.Item;
-            var parent = Tree["更新"];
-            AddTreeNode(key, new { 原 = diff, 新 = item }, parent).IsExpanded = true;
+            if (IsUpdate || !HasDBAction)
+            {
+                var key = item.Mode + ':' + item.Item;
+                var parent = Tree["更新"];
+                AddTreeNode(key, new { 原 = diff, 新 = item }, parent).IsExpanded = true;
+            }
         }
         private void OnNot(CacheSysProfileMode not)
         {
@@ -483,8 +482,19 @@ namespace Just.WPF.Views.MongoDBTool
                 mongo.DeleteOne<CacheSysProfileMode>(e => e.Id == not.Id);
             }
 
-            var parent = Tree["多余"];
-            AddTreeNode(null, not, parent);
+            if (IsDeleteOver || !HasDBAction)
+            {
+                var parent = Tree["多余"];
+                AddTreeNode(null, not, parent);
+            }
+        }
+        private void OnEq(CacheSysProfileMode item, CacheSysProfileMode eq)
+        {
+            if (IsShowSame || !HasDBAction)
+            {
+                var parent = Tree["相同"];
+                AddTreeNode(null, eq, parent);
+            }
         }
         #endregion
 
