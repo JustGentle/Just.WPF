@@ -56,7 +56,7 @@
                 Grid.Column="1"
                 Margin="5,0,0,0"
                 IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}"
-                Text="{Binding WebRootFolder}" />
+                Text="{Binding WebRootFolder,UpdateSourceTrigger=PropertyChanged}" />
             <Button
                 Grid.Column="2"
                 Margin="-1,0,0,0"
@@ -94,8 +94,9 @@
                 Grid.Column="1"
                 Margin="5,0"
                 VerticalAlignment="Center"
-                IsChecked="{Binding Preview}">
-                清理前确认
+                IsChecked="{Binding Preview, Converter={StaticResource BoolReverseConverter}}"
+                ToolTip="扫描完成后直接执行清理操作">
+                扫描并清理
             </CheckBox>
             <CheckBox
                 Grid.Column="2"

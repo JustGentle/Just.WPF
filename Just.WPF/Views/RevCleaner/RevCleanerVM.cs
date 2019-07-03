@@ -27,8 +27,11 @@ namespace Just.WPF.Views.RevCleaner
             set
             {
                 _WebRootFolder = value;
-                Step = ActionStep.Scan;
-                Data = new RevFileItem { IsKeep = true };
+                if(Step != ActionStep.Scan)
+                {
+                    Step = ActionStep.Scan;
+                    Data = new RevFileItem { IsKeep = true };
+                }
             }
         }
         public bool Preview { get; set; } = true;
