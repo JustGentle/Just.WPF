@@ -127,14 +127,21 @@ namespace Just.WPF.Views.MongoDBTool
                             json = new StringBuilder();
                             SysProfiles = new ObservableCollection<CacheSysProfileMode>();
                             Scan(JsonPath);
-                            Json = Format(json.ToString());
+                            if(json.Length > 0) Json = Format(json.ToString());
                             CopyJson.Execute(_);
-                            MainWindow.DispatcherInvoke(() => { Tree = new MongoNode(); });
                             MainWindow.Instance.ShowStatus("加载树...");
-                            var node = AddTreeNode("[读取结果]", SysProfiles, Tree);
-                            node.Children = new MongoNodeCollection(node.Children.ToList().OrderBy(n => n.Key));
-                            node.SetEnableByChildren();
-                            node.IsExpanded = true;
+                            MainWindow.DispatcherInvoke(() => { Tree = new MongoNode(); });
+                            if (SysProfiles.Any())
+                            {
+                                var node = AddTreeNode("[读取结果]", SysProfiles, Tree);
+                                node.Children = new MongoNodeCollection(node.Children.ToList().OrderBy(n => n.Key));
+                                node.SetEnableByChildren();
+                                node.IsExpanded = true;
+                            }
+                            else
+                            {
+                                SysProfiles = null;
+                            }
 
                         }
                         catch (Exception ex)
@@ -248,7 +255,7 @@ namespace Just.WPF.Views.MongoDBTool
             {
                 _execute = _execute ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
-                    if (SysProfiles == null) return;
+                    if (SysProfiles?.Any() ?? true) return;
                     if (Tree.Children[0].IsEnable != true)
                     {
                         var node = Tree.Children[0].Children.FirstOrDefault(n => n.IsEnable != true);
