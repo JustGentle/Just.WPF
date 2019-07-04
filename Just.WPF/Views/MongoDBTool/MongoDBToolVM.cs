@@ -838,8 +838,8 @@ namespace Just.WPF.Views.MongoDBTool
             MongoDBAddress = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(MongoDBAddress)}", MongoDBAddress);
             IsAdd = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(IsAdd)}", IsAdd);
             IsUpdate = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(IsUpdate)}", IsUpdate);
-            //IsRemoveDup = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(IsRemoveDup)}", IsRemoveDup);
-            IsDeleteOver = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(IsDeleteOver)}", IsDeleteOver);
+            IsRemoveDup = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(IsRemoveDup)}", IsRemoveDup);
+            //IsDeleteOver = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(IsDeleteOver)}", IsDeleteOver);
             IsShowSame = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(IsShowSame)}", IsShowSame);
         }
         public void WriteSetting()
