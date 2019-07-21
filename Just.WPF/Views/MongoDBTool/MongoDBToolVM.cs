@@ -127,7 +127,7 @@ namespace Just.WPF.Views.MongoDBTool
                             json = new StringBuilder();
                             SysProfiles = new ObservableCollection<CacheSysProfileMode>();
                             Scan(JsonPath);
-                            if(json.Length > 0) Json = Format(json.ToString());
+                            if (json.Length > 0) Json = Format(json.ToString());
                             CopyJson.Execute(_);
                             MainWindow.Instance.ShowStatus("加载树...");
                             MainWindow.DispatcherInvoke(() => { Tree = new MongoNode(); });
@@ -179,7 +179,7 @@ namespace Just.WPF.Views.MongoDBTool
             {
                 Scan(item);
             }
-            var files = Directory.GetFiles(path,"*.txt");
+            var files = Directory.GetFiles(path, "*.txt");
             foreach (var item in files)
             {
                 ScanFile(item);
@@ -199,7 +199,7 @@ namespace Just.WPF.Views.MongoDBTool
             var caches = ReadMongoJson(text);
             foreach (var cache in caches)
             {
-                if(string.IsNullOrEmpty( cache.Mode) || string.IsNullOrEmpty(cache.Item))
+                if (string.IsNullOrEmpty(cache.Mode) || string.IsNullOrEmpty(cache.Item))
                 {
                     continue;
                 }
@@ -428,8 +428,8 @@ namespace Just.WPF.Views.MongoDBTool
             {
                 mongo.InsertOne(item);
             }
-            
-            if(IsAdd || !HasDBAction)
+
+            if (IsAdd || !HasDBAction)
             {
                 AddTreeNode(null, item, Tree["新增"]);
             }
@@ -830,8 +830,103 @@ namespace Just.WPF.Views.MongoDBTool
             }
             return result;
         }
+        private ICommand _CopyNodeJson;
+        public ICommand CopyNodeJson
+        {
+            get
+            {
+                _CopyNodeJson = _CopyNodeJson ?? new RelayCommand<MongoNode>(_ =>
+                {
+                    if (_ == null) return;
+                    var json = GetNodeJson(_, _.Key == "[读取结果]" ? -1 : 0);
+                    if (string.IsNullOrEmpty(json)) return;
+                    MainWindow.DispatcherInvoke(() =>
+                    {
+                        Clipboard.SetText(json);
+                        NotifyWin.Info("已复制到剪贴板", "复制节点");
+                    });
+                });
+                return _CopyNodeJson;
+            }
+        }
+        private string GetNodeJson(MongoNode node, int lv = 0)
+        {
+            if (node == null) return string.Empty;
+
+            var sb = new StringBuilder();
+            //每级缩进两个空格
+            var lvSpace = new String(' ', Math.Max(0, lv * 2));
+            if (lv > 0) sb.Append($"{lvSpace}\"{node.Key}\":");
+
+            //不同类型不同起止字符
+            string valueOpen = "", valueClose = "";
+            if (lv >= 0)
+                switch (node.Type)
+                {
+                    case nameof(Object):
+                        valueOpen = "{";
+                        valueClose = "}";
+                        break;
+                    case nameof(Array):
+                        valueOpen = "[";
+                        valueClose = "]";
+                        break;
+                    case nameof(ObjectId):
+                        valueOpen = "ObjectId(\"";
+                        valueClose = "\")";
+                        break;
+                    case nameof(DateTime):
+                        valueOpen = "ISODate(\"";
+                        valueClose = "\")";
+                        break;
+                    case nameof(Boolean):
+                    case nameof(Int32):
+                    case nameof(Int64):
+                    case nameof(Double):
+                    case nameof(Decimal):
+                    case nameof(Decimal128):
+                    case "int":
+                    case "long":
+                    case "decimal":
+                    case "bool":
+                    case "null":
+                        break;
+                    default:
+                        valueOpen = valueClose = "\"";
+                        break;
+                }
+
+            sb.Append(valueOpen);
+            var value = string.Empty;
+            if (node.Children?.Any() ?? false)
+            {
+                var itemJsons = new List<string>();
+                foreach (var item in node.Children)
+                {
+                    itemJsons.Add(GetNodeJson(item, lv + 1));
+                }
+                //负数节点(即不复制的节点)不需要逗号分隔
+                var separator = lv >= 0 ? "," + Environment.NewLine : Environment.NewLine;
+                value = string.Join(separator, itemJsons);
+                if (!string.IsNullOrEmpty(value))
+                {
+                    //负数节点第一个子节点不需要换行
+                    if (lv >= 0) value = $"{Environment.NewLine}{lvSpace}" + value;
+                    value += $"{Environment.NewLine}{lvSpace}";
+                }
+            }
+            else
+            {
+                value = node.Value;
+            }
+            sb.Append(value);
+            sb.Append(valueClose);
+
+            return sb.ToString();
+        }
         #endregion
 
+        #region Setting
         public void ReadSetting()
         {
             JsonPath = MainWindow.ReadSetting($"{nameof(MongoDBTool)}.{nameof(JsonPath)}", JsonPath);
@@ -852,5 +947,6 @@ namespace Just.WPF.Views.MongoDBTool
             MainWindow.WriteSetting($"{nameof(MongoDBTool)}.{nameof(IsDeleteOver)}", IsDeleteOver);
             MainWindow.WriteSetting($"{nameof(MongoDBTool)}.{nameof(IsShowSame)}", IsShowSame);
         }
+        #endregion
     }
 }

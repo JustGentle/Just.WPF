@@ -232,9 +232,9 @@
                 <GenControls:TreeListView.ContextMenu>
                     <ContextMenu DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.SelectedItem}">
                         <MenuItem
-                            Command="{Binding PlacementTarget.Parent.DataContext.CopyJson, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            Command="{Binding PlacementTarget.Parent.DataContext.CopyNodeJson, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                             CommandParameter="{Binding}"
-                            Header="复制脚本"
+                            Header="复制节点脚本"
                             InputGestureText="Ctrl+C"
                             IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}" />
                         <Separator />
