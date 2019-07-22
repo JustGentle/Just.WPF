@@ -459,13 +459,14 @@ namespace Just.WPF.Views.RevCleaner
                 //1.保留 则不处理, 2.未知 则处理子项 3.不保留 则删除
                 if (!child.IsKeep.HasValue)
                 {
+                    //数量统计:先全部减去,再加剩余数量
                     fileItem.FolderCount -= child.FolderCount;
                     fileItem.FileCount -= child.FileCount;
                     Clear(child);
-                    if (!child.Children.Any(f => !f.IsKeep ?? false))
-                        child.IsKeep = true;
                     fileItem.FolderCount += child.FolderCount;
                     fileItem.FileCount += child.FileCount;
+                    if (!child.Children.Any(f => !f.IsKeep ?? false))
+                        child.IsKeep = true;
                     i++;
                 }
                 else if (child.IsKeep.Value)
@@ -516,15 +517,13 @@ namespace Just.WPF.Views.RevCleaner
                         }
                         if (child.IsFolder)
                         {
-                            fileItem.FolderCount -= child.FolderCount + 1;
+                            fileItem.FolderCount -= child.FolderCount + 1;//包括子文件夹本身
                             fileItem.FileCount -= child.FileCount;
                         }
                         else
                         {
                             fileItem.FileCount--;
                         }
-                        fileItem.FolderCount += child.FolderCount;
-                        fileItem.FileCount += child.FileCount;
                         MainWindow.DispatcherInvoke(() => { fileItem.Children.Remove(child); });
                     }
                     catch (System.Exception ex)

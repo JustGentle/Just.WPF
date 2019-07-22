@@ -660,7 +660,86 @@ namespace Just.WPF.Views.MongoDBTool
         }
         #endregion
 
+        #region 导出脚本
+        private ICommand _ExportDB;
+        public ICommand ExportDB
+        {
+            get
+            {
+                _ExportDB = _ExportDB ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    if (string.IsNullOrWhiteSpace(MongoDBAddress))
+                    {
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Warn("链接地址不能为空"); });
+                        return;
+                    }
+                    MainWindow.Instance.ShowStatus("读取...");
+                    try
+                    {
+                        //读取数据
+                        var timeoutMS = 3000;
+                        mongo = new MongoDBHelper(
+                            $"mongodb://{MongoDBAddress}/?serverSelectionTimeoutMS={timeoutMS};connectTimeoutMS={timeoutMS};socketTimeoutMS={timeoutMS}",
+                            "iOffice10Cache",
+                            nameof(CacheSysProfileMode));
+                        var collection = mongo.Find<CacheSysProfileMode>();
+                        //保存数据
+                        MainWindow.Instance.ShowStatus("生成...");
+                        var sb = new StringBuilder();
+                        foreach (var item in collection)
+                        {
+                            sb.AppendLine(MongoDBHelper.ToJson(item));
+                        }
+                        var json = sb.ToString();
+                        if (string.IsNullOrEmpty(json))
+                        {
+                            MainWindow.DispatcherInvoke(() =>
+                            {
+                                NotifyWin.Warn("当前数据为空", "导出脚本");
+                            });
+                        }
+                        else
+                        {
+                            MainWindow.Instance.ShowStatus("保存...");
+                            var sfd = new CommonSaveFileDialog($"导出脚本 - {MongoDBAddress}")
+                            {
+                                DefaultFileName = $"Mongo - {DateTime.Now:yyMMddHHmmssfff}",
+                                DefaultExtension = ".txt"
+                            };
+                            sfd.Filters.Add(new CommonFileDialogFilter("文本文件", "*.txt"));
+                            sfd.Filters.Add(new CommonFileDialogFilter("脚本文件", "*.json"));
+                            sfd.Filters.Add(new CommonFileDialogFilter("所有文件", "*.*"));
+                            if (sfd.ShowDialog(MainWindow.Instance) == CommonFileDialogResult.Ok)
+                            {
+                                var fileName = sfd.FileName;
+                                File.WriteAllBytes(fileName, Encoding.UTF8.GetBytes(json));
+                            }
+                        }
+                    }
+                    catch (TimeoutException ex)
+                    {
+                        Logger.Error("MongoDB连接超时", ex);
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error("连接超时！", "导出脚本"); });
+                    }
+                    catch (MongoConfigurationException ex)
+                    {
+                        Logger.Error("MongoDB链接地址错误", ex);
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error("请检查【链接地址】是否正确！\n" + ex.Message, "导出脚本"); });
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("导出脚本错误", ex);
+                        MainWindow.DispatcherInvoke(() => { NotifyWin.Error(ex.Message, "导出脚本"); });
+                    }
+                    MainWindow.Instance.ShowStatus();
+                });
+                return _ExportDB;
+            }
+        }
+        #endregion
+
         #region 菜单
+        //查找
         public static string FindText { get; set; } = string.Empty;
         private ICommand _Find;
         public ICommand Find
@@ -754,20 +833,28 @@ namespace Just.WPF.Views.MongoDBTool
         {
             item = item ?? Tree;
             MongoNode result = null;
-            if (item.Children?.Any() ?? false)
+            if (previous)
             {
-                var list = previous ? item.Children.Reverse() : item.Children;
-                foreach (var child in list)
+                result = FindParentNext(item, findText, previous);
+                return result;
+            }
+            else
+            {
+                if (item.Children?.Any() ?? false)
                 {
-                    result = FindItem(child, findText, previous);
-                    if (result != null)
+                    var list = previous ? item.Children.Reverse() : item.Children;
+                    foreach (var child in list)
                     {
-                        item.IsExpanded = true;
-                        return result;
+                        result = FindItem(child, findText, previous);
+                        if (result != null)
+                        {
+                            item.IsExpanded = true;
+                            return result;
+                        }
                     }
                 }
+                return FindParentNext(item, findText, previous);
             }
-            return FindParentNext(item, findText, previous);
         }
         private MongoNode FindParentNext(MongoNode item, string findText, bool previous = false)
         {
@@ -786,31 +873,21 @@ namespace Just.WPF.Views.MongoDBTool
                         return result;
                     }
                 }
+                //向上查找父级节点
+                if (previous && ItemFound(parent, findText))
+                {
+                    parent.IsSelected = true;
+                    return parent;
+                }
                 return FindParentNext(parent, findText, previous);
             }
             return result;
         }
-        private MongoNode GetParentItem(MongoNode item, MongoNode node = null)
-        {
-            MongoNode result = null;
-            node = node ?? Tree;
-            foreach (var child in node.Children)
-            {
-                if (child.Equals(item)) return node;
-                result = GetParentItem(item, child);
-                if (result != null) return result;
-            }
-            return null;
-        }
         private MongoNode FindItem(MongoNode item, string findText, bool previous = false)
         {
             MongoNode result = null;
-            if (item.Key?.ToLower().Contains(findText.ToLower()) ?? false)
-            {
-                item.IsSelected = true;
-                return item;
-            }
-            if (item.Value?.ToLower().Contains(findText.ToLower()) ?? false)
+            //查找下一个时,先查找父级
+            if(!previous && ItemFound(item, findText))
             {
                 item.IsSelected = true;
                 return item;
@@ -828,8 +905,40 @@ namespace Just.WPF.Views.MongoDBTool
                     }
                 }
             }
+            //查找上一个时,后查找父级
+            if (previous && ItemFound(item, findText))
+            {
+                item.IsSelected = true;
+                return item;
+            }
             return result;
         }
+        private MongoNode GetParentItem(MongoNode item, MongoNode node = null)
+        {
+            MongoNode result = null;
+            node = node ?? Tree;
+            foreach (var child in node.Children)
+            {
+                if (child.Equals(item)) return node;
+                result = GetParentItem(item, child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+        private bool ItemFound(MongoNode item, string findText)
+        {
+            if (item.Key?.ToLower().Contains(findText.ToLower()) ?? false)
+            {
+                return true;
+            }
+            if (item.Value?.ToLower().Contains(findText.ToLower()) ?? false)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        //复制节点脚本
         private ICommand _CopyNodeJson;
         public ICommand CopyNodeJson
         {
@@ -837,13 +946,14 @@ namespace Just.WPF.Views.MongoDBTool
             {
                 _CopyNodeJson = _CopyNodeJson ?? new RelayCommand<MongoNode>(_ =>
                 {
+                    _ = _ ?? GetSelectedItem();
                     if (_ == null) return;
                     var json = GetNodeJson(_, _.Key == "[读取结果]" ? -1 : 0);
                     if (string.IsNullOrEmpty(json)) return;
                     MainWindow.DispatcherInvoke(() =>
                     {
                         Clipboard.SetText(json);
-                        NotifyWin.Info("已复制到剪贴板", "复制节点");
+                        NotifyWin.Info("已复制到剪贴板", "复制节点脚本");
                     });
                 });
                 return _CopyNodeJson;

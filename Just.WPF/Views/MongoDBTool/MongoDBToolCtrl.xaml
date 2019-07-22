@@ -21,7 +21,7 @@
     <UserControl.InputBindings>
         <KeyBinding
             Key="C"
-            Command="{Binding CopyJson}"
+            Command="{Binding CopyNodeJson}"
             Modifiers="Ctrl" />
         <KeyBinding
             Key="F"
@@ -89,9 +89,11 @@
             <WrapPanel Orientation="Horizontal">
                 <TextBlock>链接地址:</TextBlock>
                 <TextBox
-                    Width="200"
+                    Width="150"
                     Margin="5,0,0,0"
-                    Text="{Binding MongoDBAddress}" />
+                    Text="{Binding MongoDBAddress}"
+                    ToolTip="MongoDB链接字符串"/>
+                <Button Content="导出脚本" Command="{Binding ExportDB}" ToolTip="导出MongoDB当前数据脚本"/>
                 <CheckBox
                     Margin="5,0"
                     VerticalAlignment="Center"
@@ -167,7 +169,7 @@
                     IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}">
                     <Button.Style>
                         <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
-                            <Setter Property="Content" Value="查看脚本" />
+                            <Setter Property="Content" Value="查看全部脚本" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsJsonView}" Value="True">
                                     <Setter Property="Content" Value="查看树" />
@@ -180,7 +182,7 @@
                     Margin="5,0,0,0"
                     Command="{Binding CopyJson}"
                     IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}">
-                    复制脚本
+                    复制全部脚本
                 </Button>
             </StackPanel>
         </Grid>
