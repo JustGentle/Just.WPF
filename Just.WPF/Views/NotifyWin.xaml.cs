@@ -12,6 +12,7 @@ namespace Just.WPF.Views
     {
         public static void Info(string msg, string title = "提示")
         {
+            if (NotifyTopOver(MainWindow.Instance)) return;
             new NotifyWin
             {
                 Title = title,
@@ -22,6 +23,7 @@ namespace Just.WPF.Views
         }
         public static void Warn(string msg, string title = "警告")
         {
+            if (NotifyTopOver(MainWindow.Instance)) return;
             new NotifyWin
             {
                 Title = title,
@@ -32,6 +34,7 @@ namespace Just.WPF.Views
         }
         public static void Error(string msg, string title = "错误")
         {
+            if (NotifyTopOver(MainWindow.Instance)) return;
             new NotifyWin
             {
                 Title = title,
@@ -41,12 +44,21 @@ namespace Just.WPF.Views
             }.Show();
         }
         public static List<double> NotifyTops { get; } = new List<double>();
+        private static bool NotifyTopOver(Window owner)
+        {
+            //提示信息超出屏幕时不显示
+            var top = (NotifyTops.Any() ? NotifyTops.Max() : 0);
+            if (owner.Top + owner.ActualHeight < top) return true;
+            return false;
+        }
 
         private double notifyTop;
 
         public NotifyWin()
         {
             InitializeComponent();
+            LayoutRoot.MaxWidth = SystemParameters.WorkArea.Width;
+            LayoutRoot.MaxHeight = SystemParameters.WorkArea.Height;
         }
 
         public string Message

@@ -688,7 +688,10 @@ namespace Just.WPF.Views.MongoDBTool
                         var sb = new StringBuilder();
                         foreach (var item in collection)
                         {
-                            sb.AppendLine(MongoDBHelper.ToJson(item));
+                            //移除_id
+                            var j = MongoDBHelper.ToJson(item);
+                            j = Regex.Replace(j, @"\s*""_id""[^\r\n]*", "");
+                            sb.AppendLine(j);
                         }
                         var json = sb.ToString();
                         if (string.IsNullOrEmpty(json))

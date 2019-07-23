@@ -21,7 +21,7 @@
         <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <cvt:ValueToBoolConverter x:Key="ValueToBoolConverter" />
     </Window.Resources>
-    <Border BorderBrush="{DynamicResource NormalBorderBrush}" BorderThickness="1">
+    <Border BorderBrush="{DynamicResource NormalBorderBrush}" BorderThickness="1" x:Name="LayoutRoot">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
@@ -45,23 +45,26 @@
                     TextWrapping="Wrap"/>
             </Border>
 
-            <StackPanel
-                Grid.Row="1"
-                Margin="20,10"
-                VerticalAlignment="Center"
-                Orientation="Vertical">
-                <TextBlock
-                    HorizontalAlignment="Center"
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                          VerticalAlignment="Center"
+                          Grid.Row="1">
+                <StackPanel
+                    Margin="20,10"
                     VerticalAlignment="Center"
-                    Text="{Binding Message}"
-                    TextAlignment="{Binding MessageAlignment}"
-                    TextWrapping="Wrap"
-                    Visibility="{Binding Message, Converter={StaticResource ValueToBoolConverter}}" />
-                <TextBox
-                    x:Name="InputBox"
-                    Text="{Binding InputValue}"
-                    Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}" />
-            </StackPanel>
+                    Orientation="Vertical">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{Binding Message}"
+                        TextAlignment="{Binding MessageAlignment}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding Message, Converter={StaticResource ValueToBoolConverter}}" />
+                    <TextBox
+                        x:Name="InputBox"
+                        Text="{Binding InputValue}"
+                        Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </StackPanel>
+            </ScrollViewer>
 
             <Border
                 Grid.Row="2"

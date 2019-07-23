@@ -45,7 +45,10 @@
             <StopStoryboard BeginStoryboardName="SBFadeOut"/>
         </EventTrigger>
     </Window.Triggers>
-    <Border BorderThickness="1" BorderBrush="{DynamicResource NormalBorderBrush}" Background="{StaticResource NearTransparentBrush}" MouseLeftButtonDown="Border_MouseLeftButtonDown">
+    <Border x:Name="LayoutRoot" BorderThickness="1"
+            BorderBrush="{DynamicResource NormalBorderBrush}"
+            Background="{StaticResource NearTransparentBrush}"
+            MouseLeftButtonDown="Border_MouseLeftButtonDown">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
@@ -53,24 +56,28 @@
             </Grid.RowDefinitions>
 
             <Border BorderThickness="0,0,0,0.5" BorderBrush="{DynamicResource NormalBorderBrush}"
-                Margin="10,0">
+                    Margin="10,0">
                 <TextBlock Margin="10"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                FontWeight="Bold"
-                Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:NotifyWin}}}"
-                TextAlignment="Center"
-                TextWrapping="Wrap"/>
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:NotifyWin}}}"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"/>
             </Border>
 
-            <TextBlock
-            Grid.Row="1"
-            Margin="20,10"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Text="{Binding Message, RelativeSource={RelativeSource AncestorType={x:Type local:NotifyWin}}}"
-            TextAlignment="Center"
-            TextWrapping="Wrap"/>
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                          VerticalAlignment="Center"
+                          Grid.Row="1">
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="20,10"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="{Binding Message, RelativeSource={RelativeSource AncestorType={x:Type local:NotifyWin}}}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"/>
+            </ScrollViewer>
         </Grid>
     </Border>
 </Window>

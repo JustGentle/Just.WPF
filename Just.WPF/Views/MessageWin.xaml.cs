@@ -12,6 +12,8 @@ namespace Just.WPF.Views
         public MessageWin()
         {
             InitializeComponent();
+            LayoutRoot.MaxWidth = SystemParameters.WorkArea.Width;
+            LayoutRoot.MaxHeight = SystemParameters.WorkArea.Height;
             DataContext = this;
         }
 
