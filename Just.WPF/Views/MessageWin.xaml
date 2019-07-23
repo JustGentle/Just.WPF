@@ -40,7 +40,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontWeight="Bold"
-                    Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:MessageWin}}}"
+                    Text="{Binding Title}"
                     TextAlignment="Center"
                     TextWrapping="Wrap"/>
             </Border>
@@ -53,14 +53,14 @@
                 <TextBlock
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Text="{Binding Message, RelativeSource={RelativeSource AncestorType={x:Type local:MessageWin}}}"
-                    TextAlignment="Center"
+                    Text="{Binding Message}"
+                    TextAlignment="{Binding MessageAlignment}"
                     TextWrapping="Wrap"
                     Visibility="{Binding Message, Converter={StaticResource ValueToBoolConverter}}" />
                 <TextBox
                     x:Name="InputBox"
-                    Text="{Binding InputValue, RelativeSource={RelativeSource AncestorType={x:Type local:MessageWin}}}"
-                    Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type local:MessageWin}}}" />
+                    Text="{Binding InputValue}"
+                    Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}" />
             </StackPanel>
 
             <Border
@@ -78,16 +78,14 @@
                         IsCancel="True"
                         Margin="0,0,10,0"
                         Click="Cancel_Click"
-                        Visibility="{Binding IsConfirm, Converter={StaticResource BoolToVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type local:MessageWin}}}">
-                        取消
-                    </Button>
+                        Visibility="{Binding IsConfirm, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Content="{Binding CancelContent}"/>
                     <Button
                         x:Name="OKBtn"
                         IsDefault="True"
                         Click="Ok_Click"
-                        Style="{StaticResource MainButton}">
-                        确定
-                    </Button>
+                        Style="{StaticResource MainButton}"
+                        Content="{Binding OkContent}"/>
                 </WrapPanel>
             </Border>
         </Grid>

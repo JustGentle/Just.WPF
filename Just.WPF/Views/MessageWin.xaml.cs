@@ -9,6 +9,13 @@ namespace Just.WPF.Views
     /// </summary>
     public partial class MessageWin : Window
     {
+        public MessageWin()
+        {
+            InitializeComponent();
+            DataContext = this;
+        }
+
+        #region 静态方法
         public static void Info(string msg, string title = "提示")
         {
             new MessageWin
@@ -68,11 +75,9 @@ namespace Just.WPF.Views
             }
             return string.Empty;
         }
+        #endregion
 
-        public MessageWin()
-        {
-            InitializeComponent();
-        }
+        #region 属性
 
         public string Message
         {
@@ -117,6 +122,45 @@ namespace Just.WPF.Views
         public static readonly DependencyProperty InputValueProperty =
             DependencyProperty.Register("InputValue", typeof(string), typeof(NotifyWin), new PropertyMetadata(null));
 
+
+
+        public string OkContent
+        {
+            get { return (string)GetValue(OkContentProperty); }
+            set { SetValue(OkContentProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for OkContent.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty OkContentProperty =
+            DependencyProperty.Register("OkContent", typeof(string), typeof(NotifyWin), new PropertyMetadata("确定"));
+
+
+
+        public string CancelContent
+        {
+            get { return (string)GetValue(CancelContentProperty); }
+            set { SetValue(CancelContentProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CancelContent.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CancelContentProperty =
+            DependencyProperty.Register("CancelContent", typeof(string), typeof(NotifyWin), new PropertyMetadata("取消"));
+
+
+
+        public HorizontalAlignment MessageAlignment
+        {
+            get { return (HorizontalAlignment)GetValue(MessageAlignmentProperty); }
+            set { SetValue(MessageAlignmentProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MessageAlignment.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MessageAlignmentProperty =
+            DependencyProperty.Register("MessageAlignment", typeof(HorizontalAlignment), typeof(NotifyWin), new PropertyMetadata(HorizontalAlignment.Center));
+        #endregion
+
+        #region 事件
+
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
@@ -153,5 +197,7 @@ namespace Just.WPF.Views
             this.DragMove();//拖拽移动窗口
             e.Handled = true;
         }
+        #endregion
+
     }
 }

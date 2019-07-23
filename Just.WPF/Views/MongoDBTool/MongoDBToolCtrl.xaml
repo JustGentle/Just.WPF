@@ -239,6 +239,11 @@
                             Header="复制节点脚本"
                             InputGestureText="Ctrl+C"
                             IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}" />
+                        <MenuItem
+                            Command="{Binding PlacementTarget.Parent.DataContext.ShowNodeJson, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding}"
+                            Header="查看节点脚本"
+                            IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}" />
                         <Separator />
                         <MenuItem
                             Command="{Binding PlacementTarget.Parent.DataContext.FindDialog, RelativeSource={RelativeSource AncestorType=ContextMenu}}"

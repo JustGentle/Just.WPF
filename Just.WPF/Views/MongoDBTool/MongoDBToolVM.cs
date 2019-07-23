@@ -845,7 +845,7 @@ namespace Just.WPF.Views.MongoDBTool
                     var list = previous ? item.Children.Reverse() : item.Children;
                     foreach (var child in list)
                     {
-                        result = FindItem(child, findText, previous);
+                        result = FindInItem(child, findText, previous);
                         if (result != null)
                         {
                             item.IsExpanded = true;
@@ -866,7 +866,7 @@ namespace Just.WPF.Views.MongoDBTool
                 var list = previous ? parent.Children.Take(startIndex - 1).Reverse() : parent.Children.Skip(startIndex);
                 foreach (var child in list)
                 {
-                    result = FindItem(child, findText, previous);
+                    result = FindInItem(child, findText, previous);
                     if (result != null)
                     {
                         parent.IsExpanded = true;
@@ -874,7 +874,7 @@ namespace Just.WPF.Views.MongoDBTool
                     }
                 }
                 //向上查找父级节点
-                if (previous && ItemFound(parent, findText))
+                if (previous && FoundItem(parent, findText))
                 {
                     parent.IsSelected = true;
                     return parent;
@@ -883,11 +883,11 @@ namespace Just.WPF.Views.MongoDBTool
             }
             return result;
         }
-        private MongoNode FindItem(MongoNode item, string findText, bool previous = false)
+        private MongoNode FindInItem(MongoNode item, string findText, bool previous = false)
         {
             MongoNode result = null;
             //查找下一个时,先查找父级
-            if(!previous && ItemFound(item, findText))
+            if(!previous && FoundItem(item, findText))
             {
                 item.IsSelected = true;
                 return item;
@@ -897,7 +897,7 @@ namespace Just.WPF.Views.MongoDBTool
                 var list = previous ? item.Children.Reverse() : item.Children;
                 foreach (var child in list)
                 {
-                    result = FindItem(child, findText, previous);
+                    result = FindInItem(child, findText, previous);
                     if (result != null)
                     {
                         item.IsExpanded = true;
@@ -906,7 +906,7 @@ namespace Just.WPF.Views.MongoDBTool
                 }
             }
             //查找上一个时,后查找父级
-            if (previous && ItemFound(item, findText))
+            if (previous && FoundItem(item, findText))
             {
                 item.IsSelected = true;
                 return item;
@@ -925,7 +925,7 @@ namespace Just.WPF.Views.MongoDBTool
             }
             return null;
         }
-        private bool ItemFound(MongoNode item, string findText)
+        private bool FoundItem(MongoNode item, string findText)
         {
             if (item.Key?.ToLower().Contains(findText.ToLower()) ?? false)
             {
@@ -948,7 +948,7 @@ namespace Just.WPF.Views.MongoDBTool
                 {
                     _ = _ ?? GetSelectedItem();
                     if (_ == null) return;
-                    var json = GetNodeJson(_, _.Key == "[读取结果]" ? -1 : 0);
+                    var json = GetNodeJson(_, GetNodeLevel(_));
                     if (string.IsNullOrEmpty(json)) return;
                     MainWindow.DispatcherInvoke(() =>
                     {
@@ -958,6 +958,56 @@ namespace Just.WPF.Views.MongoDBTool
                 });
                 return _CopyNodeJson;
             }
+        }
+        //查看节点脚本
+        private ICommand _ShowNodeJson;
+        public ICommand ShowNodeJson
+        {
+            get
+            {
+                _ShowNodeJson = _ShowNodeJson ?? new RelayCommand<MongoNode>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    if (_ == null) return;
+                    var json = GetNodeJson(_, GetNodeLevel(_));
+                    if (string.IsNullOrEmpty(json))
+                    {
+                        MainWindow.DispatcherInvoke(() =>
+                        {
+                            NotifyWin.Warn("节点脚本为空", "查看节点脚本");
+                        });
+                    }
+                    MainWindow.DispatcherInvoke(() =>
+                    {
+                        var n = new MessageWin
+                        {
+                            Title = _.Key,
+                            Message = json,
+                            OkContent = "复制",
+                            CancelContent = "关闭",
+                            IsConfirm = true,
+                            MessageAlignment = HorizontalAlignment.Left,
+                            Foreground = (SolidColorBrush)Application.Current.FindResource("MainForeBrush"),
+                            Width = 500,
+                            Owner = MainWindow.Instance
+                        };
+                        if (n.ShowDialog() == true)
+                        {
+                            Clipboard.SetText(json);
+                            NotifyWin.Info("已复制到剪贴板", "复制节点脚本");
+                        }
+                    });
+                });
+                return _ShowNodeJson;
+            }
+        }
+        private int GetNodeLevel(MongoNode node)
+        {
+            /* -1: 根节点 - 不复制Key, 不加OpenClose
+             * 1: 叶子节点 - 复制Key, 加OpenClose
+             * 0: 其他节点 - 不复制Key, 加OpenClose
+             * */
+            return node.Key == "[读取结果]" ? -1 : (node.Children?.Any() ?? false) ? 0 : 1;
         }
         private string GetNodeJson(MongoNode node, int lv = 0)
         {
