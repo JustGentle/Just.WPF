@@ -716,6 +716,10 @@ namespace Just.WPF.Views.MongoDBTool
                             {
                                 var fileName = sfd.FileName;
                                 File.WriteAllBytes(fileName, Encoding.UTF8.GetBytes(json));
+                                MainWindow.DispatcherInvoke(() =>
+                                {
+                                    NotifyWin.Info("导出完成", "导出脚本");
+                                });
                             }
                         }
                     }
