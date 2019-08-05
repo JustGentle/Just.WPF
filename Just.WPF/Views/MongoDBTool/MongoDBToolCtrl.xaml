@@ -93,7 +93,7 @@
                     Margin="5,0,0,0"
                     Text="{Binding MongoDBAddress}"
                     ToolTip="MongoDB链接字符串"/>
-                <Button Content="导出脚本" Command="{Binding ExportDB}" ToolTip="导出MongoDB当前数据脚本"/>
+                <Button Margin="-1,0,0,0" Content="导出脚本" Command="{Binding ExportDB}" ToolTip="导出MongoDB当前数据脚本"/>
                 <CheckBox
                     Margin="5,0"
                     VerticalAlignment="Center"

@@ -988,7 +988,7 @@ namespace Just.WPF.Views.MongoDBTool
                     {
                         var n = new MessageWin
                         {
-                            Title = _.Key,
+                            Title = _.Key.Contains(":") ? _.Value : _.Key, //CacheSysProfileMode节点标题显示Display
                             Message = json,
                             OkContent = "复制",
                             CancelContent = "关闭",
