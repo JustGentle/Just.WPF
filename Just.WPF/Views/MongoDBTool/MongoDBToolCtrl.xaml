@@ -152,7 +152,7 @@
                         Orientation="Horizontal"
                         Visibility="{Binding IsJsonView,Converter={StaticResource BoolReverseToVisibilityConverter}}">
                 <TextBlock>查找:</TextBlock>
-                <TextBox Width="300" Margin="5,0,0,0" Text="{Binding FindText,UpdateSourceTrigger=PropertyChanged}">
+                <TextBox Width="300" Margin="5,0,0,0" Text="{Binding FindText,UpdateSourceTrigger=PropertyChanged}" ToolTip="请输入查找文本">
                     <TextBox.InputBindings>
                         <KeyBinding Command="{Binding Find}" Key="Enter"/>
                     </TextBox.InputBindings>

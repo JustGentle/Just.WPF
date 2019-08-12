@@ -29,6 +29,8 @@
                 <ResourceDictionary Source="/Theme/ComboBox.xaml" />
                 <!--  树形样式  -->
                 <ResourceDictionary Source="/Theme/TreeView.xaml" />
+                <!--  菜单样式  -->
+                <ResourceDictionary Source="/Theme/Popup.xaml" />
                 <!--  公共样式  -->
                 <ResourceDictionary Source="/Theme/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>

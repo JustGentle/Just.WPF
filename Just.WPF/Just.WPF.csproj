@@ -120,6 +120,10 @@
     </Compile>
     <Compile Include="Views\MongoDBTool\MongoDBToolVM.cs" />
     <Compile Include="Views\MongoDBTool\MongoNode.cs" />
+    <Compile Include="Views\RegexNet\RegexNetCtrl.xaml.cs">
+      <DependentUpon>RegexNetCtrl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RegexNet\RegexNetVM.cs" />
     <Compile Include="Views\RevCleaner\RevCleanerVM.cs" />
     <Compile Include="Views\RevCleaner\RevFileItem.cs" />
     <Compile Include="Views\ChangesetGetter\ChangesetGetterCtrl.xaml.cs">
@@ -148,6 +152,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Theme\Popup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ChangesetGetter\ChangesetGetterCtrl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -161,6 +169,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\NotifyWin.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RegexNet\RegexNetCtrl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

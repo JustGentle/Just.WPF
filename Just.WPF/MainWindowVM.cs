@@ -69,6 +69,11 @@ namespace Just.WPF
     'Header': '变更集抽取',
     'ClassName': 'ChangesetGetterCtrl',
     'Visible': true
+  },
+  {
+    'Id': 'RegexNet',
+    'Header': '正则表达式',
+    'ClassName': 'RegexNetCtrl'
   }
 ]
 ";
