@@ -59,17 +59,17 @@ namespace Just.Base
   {
     'Id': 'ConfigManager',
     'Parent': 'iOffice10',
-    'Header': '配置文件管理',
+    'Header': '配置文件管理*',
     'ClassName': 'ConfigManagerCtrl'
   },
   {
     'Id': 'WebsiteMapper',
-    'Header': '站点文件映射',
+    'Header': '站点文件映射*',
     'ClassName': 'WebsiteMapperCtrl'
   },
   {
     'Id': 'ChangesetGetter',
-    'Header': '变更集抽取',
+    'Header': '变更集抽取*',
     'ClassName': 'ChangesetGetterCtrl',
     'Visible': true
   },
@@ -81,7 +81,7 @@ namespace Just.Base
 ]
 ";
 #else
-            var json = MainWindow.ReadSetting(nameof(MainMenu));
+            var json = ReadSetting(nameof(MainMenu));
 #endif
             Logger.Debug(json);
             try

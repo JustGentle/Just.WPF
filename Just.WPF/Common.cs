@@ -42,6 +42,7 @@ namespace Just.WPF
                 view = Container.ResolveNamed<IDependency>(className) as UserControl;
                 if (view == null)
                 {
+                    Logger.Warn($"【{title}】初始化失败");
                     MessageWin.Warn($"【{title}】初始化失败");
                     return;
                 }
