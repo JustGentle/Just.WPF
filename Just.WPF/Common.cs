@@ -1,5 +1,9 @@
-﻿using Just.Base.Views;
+﻿using Autofac;
+using Autofac.Configuration;
+using Just.Base;
+using Just.Base.Views;
 using Just.WPF.Views;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Configuration;
 using System.Linq;
@@ -11,22 +15,57 @@ namespace Just.WPF
 {
     public partial class MainWindow
     {
+        private IContainer Container { get; set; }
+        private IContainer DependencyResolverInitialize()
+        {
+            //var builder = new ContainerBuilder();
+            //var scanAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            //var baseType = typeof(IDependency);
+            //builder.RegisterAssemblyTypes(scanAssemblies)
+            //    .Where(t => t.IsClass && baseType.IsAssignableFrom(t))
+            //    .AsImplementedInterfaces()
+            //    .InstancePerLifetimeScope();
+
+            var config = new ConfigurationBuilder();
+            config.AddJsonFile("autofac.json");
+            var module = new ConfigurationModule(config.Build());
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(module);
+            Container = builder.Build();
+            return Container;
+        }
         #region Window
         /// <summary>
         /// 显示子窗口
         /// </summary>
         /// <param name="title">窗口标题</param>
         /// <param name="code">窗口权限代码(后缀为类名)</param>
-        public void ShowWindow(string title, string code, bool isReOpen = false, params object[] args)
+        public void ShowWindow(string title, string code, bool isReOpen = false)
         {
             if (code == null || code == string.Empty)
                 return;
             string className = code;
-            //取短名称与类名匹配的用户控件
-            Type type = Assembly.GetExecutingAssembly().GetTypes()
-                .FirstOrDefault(t => typeof(UserControl).IsAssignableFrom(t) && t.Name.Equals(className, StringComparison.CurrentCultureIgnoreCase));
-            //调试用
-            type = type ?? Assembly.GetExecutingAssembly().GetType("...");
+            UserControl view = null;
+            try
+            {
+                view = Container.ResolveNamed<IDependency>(className) as UserControl;
+                if (view == null)
+                {
+                    MessageWin.Warn($"【{title}】初始化失败");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"【{title}】初始化错误", ex);
+                MessageWin.Error($"【{title}】初始化错误");
+                return;
+            }
+            ////取短名称与类名匹配的用户控件
+            //Type type = Assembly.GetExecutingAssembly().GetTypes()
+            //    .FirstOrDefault(t => typeof(UserControl).IsAssignableFrom(t) && t.Name.Equals(className, StringComparison.CurrentCultureIgnoreCase));
+            ////调试用
+            //type = type ?? Assembly.GetExecutingAssembly().GetType("...");
 
             var tab = GetTabItem(code);
             if (tab == null)
@@ -39,7 +78,7 @@ namespace Just.WPF
                     Content = new ContentControl
                     {
                         Margin = new Thickness(10),
-                        Content = (Activator.CreateInstance(type, args) as UserControl)
+                        Content = view
                     }
                 };
                 tbContent.Items.Add(tab);
@@ -48,7 +87,7 @@ namespace Just.WPF
             {
                 tab.IsSelected = true;
                 if (isReOpen)
-                    tab.Content = (Activator.CreateInstance(type, args) as UserControl);
+                    tab.Content = view;
             }
         }
         /// <summary>
@@ -78,7 +117,7 @@ namespace Just.WPF
                 //保存设置
                 if(tbContent.Items[0] is TabItem item 
                     && item.Content is ContentControl content 
-                    && content.Content is IChildViews writer)
+                    && content.Content is IChildView writer)
                 {
                     writer.WriteSettings();
                 }

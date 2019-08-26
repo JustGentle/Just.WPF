@@ -12,7 +12,7 @@ namespace Just.MongoDB
     /// MongoSyncCtrl.xaml 的交互逻辑
     /// </summary>
     [DisplayName("MongoDB工具")]
-    public partial class MongoSyncCtrl : UserControl, IChildViews
+    public partial class MongoSyncCtrl : UserControl, IChildView
     {
         private readonly MongoSyncVM _vm = new MongoSyncVM();
         public MongoSyncCtrl()

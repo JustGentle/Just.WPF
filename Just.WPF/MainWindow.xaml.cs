@@ -44,6 +44,7 @@ namespace Just.WPF
             InitializeComponent();
             _Instance = this;
 
+            DependencyResolverInitialize();
             _vm = MainWindowVM.Instance;
             this.DataContext = _vm;
         }

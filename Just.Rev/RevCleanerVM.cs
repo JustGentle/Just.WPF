@@ -43,7 +43,6 @@ namespace Just.Rev
         public string BackupFolder { get; set; }
         public RevFileItem Data { get; set; } = new RevFileItem { IsKeep = true };
 
-        public bool SimpleIcon { get; set; } = true;
         public bool Doing => Status == ActionStatus.Doing;
 
         public ActionStep Step { get; set; } = ActionStep.Scan;
@@ -344,20 +343,10 @@ namespace Just.Rev
             return result;
         }
 
-        private readonly string[] fontExts = { "otf", "oet", "svg", "ttf", "woff", "woff2", "eot" };
         private string GetFileIcon(string file)
         {
             var imgFolder = @"\Images\";
             var img = "file.png";
-            if (!SimpleIcon)
-            {
-                var ext = Path.GetExtension(file).TrimStart('.');
-                if (fontExts.Contains(ext))
-                    ext = "font";
-                var extImg = imgFolder + ext + ".png";
-                if (ImageExists(extImg))
-                    return extImg;
-            }
             return imgFolder + img;
         }
         public bool ImageExists(string img)
@@ -786,7 +775,6 @@ namespace Just.Rev
             Preview = MainWindowVM.ReadSetting($"{nameof(RevCleanerCtrl)}.{nameof(Preview)}", Preview);
             Backup = MainWindowVM.ReadSetting($"{nameof(RevCleanerCtrl)}.{nameof(Backup)}", Backup);
             BackupFolder = MainWindowVM.ReadSetting($"{nameof(RevCleanerCtrl)}.{nameof(BackupFolder)}", BackupFolder);
-            SimpleIcon = MainWindowVM.ReadSetting($"{nameof(RevCleanerCtrl)}.{nameof(SimpleIcon)}", SimpleIcon);
         }
         public void WriteSetting()
         {
@@ -794,7 +782,6 @@ namespace Just.Rev
             MainWindowVM.WriteSetting($"{nameof(RevCleanerCtrl)}.{nameof(Preview)}", Preview);
             MainWindowVM.WriteSetting($"{nameof(RevCleanerCtrl)}.{nameof(Backup)}", Backup);
             MainWindowVM.WriteSetting($"{nameof(RevCleanerCtrl)}.{nameof(BackupFolder)}", BackupFolder);
-            MainWindowVM.WriteSetting($"{nameof(RevCleanerCtrl)}.{nameof(SimpleIcon)}", SimpleIcon);
         }
         #endregion
 

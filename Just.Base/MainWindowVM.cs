@@ -51,10 +51,10 @@ namespace Just.Base
     'ClassName': 'RevCleanerCtrl'
   },
   {
-    'Id': 'MongoDBSync',
+    'Id': 'MongoSync',
     'Parent': 'iOffice10',
     'Header': 'MongoDB同步',
-    'ClassName': 'MongoDBToolCtrl'
+    'ClassName': 'MongoSyncCtrl'
   },
   {
     'Id': 'ConfigManager',

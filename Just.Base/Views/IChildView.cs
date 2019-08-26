@@ -1,6 +1,6 @@
 ﻿namespace Just.Base.Views
 {
-    public interface IChildViews
+    public interface IChildView : IDependency
     {
         void WriteSettings();
     }

@@ -1,0 +1,32 @@
+{
+  "defaultAssembly": "Just.Base",
+  "components": [
+    {
+      "type": "Just.Rev.RevCleanerCtrl, Just.Rev",
+      "services": [
+        {
+          "key": "RevCleanerCtrl",
+          "type": "Just.Base.IDependency"
+        }
+      ]
+    },
+    {
+      "type": "Just.MongoDB.MongoSyncCtrl, Just.MongoDB",
+      "services": [
+        {
+          "key": "MongoSyncCtrl",
+          "type": "Just.Base.IDependency"
+        }
+      ]
+    },
+    {
+      "type": "Just.RegexNet.RegexNetCtrl, Just.RegexNet",
+      "services": [
+        {
+          "key": "RegexNetCtrl",
+          "type": "Just.Base.IDependency"
+        }
+      ]
+    }
+  ]
+}

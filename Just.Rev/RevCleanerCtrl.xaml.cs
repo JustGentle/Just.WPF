@@ -11,7 +11,7 @@ namespace Just.Rev
     /// RevCleanerCtrl.xaml 的交互逻辑
     /// </summary>
     [DisplayName("补丁文件清理")]
-    public partial class RevCleanerCtrl : UserControl, IChildViews
+    public partial class RevCleanerCtrl : UserControl, IChildView
     {
         private readonly RevCleanerVM _vm = new RevCleanerVM();
         public RevCleanerCtrl()

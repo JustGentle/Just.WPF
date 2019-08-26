@@ -88,14 +88,6 @@
                 <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
             <CheckBox
-                Grid.Column="0"
-                Margin="5,0"
-                VerticalAlignment="Center"
-                IsChecked="{Binding SimpleIcon}"
-                ToolTip="处理速度更快">
-                简易图标
-            </CheckBox>
-            <CheckBox
                 Grid.Column="1"
                 Margin="5,0"
                 VerticalAlignment="Center"

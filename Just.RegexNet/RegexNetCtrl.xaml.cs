@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Just.Base.Views;
+using System;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,7 +10,7 @@ namespace Just.RegexNet
     /// <summary>
     /// RegexNetCtrl.xaml 的交互逻辑
     /// </summary>
-    public partial class RegexNetCtrl : UserControl
+    public partial class RegexNetCtrl : UserControl, IChildView
     {
         private readonly RegexNetVM _vm = new RegexNetVM();
         public RegexNetCtrl()
@@ -83,6 +84,10 @@ namespace Just.RegexNet
         {
             _vm.Init(GetOptions());
             _vm.Split();
+        }
+
+        public void WriteSettings()
+        {
         }
 
         #endregion
