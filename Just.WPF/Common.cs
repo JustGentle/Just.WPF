@@ -2,12 +2,8 @@
 using Autofac.Configuration;
 using Just.Base;
 using Just.Base.Views;
-using Just.WPF.Views;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Configuration;
-using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -15,17 +11,10 @@ namespace Just.WPF
 {
     public partial class MainWindow
     {
+        #region Autofac
         private IContainer Container { get; set; }
         private IContainer DependencyResolverInitialize()
         {
-            //var builder = new ContainerBuilder();
-            //var scanAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            //var baseType = typeof(IDependency);
-            //builder.RegisterAssemblyTypes(scanAssemblies)
-            //    .Where(t => t.IsClass && baseType.IsAssignableFrom(t))
-            //    .AsImplementedInterfaces()
-            //    .InstancePerLifetimeScope();
-
             var config = new ConfigurationBuilder();
             config.AddJsonFile("autofac.json");
             var module = new ConfigurationModule(config.Build());
@@ -34,6 +23,8 @@ namespace Just.WPF
             Container = builder.Build();
             return Container;
         }
+        #endregion
+
         #region Window
         /// <summary>
         /// 显示子窗口
@@ -61,11 +52,6 @@ namespace Just.WPF
                 MessageWin.Error($"【{title}】初始化错误");
                 return;
             }
-            ////取短名称与类名匹配的用户控件
-            //Type type = Assembly.GetExecutingAssembly().GetTypes()
-            //    .FirstOrDefault(t => typeof(UserControl).IsAssignableFrom(t) && t.Name.Equals(className, StringComparison.CurrentCultureIgnoreCase));
-            ////调试用
-            //type = type ?? Assembly.GetExecutingAssembly().GetType("...");
 
             var tab = GetTabItem(code);
             if (tab == null)

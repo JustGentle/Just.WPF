@@ -1,6 +1,5 @@
 ﻿using Just.Base;
 using Just.Base.Views;
-using Just.WPF.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;

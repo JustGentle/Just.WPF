@@ -111,6 +111,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
+    <Resource Include="Images\arr.png" />
+    <Resource Include="Images\id.png" />
+    <Resource Include="Images\null.png" />
+    <Resource Include="Images\obj.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
