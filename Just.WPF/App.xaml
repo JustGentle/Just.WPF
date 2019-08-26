@@ -6,33 +6,27 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!--  文本样式  -->
-                <ResourceDictionary>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                        <!--<Setter Property="Foreground" Value="Black"/>-->
-                    </Style>
-                </ResourceDictionary>
-                
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/TextBlock.xaml" />
                 <!--  刷子颜色  -->
-                <ResourceDictionary Source="/Theme/Brush.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/Brush.xaml" />
                 <!--  Tab页控件  -->
-                <ResourceDictionary Source="/Theme/TabControl_WithClose.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/TabControl_WithClose.xaml" />
                 <!--  滚动条样式  -->
-                <ResourceDictionary Source="/Theme/ScrollBar.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/ScrollBar.xaml" />
                 <!--  数据表样式  -->
-                <ResourceDictionary Source="/Theme/DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/DataGrid.xaml" />
                 <!--  按钮样式  -->
-                <ResourceDictionary Source="/Theme/Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/Button.xaml" />
                 <!--  文本框样式  -->
-                <ResourceDictionary Source="/Theme/TextBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/TextBox.xaml" />
                 <!--  下拉框样式  -->
-                <ResourceDictionary Source="/Theme/ComboBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/ComboBox.xaml" />
                 <!--  树形样式  -->
-                <ResourceDictionary Source="/Theme/TreeView.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/TreeView.xaml" />
                 <!--  菜单样式  -->
-                <ResourceDictionary Source="/Theme/Popup.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/Popup.xaml" />
                 <!--  公共样式  -->
-                <ResourceDictionary Source="/Theme/Generic.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Just.Base;Component/Theme/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

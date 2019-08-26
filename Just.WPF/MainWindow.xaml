@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Just.WPF"
-        xmlns:cvt="clr-namespace:Just.WPF.Converters"
+        xmlns:cvt="clr-namespace:Just.Base.Converters;assembly=Just.Base"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
         Closing="Window_Closing"
@@ -209,7 +209,7 @@
         <Grid
             Width="Auto"
             Height="35"
-            Background="#F0F2f5"
+            Background="#F0F2F5"
             DockPanel.Dock="Bottom">
             <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                 <TextBlock Margin="10,0" Text="{Binding StatusText}" />

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Just.Base.Views;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -39,7 +40,7 @@ namespace Just.WPF
                 {
                     Logger.Fatal(msg, new Exception(e.ExceptionObject?.ToString()));
                 }
-                Views.MessageWin.Error("系统发生未处理的异常", "系统错误");
+                MessageWin.Error("系统发生未处理的异常", "系统错误");
             }
             catch (Exception ex)
             {
@@ -53,7 +54,7 @@ namespace Just.WPF
             {
                 Logger.Fatal("Task线程异常", e.Exception);
                 e.SetObserved();//设置该异常已察觉（这样处理后就不会引起程序崩溃）
-                Views.MessageWin.Error("系统发生未处理的异常", "系统错误");
+                MessageWin.Error("系统发生未处理的异常", "系统错误");
             }
             catch (Exception ex)
             {
@@ -67,7 +68,7 @@ namespace Just.WPF
             {
                 e.Handled = true; //把 Handled 属性设为true，表示此异常已处理，程序可以继续运行，不会强制退出
                 Logger.Fatal("UI线程异常", e.Exception);
-                Views.MessageWin.Error("系统发生未处理的异常", "系统错误");
+                MessageWin.Error("系统发生未处理的异常", "系统错误");
             }
             catch (Exception ex)
             {

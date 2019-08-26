@@ -1,4 +1,5 @@
-﻿using Just.WPF.Views;
+﻿using Just.Base.Views;
+using Just.WPF.Views;
 using System;
 using System.Configuration;
 using System.Linq;
@@ -10,55 +11,6 @@ namespace Just.WPF
 {
     public partial class MainWindow
     {
-        #region Dispatcher
-        public static void DispatcherInvoke(Action action)
-        {
-            Instance.Dispatcher.Invoke(action);
-        }
-        public static TResult DispatcherInvoke<TResult>(Func<TResult> func)
-        {
-            return Instance.Dispatcher.Invoke(func);
-        }
-        #endregion
-
-        #region Setting
-        private static Configuration cfg = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-        public static string ReadSetting(string key, string defaultValue = null)
-        {
-            var value = cfg.AppSettings.Settings[key]?.Value;
-            if (string.IsNullOrEmpty(value))
-                value = defaultValue;
-            return value;
-        }
-        public static void WriteSetting(string key, string value)
-        {
-            var setting = cfg.AppSettings.Settings[key];
-            if (setting == null)
-                cfg.AppSettings.Settings.Add(key, value);
-            else
-                setting.Value = value;
-        }
-        public static T ReadSetting<T>(string key, T defaultValue = default(T))
-        {
-            var value = cfg.AppSettings.Settings[key]?.Value;
-            if (string.IsNullOrEmpty(value))
-                return defaultValue;
-            return (T)Convert.ChangeType(value, typeof(T));
-        }
-        public static void WriteSetting<T>(string key, T value)
-        {
-            var setting = cfg.AppSettings.Settings[key];
-            if (setting == null)
-                cfg.AppSettings.Settings.Add(key, value?.ToString());
-            else
-                setting.Value = value?.ToString();
-        }
-        public static void SaveSetting()
-        {
-            cfg.Save();
-        }
-        #endregion
-
         #region Window
         /// <summary>
         /// 显示子窗口
@@ -126,7 +78,7 @@ namespace Just.WPF
                 //保存设置
                 if(tbContent.Items[0] is TabItem item 
                     && item.Content is ContentControl content 
-                    && content.Content is IWriteSettings writer)
+                    && content.Content is IChildViews writer)
                 {
                     writer.WriteSettings();
                 }
@@ -144,19 +96,6 @@ namespace Just.WPF
                     return item;
             }
             return null;
-        }
-        #endregion
-
-        #region StatusBar
-        /// <summary>
-        /// 显示状态文本
-        /// </summary>
-        /// <param name="text"></param>
-        public void ShowStatus(string text = "就绪", bool isProcess = false, int process = 0)
-        {
-            _vm.StatusText = text;
-            _vm.IsShowStatusProcess = isProcess;
-            _vm.StatusProcess = process;
         }
         #endregion
     }

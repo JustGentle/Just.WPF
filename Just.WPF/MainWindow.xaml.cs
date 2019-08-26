@@ -1,4 +1,6 @@
-﻿using Just.WPF.Views;
+﻿using Just.Base;
+using Just.Base.Views;
+using Just.WPF.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,6 +55,7 @@ namespace Just.WPF
         /// <param name="e"></param>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            _vm.MainWindow = this;
             CreateMenu();
             foreach (var item in _vm.StartOn)
             {
@@ -68,7 +71,7 @@ namespace Just.WPF
                 return;
             }
             CloseAll();
-            SaveSetting();
+            MainWindowVM.SaveSetting();
         }
         #endregion
 
