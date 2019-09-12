@@ -65,12 +65,15 @@ namespace Just.WPF
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!MessageWin.Confirm("确定退出?") ?? true)
+            if (tbContent.HasItems)
             {
-                e.Cancel = true;
-                return;
+                if (!MessageWin.Confirm("确定退出?") ?? true)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                CloseAll();
             }
-            CloseAll();
             MainWindowVM.SaveSetting();
         }
         #endregion

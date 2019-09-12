@@ -57,15 +57,22 @@ namespace Just.Base
     'ClassName': 'MongoSyncCtrl'
   },
   {
+    'Id': 'WebsiteMapper',
+    'Parent': 'iOffice10',
+    'Header': '站点文件映射*',
+    'ClassName': 'WebsiteMapperCtrl'
+  },
+  {
     'Id': 'ConfigManager',
     'Parent': 'iOffice10',
     'Header': '配置文件管理*',
     'ClassName': 'ConfigManagerCtrl'
   },
   {
-    'Id': 'WebsiteMapper',
-    'Header': '站点文件映射*',
-    'ClassName': 'WebsiteMapperCtrl'
+    'Id': 'ScriptManager',
+    'Parent': 'iOffice10',
+    'Header': '常用脚本管理*',
+    'ClassName': 'ScriptManagerCtrl'
   },
   {
     'Id': 'ChangesetGetter',

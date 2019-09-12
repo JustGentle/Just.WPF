@@ -11,21 +11,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Just.Base;Component/Theme/Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-
-            <Style x:Key="MutliLineBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-                <Setter Property="AcceptsReturn" Value="True"/>
-                <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
-                <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
-                <Setter Property="VerticalContentAlignment" Value="Top"/>
-            </Style>
-            <Style x:Key="CheckMenuItem" TargetType="Border" BasedOn="{StaticResource MenuItem}">
-                <Setter Property="Padding" Value="0"/>
-            </Style>
-            <Style x:Key="MenuItemCheckBox" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
-                <Setter Property="Padding" Value="10"/>
-                <Setter Property="Margin" Value="10,0,0,0"/>
-                <Setter Property="VerticalContentAlignment" Value="Center"/>
-            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -36,7 +21,7 @@
         </Grid.RowDefinitions>
 
         <WrapPanel Grid.Row="1" Orientation="Horizontal">
-            <Button Click="ButtonOption_Click" ToolTip="Reset" Style="{StaticResource MainButton}" Margin="5,5,0,5" Name="ButtonOption">
+            <Button Click="ButtonOption_Click" Style="{StaticResource MainButton}" Margin="5,5,0,5" Name="ButtonOption">
                 <StackPanel Orientation="Horizontal">
                     <Path
                         x:Name="ExpandIconPath"
@@ -60,31 +45,31 @@
                         </Border>
                         <Border Style="{DynamicResource MenuSeparator}" />
                         <Border Style="{DynamicResource CheckMenuItem}">
-                            <CheckBox IsChecked="{Binding IsAdd}" Tag="1" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="IgnoreCase：不区分大小写的匹配。">忽略大小写</CheckBox>
+                            <CheckBox Tag="1" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="IgnoreCase：不区分大小写的匹配。">忽略大小写</CheckBox>
                         </Border>
                         <Border Style="{DynamicResource CheckMenuItem}">
-                            <CheckBox IsChecked="{Binding IsAdd}" Tag="2" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="Multiline：更改 ^ 和 $ 的含义，使它们分别在任意一行的行首和行尾匹配，而不仅仅在整个字符串的开头和结尾匹配。">多行模式</CheckBox>
+                            <CheckBox Tag="2" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="Multiline：更改 ^ 和 $ 的含义，使它们分别在任意一行的行首和行尾匹配，而不仅仅在整个字符串的开头和结尾匹配。">多行模式</CheckBox>
                         </Border>
                         <Border Style="{DynamicResource CheckMenuItem}">
-                            <CheckBox IsChecked="{Binding IsAdd}" Tag="16" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="Singleline：更改点 (.) 的含义，以使它与每个字符（而不是除 \n 之外的所有字符）匹配。">单行模式</CheckBox>
+                            <CheckBox Tag="16" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="Singleline：更改点 (.) 的含义，以使它与每个字符（而不是除 \n 之外的所有字符）匹配。">单行模式</CheckBox>
                         </Border>
                         <Border Style="{DynamicResource CheckMenuItem}">
-                            <CheckBox IsChecked="{Binding IsAdd}" Tag="32" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="IgnorePatternWhitespace：消除模式中的非转义空白并启用由 # 标记的注释。但是，此值不影响或消除标记单独的正则表达式语言元素的开头的字符类、数值量词或令牌中的空白。">忽略空白</CheckBox>
+                            <CheckBox Tag="32" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="IgnorePatternWhitespace：消除模式中的非转义空白并启用由 # 标记的注释。但是，此值不影响或消除标记单独的正则表达式语言元素的开头的字符类、数值量词或令牌中的空白。">忽略空白</CheckBox>
                         </Border>
                         <Border Style="{DynamicResource CheckMenuItem}">
-                            <CheckBox IsChecked="{Binding IsAdd}" Tag="64" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="RightToLeft：指定搜索从右向左而不是从左向右进行。">从右向左</CheckBox>
+                            <CheckBox Tag="64" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="RightToLeft：指定搜索从右向左而不是从左向右进行。">从右向左</CheckBox>
                         </Border>
                         <Border Style="{DynamicResource CheckMenuItem}">
-                            <CheckBox IsChecked="{Binding IsAdd}" Tag="4" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="ExplicitCapture：指定唯一有效的捕获是显式命名或编号的 (?&lt;name&gt;…) 形式的组。这使未命名的圆括号可以充当非捕获组，并且不会使表达式的语法 (?:...) 显得笨拙。">仅显式捕获</CheckBox>
+                            <CheckBox Tag="4" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="ExplicitCapture：指定唯一有效的捕获是显式命名或编号的 (?&lt;name&gt;…) 形式的组。这使未命名的圆括号可以充当非捕获组，并且不会使表达式的语法 (?:...) 显得笨拙。">仅显式捕获</CheckBox>
                         </Border>
                         <Border Style="{DynamicResource CheckMenuItem}">
-                            <CheckBox IsChecked="{Binding IsAdd}" Tag="8" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="Compiled：指定将正则表达式编译为程序集。这会产生更快的执行速度，但会增加启动时间。">编译模式</CheckBox>
+                            <CheckBox Tag="8" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="Compiled：指定将正则表达式编译为程序集。这会产生更快的执行速度，但会增加启动时间。">编译模式</CheckBox>
                         </Border>
                         <Border Style="{DynamicResource CheckMenuItem}">
-                            <CheckBox IsChecked="{Binding IsAdd}" Tag="256" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="ECMAScript：为表达式启用符合 ECMAScript 的行为。">ECMAScript</CheckBox>
+                            <CheckBox Tag="256" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="ECMAScript：为表达式启用符合 ECMAScript 的行为。">ECMAScript</CheckBox>
                         </Border>
                         <Border Style="{DynamicResource CheckMenuItem}">
-                            <CheckBox IsChecked="{Binding IsAdd}" Tag="512" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="CultureInvariant：指定忽略语言中的区域性差异。">忽略语言区域</CheckBox>
+                            <CheckBox Tag="512" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="CultureInvariant：指定忽略语言中的区域性差异。">忽略语言区域</CheckBox>
                         </Border>
                     </StackPanel>
                 </Border>
