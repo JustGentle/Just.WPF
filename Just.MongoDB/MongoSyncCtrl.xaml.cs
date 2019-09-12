@@ -49,5 +49,10 @@ namespace Just.MongoDB
                 }
             }
         }
+
+        private void ButtonOption_Click(object sender, RoutedEventArgs e)
+        {
+            OptionPopup.IsOpen = !OptionPopup.IsOpen;
+        }
     }
 }

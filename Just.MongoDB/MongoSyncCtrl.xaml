@@ -67,7 +67,7 @@
                 Command="{Binding JsonFolderBrowser}"
                 ToolTip="选择文件夹">
                 <Image Source="/Images/folder.png" Height="22"/>
-                <!--<Path Style="{DynamicResource FolderPath}" Height="12"/>-->
+                <!--<Path Style="{DynamicResource FolderPath}" Stroke="Orange" Height="12"/>-->
             </Button>
             <Button
                 Grid.Column="3"
@@ -76,7 +76,7 @@
                 Command="{Binding JsonFileBrowser}"
                 ToolTip="选择文件">
                 <Image Source="/Images/file.png" Height="22"/>
-                <!--<Path Style="{DynamicResource FilePath}" Height="12"/>-->
+                <!--<Path Style="{DynamicResource FilePath}" Stroke="Blue" Height="12"/>-->
             </Button>
             <Button
                 Grid.Column="4"
@@ -91,72 +91,97 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
-            <WrapPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal">
                 <TextBlock>链接地址:</TextBlock>
                 <TextBox
-                    Width="150"
+                    Width="300"
                     Margin="5,0,0,0"
                     Text="{Binding MongoDBAddress}"
                     ToolTip="MongoDB链接字符串"/>
-                <Button Margin="-1,0,0,0" Content="导出脚本" Command="{Binding ExportDB}" ToolTip="导出MongoDB当前数据脚本"/>
-                <CheckBox
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding IsAdd}">
-                    执行新增
-                </CheckBox>
-                <CheckBox
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding IsUpdate}"
-                    ToolTip="根据关键字,保留当前开关值,更新其他字段（如默认值,显示文字等）">
-                    执行更新
-                </CheckBox>
-                <CheckBox
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding IsRemoveDup}">
-                    移除重复
-                </CheckBox>
-                <CheckBox
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding IsDeleteOver}"
-                    Foreground="{StaticResource RedBrush}"
-                    ToolTip="不在所选脚本中的数据将被删除">
-                    删除多余
-                </CheckBox>
-                <CheckBox
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding IsShowSame}"
-                    ToolTip="显示与脚本完全一致的数据">
-                    显示相同
-                </CheckBox>
-            </WrapPanel>
+                <Button Margin="5,0,0,0" Content="导出数据" Command="{Binding ExportDB}" ToolTip="导出MongoDB当前数据脚本"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Click="ButtonOption_Click" Margin="5,0,0,0" Name="ButtonOption">
+                    <StackPanel Orientation="Horizontal">
+                        <Path
+                            x:Name="ExpandIconPath"
+                            Width="10"
+                            Margin="0,0,5,0">
+                            <Path.Style>
+                                <Style TargetType="Path" BasedOn="{StaticResource DropDownPath}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDeleteOver}" Value="True">
+                                            <Setter Property="Stroke" Value="{StaticResource RedBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                        </Path>
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                    <Setter Property="Text" Value="{Binding OptionText}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDeleteOver}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource RedBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                </Button>
+                <Popup
+                    x:Name="OptionPopup"
+                    AllowsTransparency="True"
+                    Placement="Bottom"
+                    PlacementTarget="{Binding ElementName=ButtonOption}"
+                    StaysOpen="False">
+                    <Border Style="{DynamicResource MenuBorder}">
+                        <StackPanel Name="MenuOptions">
+                            <Border Style="{DynamicResource CheckMenuItem}">
+                                <CheckBox IsChecked="{Binding IsAdd}" Style="{StaticResource MenuItemCheckBox}" Padding="10">执行新增</CheckBox>
+                            </Border>
+                            <Border Style="{DynamicResource CheckMenuItem}">
+                                <CheckBox IsChecked="{Binding IsUpdate}" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="根据关键字,保留当前开关值,更新其他字段（如默认值,显示文字等）">执行更新</CheckBox>
+                            </Border>
+                            <Border Style="{DynamicResource CheckMenuItem}">
+                                <CheckBox IsChecked="{Binding IsRemoveDup}" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="已有数据重复则只保留一个。">移除重复</CheckBox>
+                            </Border>
+                            <Border Style="{DynamicResource CheckMenuItem}">
+                                <CheckBox IsChecked="{Binding IsShowSame}" Style="{StaticResource MenuItemCheckBox}" Padding="10" ToolTip="显示与脚本完全一致的数据。">显示相同</CheckBox>
+                            </Border>
+                            <Border Style="{DynamicResource MenuSeparator}" />
+                            <Border Style="{DynamicResource CheckMenuItem}">
+                                <CheckBox IsChecked="{Binding IsDeleteOver}" Style="{StaticResource MenuItemCheckBox}" Foreground="{StaticResource RedBrush}" Padding="10" ToolTip="慎重！不在所选脚本中的数据将被删除！">删除多余</CheckBox>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </Popup>
+                <Button
+                    Margin="5,0,0,0"
+                    Command="{Binding Check}"
+                    IsEnabled="{Binding SysProfiles,Converter={StaticResource ValueToBoolConverter}}"
+                    Style="{StaticResource GreenButton}"
+                    Content="检查"
+                    ToolTip="仅检查差异数据,不执行同步">
+                </Button>
+            </StackPanel>
             <Button
                 Grid.Column="3"
                 Margin="5,0,0,0"
                 Command="{Binding Execute}"
-                IsEnabled="{Binding SysProfiles,Converter={StaticResource ValueToBoolConverter}}">
-                <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource MainButton}">
-                        <Setter Property="Content" Value="同步"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding HasDBAction}" Value="False">
-                                <Setter Property="Content" Value="检查"/>
-                                <Setter Property="ToolTip" Value="仅检查差异数据,不执行同步"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
+                IsEnabled="{Binding SysProfiles,Converter={StaticResource ValueToBoolConverter}}"
+                Style="{StaticResource MainButton}"
+                Content="同步"
+                ToolTip="按当前选项同步数据到MongoDB">
             </Button>
         </Grid>
         <Grid Grid.Row="2" Margin="0,5,0,0">
             <StackPanel HorizontalAlignment="Left"
                         Orientation="Horizontal"
                         Visibility="{Binding IsJsonView,Converter={StaticResource BoolReverseToVisibilityConverter}}">
-                <TextBlock>查找:</TextBlock>
+                <TextBlock>　查　找:</TextBlock>
                 <TextBox Width="300" Margin="5,0,0,0" Text="{Binding FindText,UpdateSourceTrigger=PropertyChanged}" ToolTip="请输入查找文本">
                     <TextBox.InputBindings>
                         <KeyBinding Command="{Binding Find}" Key="Enter"/>
@@ -170,6 +195,13 @@
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">
                 <Button
+                    Command="{Binding SaveJson}"
+                    Style="{StaticResource MainButton}"
+                    Visibility="{Binding IsJsonView,Converter={StaticResource BoolToVisibilityConverter}}">
+                    另存为
+                </Button>
+                <Button
+                    Margin="5,0,0,0"
                     Command="{Binding SwitchView}"
                     IsEnabled="{Binding Json, Converter={StaticResource ValueToBoolConverter}}">
                     <Button.Style>

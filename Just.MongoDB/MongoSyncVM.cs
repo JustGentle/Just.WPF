@@ -90,6 +90,35 @@ namespace Just.MongoDB
             }
         }
 
+        private ICommand _SaveJson;
+        public ICommand SaveJson
+        {
+            get
+            {
+                _SaveJson = _SaveJson ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    var dlg = new CommonOpenFileDialog();
+
+                    if (dlg.ShowDialog() != CommonFileDialogResult.Ok) return;
+                    var filename = dlg.FileName;
+                    try
+                    {
+                        using (var fw = new StreamWriter(filename, false, Encoding.UTF8))
+                        {
+                            fw.Write(Json);
+                            fw.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("保存脚本错误", ex);
+                        MessageWin.Error("保存脚本失败！\n" + ex.Message);
+                    }
+                });
+                return _SaveJson;
+            }
+        }
+
         private ICommand _CopyJson;
         public ICommand CopyJson
         {
@@ -130,6 +159,7 @@ namespace Just.MongoDB
                             json = new StringBuilder();
                             SysProfiles = new ObservableCollection<CacheSysProfileMode>();
                             Scan(JsonPath);
+                            //全部脚本 = 读取的脚本内容
                             if (json.Length > 0) Json = Format(json.ToString());
                             CopyJson.Execute(_);
                             MainWindowVM.ShowStatus("加载树...");
@@ -140,6 +170,8 @@ namespace Just.MongoDB
                                 node.Children = new MongoNodeCollection(node.Children.ToList().OrderBy(n => n.Key));
                                 node.SetEnableByChildren();
                                 node.IsExpanded = true;
+                                //全部脚本 = 脚本节点生成脚本
+                                Json = GetNodeJson(node, GetNodeLevel(node));
                             }
                             else
                             {
@@ -241,13 +273,28 @@ namespace Just.MongoDB
         public bool IsRemoveDup { get; set; } = true;
         public bool IsDeleteOver { get; set; } = false;
         public bool IsShowSame { get; set; } = true;
+        public string OptionText
+        {
+            get
+            {
+                var count = 0;
+                if (IsAdd) count++;
+                if (IsUpdate) count++;
+                if (IsRemoveDup) count++;
+                if (IsDeleteOver) count++;
+                if (IsShowSame) count++;
+                return $"选项({count})";
+            }
+        }
         public bool HasDBAction
         {
             get
             {
+                if (CheckOnly) return false;
                 return IsAdd || IsUpdate || IsRemoveDup || IsDeleteOver;
             }
         }
+        private bool CheckOnly { get; set; }
 
         private MongoDBHelper mongo = null;
 
@@ -375,6 +422,27 @@ namespace Just.MongoDB
             }
         }
 
+        private ICommand _check;
+        public ICommand Check
+        {
+            get
+            {
+                _check = _check ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    CheckOnly = true;
+                    try
+                    {
+                        Execute.Execute(_);
+                    }
+                    finally
+                    {
+                        CheckOnly = false;
+                    }
+                });
+                return _check;
+            }
+        }
+
         private void InitExecutionTree()
         {
             Tree = new MongoNode();
@@ -427,7 +495,7 @@ namespace Just.MongoDB
         private void OnAdd(CacheSysProfileMode item)
         {
             item.Id = ObjectId.Empty;
-            if (IsAdd)
+            if (IsAdd && !CheckOnly)
             {
                 mongo.InsertOne(item);
             }
@@ -439,7 +507,7 @@ namespace Just.MongoDB
         }
         private void OnDup(CacheSysProfileMode item, CacheSysProfileMode dup)
         {
-            if (IsRemoveDup && dup.Id != ObjectId.Empty)
+            if (IsRemoveDup && !CheckOnly && dup.Id != ObjectId.Empty)
             {
                 mongo.DeleteOne<CacheSysProfileMode>(e => e.Id == dup.Id);
             }
@@ -461,7 +529,7 @@ namespace Just.MongoDB
         private void OnDiff(CacheSysProfileMode item, CacheSysProfileMode diff)
         {
             item.Id = ObjectId.Empty;
-            if (IsUpdate)
+            if (IsUpdate && !CheckOnly)
             {
                 var copy = MongoDBHelper.FromJson<CacheSysProfileMode>(item.ToJson());
                 if (copy.ValueType == diff.ValueType)
@@ -480,7 +548,7 @@ namespace Just.MongoDB
         }
         private void OnNot(CacheSysProfileMode not)
         {
-            if (IsDeleteOver)
+            if (IsDeleteOver && !CheckOnly)
             {
                 mongo.DeleteOne<CacheSysProfileMode>(e => e.Id == not.Id);
             }
@@ -536,7 +604,13 @@ namespace Just.MongoDB
                     node.ImagePath = ResourcesBase + @"/Images/id.png";
                 }
             }
-            else if (value is string || value is bool || value is int || value is long || value is double || value is decimal || value is ObjectId)
+            else if(value is bool)
+            {
+                node.Value = value.ToString().ToLower();
+                node.Type = value.GetType().Name;
+                node.ImagePath = ResourcesBase + @"/Images/id.png";
+            }
+            else if (value is string || value is int || value is long || value is double || value is decimal || value is ObjectId)
             {
                 node.Value = value.ToString();
                 node.Type = value.GetType().Name;
@@ -664,7 +738,7 @@ namespace Just.MongoDB
         }
         #endregion
 
-        #region 导出脚本
+        #region 导出数据
         private ICommand _ExportDB;
         public ICommand ExportDB
         {
@@ -749,7 +823,7 @@ namespace Just.MongoDB
         }
         #endregion
 
-        #region 菜单
+        #region 右键菜单
         //查找
         public static string FindText { get; set; } = string.Empty;
         private ICommand _Find;
@@ -1020,14 +1094,19 @@ namespace Just.MongoDB
              * */
             return node.Key == "[读取结果]" ? -1 : (node.Children?.Any() ?? false) ? 0 : 1;
         }
-        private string GetNodeJson(MongoNode node, int lv = 0)
+        private string GetNodeJson(MongoNode node, int lv = 0, bool? withKey = null)
         {
             if (node == null) return string.Empty;
 
             var sb = new StringBuilder();
             //每级缩进两个空格
-            var lvSpace = new String(' ', Math.Max(0, lv * 2));
-            if (lv > 0) sb.Append($"{lvSpace}\"{node.Key}\":");
+            var lvSpace = new string(' ', Math.Max(0, lv * 2));
+            //withKey指定是否含Key，不指定则由lv决定
+            if (lv > 0)
+            {
+                sb.Append($"{lvSpace}");
+                if ((withKey ?? true)) sb.Append($"\"{node.Key}\": ");
+            }
 
             //不同类型不同起止字符
             string valueOpen = "", valueClose = "";
@@ -1061,6 +1140,7 @@ namespace Just.MongoDB
                     case "decimal":
                     case "bool":
                     case "null":
+                    case "Null":
                         break;
                     default:
                         valueOpen = valueClose = "\"";
@@ -1074,7 +1154,10 @@ namespace Just.MongoDB
                 var itemJsons = new List<string>();
                 foreach (var item in node.Children)
                 {
-                    itemJsons.Add(GetNodeJson(item, lv + 1));
+                    //数组子元素不加Key
+                    bool? childWithKey = null;
+                    if (node.Type == nameof(Array)) childWithKey = false;
+                    itemJsons.Add(GetNodeJson(item, lv + 1, childWithKey));
                 }
                 //负数节点(即不复制的节点)不需要逗号分隔
                 var separator = lv >= 0 ? "," + Environment.NewLine : Environment.NewLine;
@@ -1086,9 +1169,13 @@ namespace Just.MongoDB
                     value += $"{Environment.NewLine}{lvSpace}";
                 }
             }
+            else if(node.Type == nameof(Object) || node.Type == nameof(Array))
+            {
+                value = string.Empty;
+            }
             else
             {
-                value = node.Value;
+                value = node.Value?.Replace("\"", "\\\"");
             }
             sb.Append(value);
             sb.Append(valueClose);
