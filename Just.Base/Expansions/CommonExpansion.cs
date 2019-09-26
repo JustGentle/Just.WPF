@@ -54,5 +54,10 @@ namespace Just
         {
             return win.Dispatcher.Invoke(func);
         }
+
+        public static String[] Split(this string str, params string[] separator)
+        {
+            return str?.Split(separator, StringSplitOptions.None);
+        }
     }
 }

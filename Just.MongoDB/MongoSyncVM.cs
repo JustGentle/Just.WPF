@@ -97,7 +97,13 @@ namespace Just.MongoDB
             {
                 _SaveJson = _SaveJson ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
-                    var dlg = new CommonOpenFileDialog();
+                    var dlg = new CommonSaveFileDialog()
+                    {
+                        DefaultFileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}",
+                        DefaultExtension = "json"
+                    };
+                    dlg.Filters.Add(new CommonFileDialogFilter("脚本文件", "json"));
+                    dlg.Filters.Add(new CommonFileDialogFilter("文本文件", "txt"));
 
                     if (dlg.ShowDialog() != CommonFileDialogResult.Ok) return;
                     var filename = dlg.FileName;
@@ -108,6 +114,7 @@ namespace Just.MongoDB
                             fw.Write(Json);
                             fw.Close();
                         }
+                        NotifyWin.Info("保存脚本成功");
                     }
                     catch (Exception ex)
                     {
@@ -137,6 +144,7 @@ namespace Just.MongoDB
             }
         }
 
+        private const string ContainerNodeText = "[读取结果]";
         private StringBuilder json;
         private ICommand _ReadJson;
         public ICommand ReadJson
@@ -166,12 +174,12 @@ namespace Just.MongoDB
                             MainWindowVM.DispatcherInvoke(() => { Tree = new MongoNode(); });
                             if (SysProfiles.Any())
                             {
-                                var node = AddTreeNode("[读取结果]", SysProfiles, Tree);
+                                var node = AddTreeNode(ContainerNodeText, SysProfiles, Tree);
                                 node.Children = new MongoNodeCollection(node.Children.ToList().OrderBy(n => n.Key));
                                 node.SetEnableByChildren();
                                 node.IsExpanded = true;
                                 //全部脚本 = 脚本节点生成脚本
-                                Json = GetNodeJson(node, GetNodeLevel(node));
+                                Json = GetNodeOutterJson(node);
                             }
                             else
                             {
@@ -1033,7 +1041,7 @@ namespace Just.MongoDB
                 {
                     _ = _ ?? GetSelectedItem();
                     if (_ == null) return;
-                    var json = GetNodeJson(_, GetNodeLevel(_));
+                    var json = GetNodeOutterJson(_);
                     if (string.IsNullOrEmpty(json)) return;
                     MainWindowVM.DispatcherInvoke(() =>
                     {
@@ -1054,7 +1062,7 @@ namespace Just.MongoDB
                 {
                     _ = _ ?? GetSelectedItem();
                     if (_ == null) return;
-                    var json = GetNodeJson(_, GetNodeLevel(_));
+                    var json = GetNodeOutterJson(_);
                     if (string.IsNullOrEmpty(json))
                     {
                         MainWindowVM.DispatcherInvoke(() =>
@@ -1086,31 +1094,19 @@ namespace Just.MongoDB
                 return _ShowNodeJson;
             }
         }
-        private int GetNodeLevel(MongoNode node)
-        {
-            /* -1: 根节点 - 不复制Key, 不加OpenClose
-             * 1: 叶子节点 - 复制Key, 加OpenClose
-             * 0: 其他节点 - 不复制Key, 加OpenClose
-             * */
-            return node.Key == "[读取结果]" ? -1 : (node.Children?.Any() ?? false) ? 0 : 1;
-        }
-        private string GetNodeJson(MongoNode node, int lv = 0, bool? withKey = null)
+
+        //TODO: 忽略Null值节点
+        private string GetNodeOutterJson(MongoNode node, bool withKey = false)
         {
             if (node == null) return string.Empty;
-
-            var sb = new StringBuilder();
-            //每级缩进两个空格
-            var lvSpace = new string(' ', Math.Max(0, lv * 2));
-            //withKey指定是否含Key，不指定则由lv决定
-            if (lv > 0)
-            {
-                sb.Append($"{lvSpace}");
-                if ((withKey ?? true)) sb.Append($"\"{node.Key}\": ");
-            }
-
+            //是否包含Key（顶级不含，数组元素不含，属性含）
+            var keyOrEmpty = withKey ? $"\"{node.Key}\": " : null;
             //不同类型不同起止字符
-            string valueOpen = "", valueClose = "";
-            if (lv >= 0)
+            string valueOpen = null, valueClose = null;
+            //容器节点各子节点分离，不含起止符
+            var isBreak = node.Key == ContainerNodeText;
+            if (!isBreak)
+            {
                 switch (node.Type)
                 {
                     case nameof(Object):
@@ -1129,57 +1125,52 @@ namespace Just.MongoDB
                         valueOpen = "ISODate(\"";
                         valueClose = "\")";
                         break;
-                    case nameof(Boolean):
-                    case nameof(Int32):
-                    case nameof(Int64):
-                    case nameof(Double):
-                    case nameof(Decimal):
-                    case nameof(Decimal128):
-                    case "int":
-                    case "long":
-                    case "decimal":
-                    case "bool":
-                    case "null":
-                    case "Null":
-                        break;
-                    default:
+                    case nameof(String):
+                    case "string":
                         valueOpen = valueClose = "\"";
                         break;
-                }
-
-            sb.Append(valueOpen);
-            var value = string.Empty;
-            if (node.Children?.Any() ?? false)
-            {
-                var itemJsons = new List<string>();
-                foreach (var item in node.Children)
-                {
-                    //数组子元素不加Key
-                    bool? childWithKey = null;
-                    if (node.Type == nameof(Array)) childWithKey = false;
-                    itemJsons.Add(GetNodeJson(item, lv + 1, childWithKey));
-                }
-                //负数节点(即不复制的节点)不需要逗号分隔
-                var separator = lv >= 0 ? "," + Environment.NewLine : Environment.NewLine;
-                value = string.Join(separator, itemJsons);
-                if (!string.IsNullOrEmpty(value))
-                {
-                    //负数节点第一个子节点不需要换行
-                    if (lv >= 0) value = $"{Environment.NewLine}{lvSpace}" + value;
-                    value += $"{Environment.NewLine}{lvSpace}";
+                    default:
+                        break;
                 }
             }
-            else if(node.Type == nameof(Object) || node.Type == nameof(Array))
+            return $"{keyOrEmpty}{valueOpen}{GetNodeInnerJson(node, isBreak)}{valueClose}";
+        }
+        private string GetNodeInnerJson(MongoNode node, bool isBreak = false)
+        {
+            if (node == null) return string.Empty;
+            var sb = new StringBuilder();
+            if (node.Type == nameof(Object) || node.Type == nameof(Array))
             {
-                value = string.Empty;
+                //子节点
+                if (node.Children != null && node.Children.Any())
+                {
+                    var indent = "  ";//缩进
+                    var itemJsons = new List<string>();
+                    foreach (var item in node.Children)
+                    {
+                        //数组子元素不含Key，对象属性含Key
+                        bool childWithKey = true;
+                        if (node.Type == nameof(Array)) childWithKey = false;
+                        var itemJson = GetNodeOutterJson(item, childWithKey);
+                        var lines = itemJson.Split(Environment.NewLine);
+                        //每行加缩进
+                        foreach (var line in lines)
+                        {
+                            sb.AppendLine().Append(indent).Append(line);
+                        }
+                        //容器节点各子节点分离，不含分隔符
+                        if (!isBreak) sb.Append(",");
+                    }
+                    //移除最后一个分隔符
+                    if (!isBreak) sb.Remove(sb.Length - 1, 1);
+                    sb.AppendLine();
+                }
             }
             else
             {
-                value = node.Value?.Replace("\"", "\\\"");
+                //双引号转义
+                sb.Append(node.Value?.Replace("\"", "\\\""));
             }
-            sb.Append(value);
-            sb.Append(valueClose);
-
             return sb.ToString();
         }
         #endregion
