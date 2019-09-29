@@ -41,6 +41,7 @@ namespace Just.WPF
                     Logger.Fatal(msg, new Exception(e.ExceptionObject?.ToString()));
                 }
                 MessageWin.Error("系统发生未处理的异常", "系统错误");
+                ShutdownWhenNoMainWindow();
             }
             catch (Exception ex)
             {
@@ -55,6 +56,7 @@ namespace Just.WPF
                 Logger.Fatal("Task线程异常", e.Exception);
                 e.SetObserved();//设置该异常已察觉（这样处理后就不会引起程序崩溃）
                 MessageWin.Error("系统发生未处理的异常", "系统错误");
+                ShutdownWhenNoMainWindow();
             }
             catch (Exception ex)
             {
@@ -69,14 +71,19 @@ namespace Just.WPF
                 e.Handled = true; //把 Handled 属性设为true，表示此异常已处理，程序可以继续运行，不会强制退出
                 Logger.Fatal("UI线程异常", e.Exception);
                 MessageWin.Error("系统发生未处理的异常", "系统错误");
-                if (MainWindow.Visibility != Visibility.Visible)
-                {
-                    Application.Current.Shutdown();
-                }
+                ShutdownWhenNoMainWindow();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "UI线程发生未处理错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ShutdownWhenNoMainWindow()
+        {
+            if (MainWindow.Visibility != Visibility.Visible)
+            {
+                Application.Current.Shutdown();
             }
         }
     }
