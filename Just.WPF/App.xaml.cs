@@ -69,6 +69,10 @@ namespace Just.WPF
                 e.Handled = true; //把 Handled 属性设为true，表示此异常已处理，程序可以继续运行，不会强制退出
                 Logger.Fatal("UI线程异常", e.Exception);
                 MessageWin.Error("系统发生未处理的异常", "系统错误");
+                if (MainWindow.Visibility != Visibility.Visible)
+                {
+                    Application.Current.Shutdown();
+                }
             }
             catch (Exception ex)
             {
