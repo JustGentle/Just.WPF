@@ -1,0 +1,133 @@
+﻿<UserControl x:Class="Just.VersionFile.VersionFileCtrl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Just.VersionFile"
+             xmlns:cvt="clr-namespace:Just.Base.Converters;assembly=Just.Base"
+             xmlns:v="clr-namespace:Just.Base.Views;assembly=Just.Base"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Just.Base;Component/Theme/Default.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <cvt:BoolReverseConverter x:Key="BoolReverseConverter" />
+            <Thickness x:Key="LineMargin" Top="5" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            
+            <RowDefinition Height="auto"/>
+            <RowDefinition />
+
+            <RowDefinition Height="auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition />
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+        <v:WaitLayer
+            Grid.Row="1"
+            Grid.RowSpan="99"
+            Grid.ColumnSpan="99"
+            Panel.ZIndex="{Binding Doing}"
+            Visibility="{Binding Doing, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="升级包路径："/>
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox ToolTip="请选择路径"
+                     Text="{Binding PackFolder}" IsEnabled="{Binding Doing,Converter={StaticResource BoolReverseConverter}}" />
+            <Button
+                Grid.Column="1"
+                Margin="-1,0,0,0"
+                Padding="5,0"
+                Command="{Binding PackFolderBrowser}"
+                ToolTip="选择文件夹"
+                IsEnabled="{Binding Doing,Converter={StaticResource BoolReverseConverter}}">
+                <Image Source="/Images/folder.png" Height="22"/>
+                <!--<Path Style="{DynamicResource FolderPath}" Stroke="Orange" Height="12"/>-->
+            </Button>
+        </Grid>
+        <Button Grid.Row="0" Grid.Column="2"
+                Margin="5,0,0,0"
+                Command="{Binding CreateFile}">
+            <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource MainButton}">
+                    <Setter Property="Content" Value="生成" />
+                    <Setter Property="ToolTip" Value="生成版本信息文件（Version.ver）到升级包路径中" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Doing}" Value="True">
+                            <Setter Property="Content" Value="停止" />
+                            <Setter Property="ToolTip" Value="停止生成" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+
+        <TextBlock Grid.Row="1" Grid.Column="0"
+                   Text="　主要版本："
+                   Margin="{StaticResource LineMargin}"/>
+        <TextBox Grid.Row="1" Grid.Column="1"
+                 ToolTip="版本号（例：20190927）"
+                 Margin="{StaticResource LineMargin}"
+                 Text="{Binding MainVersion}"/>
+        <Button Grid.Row="1" Grid.Column="2"
+                Content="读取"
+                ToolTip="读取已经生成的版本文件"
+                Margin="5,5,0,0"
+                Command="{Binding ReadFile}"/>
+        <TextBox Grid.Row="2" Grid.Column="1"
+                 ToolTip="版本说明（例：2019年9月27日 完整升级包）"
+                 Style="{StaticResource MutliLineBox}"
+                 Margin="{StaticResource LineMargin}"
+                 Text="{Binding MainVersionDescription}"/>
+        <StackPanel Grid.Row="2" Grid.Column="2"
+                    HorizontalAlignment="Center"
+                    Orientation="Vertical">
+            <CheckBox HorizontalAlignment="Center"
+                  VerticalAlignment="Top"
+                  VerticalContentAlignment="Center"
+                  Margin="{StaticResource LineMargin}"
+                  Content="校验"
+                  ToolTip="生成结果包含所有文件校验信息"
+                  IsChecked="{Binding HasCheckData}" />
+            <TextBlock HorizontalAlignment="Center"
+                Margin="{StaticResource LineMargin}"
+                       ToolTip="查看已读取或生成的版本信息"
+                       Visibility="{Binding HasCheckData,Converter={StaticResource BoolToVisibilityConverter}}">
+                <Hyperlink Command="{Binding ShowFile}">查看</Hyperlink>
+            </TextBlock>
+        </StackPanel>
+
+        <TextBlock Grid.Row="3" Grid.Column="0"
+                   Text="　补丁版本："
+                   Margin="{StaticResource LineMargin}"/>
+        <TextBox Grid.Row="3" Grid.Column="1"
+                 ToolTip="版本号（例：20190927.1344）"
+                 Margin="{StaticResource LineMargin}"
+                 Text="{Binding PatchVersion}" IsEnabled="{Binding IsPatch}"/>
+        <CheckBox Grid.Row="3" Grid.Column="2" 
+                  HorizontalAlignment="Center" VerticalAlignment="Center" 
+                  Margin="{StaticResource LineMargin}"
+                  ToolTip="是否补丁包"
+                  IsChecked="{Binding IsPatch}" />
+        <TextBox Grid.Row="4" Grid.Column="1"
+                 ToolTip="版本说明（例：某客户-某功能优化补丁-基于版本20190927）" 
+                 Style="{StaticResource MutliLineBox}" 
+                 Margin="{StaticResource LineMargin}"
+                 Text="{Binding PatchVersionDescription}" IsEnabled="{Binding IsPatch}"/>
+    </Grid>
+</UserControl>

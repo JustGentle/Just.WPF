@@ -57,6 +57,12 @@ namespace Just.Base
     'ClassName': 'MongoSyncCtrl'
   },
   {
+    'Id': 'VersionFile',
+    'Parent': 'iOffice10',
+    'Header': '版本文件生成',
+    'ClassName': 'VersionFileCtrl'
+  },
+  {
     'Id': 'WebsiteMapper',
     'Parent': 'iOffice10',
     'Header': '站点文件映射*',

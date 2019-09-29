@@ -20,6 +20,15 @@
       ]
     },
     {
+      "type": "Just.VersionFile.VersionFileCtrl, Just.VersionFile",
+      "services": [
+        {
+          "key": "VersionFileCtrl",
+          "type": "Just.Base.IDependency"
+        }
+      ]
+    },
+    {
       "type": "Just.RegexNet.RegexNetCtrl, Just.RegexNet",
       "services": [
         {

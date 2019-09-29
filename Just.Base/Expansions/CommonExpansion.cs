@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -55,9 +56,31 @@ namespace Just
             return win.Dispatcher.Invoke(func);
         }
 
-        public static String[] Split(this string str, params string[] separator)
+        public static string[] Split(this string str, params string[] separator)
         {
             return str?.Split(separator, StringSplitOptions.None);
+        }
+
+        public static Dictionary<TKey, TValue> AddOrUpdate<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue value)
+        {
+            dict = dict ?? new Dictionary<TKey, TValue>();
+            if (dict.ContainsKey(key))
+            {
+                dict[key] = value;
+            }
+            else
+            {
+                dict.Add(key, value);
+            }
+            return dict;
+        }
+        public static Dictionary<TKey, TValue> AddOrUpdate<TKey, TValue>(this Dictionary<TKey, TValue> dict, IEnumerable<KeyValuePair<TKey, TValue>> keyValues)
+        {
+            foreach (var kv in keyValues)
+            {
+                dict = dict.AddOrUpdate(kv.Key, kv.Value);
+            }
+            return dict;
         }
     }
 }

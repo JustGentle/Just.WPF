@@ -15,6 +15,8 @@ namespace Just.Base.Views
             LayoutRoot.MaxWidth = SystemParameters.WorkArea.Width;
             LayoutRoot.MaxHeight = SystemParameters.WorkArea.Height;
             DataContext = this;
+            Foreground = (SolidColorBrush)Application.Current.FindResource("MainForeBrush");
+            Owner = MainWindowVM.Instance.MainWindow;
         }
 
         #region 静态方法
