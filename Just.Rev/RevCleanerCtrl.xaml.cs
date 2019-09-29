@@ -39,11 +39,6 @@ namespace Just.Rev
             }
         }
 
-        private void UserControl_Unloaded(object sender, System.Windows.RoutedEventArgs e)
-        {
-            WriteSettings();
-        }
-
         public void WriteSettings()
         {
             _vm.WriteSetting();

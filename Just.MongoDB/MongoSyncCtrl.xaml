@@ -9,7 +9,6 @@
              xmlns:GenControls="clr-namespace:GenLibrary.GenControls;assembly=GenLibrary"
              d:DesignHeight="580"
              d:DesignWidth="730"
-             Unloaded="UserControl_Unloaded"
              mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>

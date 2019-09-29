@@ -27,11 +27,6 @@ namespace Just.MongoDB
             _vm.WriteSetting();
         }
 
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            WriteSettings();
-        }
-
         private void TreeListView_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton != MouseButton.Right) return;

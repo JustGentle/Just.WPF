@@ -1,11 +1,14 @@
 ﻿using Just.Base.Views;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 
 namespace Just.Base
@@ -37,8 +40,10 @@ namespace Just.Base
         #region 方法
         public void LoadMainMenu()
         {
+            try
+            {
 #if DEBUG
-            var json = @"
+                var json = @"
 [
   {
     'Id': 'iOffice10',
@@ -93,13 +98,10 @@ namespace Just.Base
   }
 ]
 ";
+                var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json);
 #else
-            var json = ReadSetting(nameof(MainMenu));
+                var nodes = ReadSetting(nameof(MainMenu), new List<MenuNode>());
 #endif
-            Logger.Debug(json);
-            try
-            {
-                var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json ?? string.Empty) ?? new List<MenuNode>();
                 foreach (var item in nodes)
                 {
                     MainMenu.Add(item);
@@ -149,40 +151,23 @@ namespace Just.Base
             return Instance.MainWindow.Dispatcher.Invoke(func);
         }
 
+        private static readonly string _settingFile = AppDomain.CurrentDomain.BaseDirectory + @"\Setting.json";
+        private static readonly JObject _setting = JsonConvert.DeserializeObject<JObject>(
+            File.ReadAllText(_settingFile, Encoding.UTF8));
         private static Configuration cfg = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-        public static string ReadSetting(string key, string defaultValue = null)
-        {
-            var value = cfg.AppSettings.Settings[key]?.Value;
-            if (string.IsNullOrEmpty(value))
-                value = defaultValue;
-            return value;
-        }
-        public static void WriteSetting(string key, string value)
-        {
-            var setting = cfg.AppSettings.Settings[key];
-            if (setting == null)
-                cfg.AppSettings.Settings.Add(key, value);
-            else
-                setting.Value = value;
-        }
         public static T ReadSetting<T>(string key, T defaultValue = default(T))
         {
-            var value = cfg.AppSettings.Settings[key]?.Value;
-            if (string.IsNullOrEmpty(value))
-                return defaultValue;
-            return (T)Convert.ChangeType(value, typeof(T));
+            var token = _setting[key];
+            var value = token == null ? defaultValue : token.ToObject<T>();
+            return value;
         }
         public static void WriteSetting<T>(string key, T value)
         {
-            var setting = cfg.AppSettings.Settings[key];
-            if (setting == null)
-                cfg.AppSettings.Settings.Add(key, value?.ToString());
-            else
-                setting.Value = value?.ToString();
+            _setting[key] = value == null ? null : JToken.FromObject(value);
         }
         public static void SaveSetting()
         {
-            cfg.Save();
+            File.WriteAllText(_settingFile, _setting.ToString(), Encoding.UTF8);
         }
         #endregion
     }

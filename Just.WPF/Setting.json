@@ -1,0 +1,73 @@
+{
+  "MainMenu": [
+    {
+      "Id": "iOffice10",
+      "Header": "iOffice10"
+    },
+    {
+      "Id": "RevCleaner",
+      "Parent": "iOffice10",
+      "Header": "历史补丁清理",
+      "ClassName": "RevCleanerCtrl"
+    },
+    {
+      "Id": "MongoSync",
+      "Parent": "iOffice10",
+      "Header": "MongoDB同步",
+      "ClassName": "MongoSyncCtrl"
+    },
+    {
+      "Id": "VersionFile",
+      "Parent": "iOffice10",
+      "Header": "版本文件生成",
+      "ClassName": "VersionFileCtrl"
+    },
+    {
+      "Id": "RegexNet",
+      "Header": "正则表达式",
+      "ClassName": "RegexNetCtrl"
+    }
+  ],
+  "VersionFileCtrl.IgnoreHashs": [
+    //开发文件夹
+    ".vscode/",
+    "obj/",
+    "Properties/",
+    "App_Data/",
+    "App_Start/",
+    "Controllers/",
+    "Models/",
+    "Log/",
+    "node_modules/",
+    "gulp_modules/",
+    "distChanged/",
+    //开发文件
+    ".eslintrc",
+    ".jshintrc",
+    "Global.asax",
+    "Global.asax.cs",
+    "Startup.cs",
+    "gulpfile.js",
+    "Integration.iml",
+    "iOffice10.Integration.csproj",
+    "iOffice10.Integration.csproj.user",
+    "iOffice10.Integration.csproj.vspscc",
+    //开发配置文件
+    "log4net.config",
+    "log4net.Debug.config",
+    "log4net.Release.config",
+    "package.json",
+    "packages.config",
+    "Web.Debug.config",
+    "Web.Release.config",
+    //可更改文件
+    "favicon.ico",
+    "hongfan.ico",
+    "connectionStrings.config",
+    "db.config",
+    "sso.config",
+    "PrivilegeSetting.config",
+    "serviceModelClient.config",
+    "Version.ver"
+  ]
+}

@@ -16,7 +16,7 @@ namespace Just.WPF
         private IContainer DependencyResolverInitialize()
         {
             var config = new ConfigurationBuilder();
-            config.AddJsonFile("autofac.json");
+            config.AddJsonFile("Autofac.json");
             var module = new ConfigurationModule(config.Build());
             var builder = new ContainerBuilder();
             builder.RegisterModule(module);
@@ -35,28 +35,12 @@ namespace Just.WPF
         {
             if (code == null || code == string.Empty)
                 return;
-            string className = code;
-            UserControl view = null;
-            try
-            {
-                view = Container.ResolveNamed<IDependency>(className) as UserControl;
-                if (view == null)
-                {
-                    Logger.Warn($"【{title}】初始化失败");
-                    MessageWin.Warn($"【{title}】初始化失败");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"【{title}】初始化错误", ex);
-                MessageWin.Error($"【{title}】初始化错误");
-                return;
-            }
 
             var tab = GetTabItem(code);
             if (tab == null)
             {
+                var view = CreateView(code, title);
+                if (view == null) return;
                 tab = new TabItem
                 {
                     Tag = code,
@@ -74,9 +58,42 @@ namespace Just.WPF
             {
                 tab.IsSelected = true;
                 if (isReOpen)
-                    tab.Content = view;
+                {
+
+                    var view = CreateView(code, title);
+                    if (view == null) return;
+                    tab.Content = CreateView(code, title);
+                }
             }
         }
+        private UserControl CreateView(string className, string title)
+        {
+            UserControl view = null;
+            try
+            {
+                view = Container.ResolveNamed<IDependency>(className) as UserControl;
+                if (view == null)
+                {
+                    Logger.Warn($"【{title}】初始化失败");
+                    MessageWin.Warn($"【{title}】初始化失败");
+                    return null;
+                }
+                view.Unloaded += ChildView_Unloaded;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"【{title}】初始化错误", ex);
+                MessageWin.Error($"【{title}】初始化错误");
+                return null;
+            }
+            return view;
+        }
+
+        private void ChildView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            (sender as IChildView)?.WriteSettings();
+        }
+
         /// <summary>
         /// 关闭子窗口
         /// </summary>
@@ -94,6 +111,16 @@ namespace Just.WPF
         {
             var item = GetTabItem(code);
             if (item == null) return;
+            CloseWindow(item);
+        }
+        private void CloseWindow(TabItem item)
+        {
+            if (item == null) return;
+            if (item.Content is ContentControl content
+                && content.Content is IChildView writer)
+            {
+                writer.WriteSettings();
+            }
             this.tbContent.Items.Remove(item);
         }
 
@@ -101,14 +128,15 @@ namespace Just.WPF
         {
             while (tbContent.HasItems)
             {
-                //保存设置
-                if(tbContent.Items[0] is TabItem item 
-                    && item.Content is ContentControl content 
-                    && content.Content is IChildView writer)
+                var item = tbContent.Items[0] as TabItem;
+                if(item == null)
                 {
-                    writer.WriteSettings();
+                    this.tbContent.Items.RemoveAt(0);
                 }
-                this.tbContent.Items.RemoveAt(0);
+                else
+                {
+                    CloseWindow(item);
+                }
             }
         }
 

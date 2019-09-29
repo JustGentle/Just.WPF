@@ -23,6 +23,7 @@ namespace Just.VersionFile
     {
         private const string KeyMainVersion = "Main";
         private const string KeyPatchVersion = "Patch";
+        private const string VersionFileName = "Version.ver";
         private VersionFileInfo _versionFile = new VersionFileInfo();
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
@@ -95,7 +96,7 @@ namespace Just.VersionFile
                             MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("版本号不能为空"); });
                             return;
                         }
-                        var path = PackFolder + @"\Version.ver";
+                        var path = $@"{PackFolder}\{VersionFileName}";
                         if (File.Exists(path))
                         {
                             if (MainWindowVM.DispatcherInvoke(() => MessageWin.Confirm("版本信息文件已存在，是否覆盖？")) != true)
@@ -161,21 +162,17 @@ namespace Just.VersionFile
             }
         }
         //不取哈希的文件夹(反斜杠结尾)、文件
-        private string IgnoreHashs = ".vscode/,obj/,Properties/,App_Data/,App_Start/,Controllers/,Models/,Log/,node_modules/,gulp_modules/,distChanged/" //开发文件夹
-            + ",.eslintrc,.jshintrc,Global.asax,Global.asax.cs,Startup.cs,gulpfile.js,Integration.iml,iOffice10.Integration.csproj,iOffice10.Integration.csproj.user,iOffice10.Integration.csproj.vspscc"//开发文件
-            + ",log4net.config,log4net.Debug.config,log4net.Release.config,package.json,packages.config,Web.Debug.config,Web.Release.config"//开发配置文件
-            + ",favicon.ico,hongfan.ico,connectionStrings.config,db.config,sso.config,PrivilegeSetting.config,serviceModelClient.config";//可更改文件
-        private string[] IgnoreHashArr => IgnoreHashs?.Split(',');
+        private string[] IgnoreHashs { get; set; }
         private Dictionary<string, string> GetAllFileHash()
         {
             var result = new Dictionary<string, string>();
             //1.取顶层文件
             var files = Directory.GetFiles(PackFolder)
-                .Where(f => !IgnoreHashArr.Any(i => f.Equals($@"{PackFolder}\{i}", StringComparison.OrdinalIgnoreCase)))
+                .Where(f => !IgnoreHashs.Any(i => f.Equals($@"{PackFolder}\{i}", StringComparison.OrdinalIgnoreCase)))
                 .ToList();
             //2.取顶层目录
             var dirs = Directory.GetDirectories(PackFolder)
-                .Where(d => !IgnoreHashArr.Any(i => $"{d}/".Equals($@"{PackFolder}\{i}", StringComparison.OrdinalIgnoreCase)))
+                .Where(d => !IgnoreHashs.Any(i => $"{d}/".Equals($@"{PackFolder}\{i}", StringComparison.OrdinalIgnoreCase)))
                 .ToList();
             //3.取子目录文件
             foreach (var dir in dirs)
@@ -192,7 +189,8 @@ namespace Just.VersionFile
                 try
                 {
                     var file = files[i];
-                    result.Add(file.Remove(0, PackFolder.Length), MD5.GetFileHash(file));
+                    var key = file.Remove(0, PackFolder.Length + 1).Replace("\\", "/");
+                    result.Add(key, MD5.GetFileHash(file));
                     if (DateTime.Now.Ticks - timer > interval)
                     {
                         timer = DateTime.Now.Ticks;
@@ -214,7 +212,10 @@ namespace Just.VersionFile
             {
                 _ReadFile = _ReadFile ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
-                    var dlg = new CommonOpenFileDialog();
+                    var dlg = new CommonOpenFileDialog
+                    {
+                        DefaultFileName = VersionFileName
+                    };
                     dlg.Filters.Add(new CommonFileDialogFilter("版本文件", "ver"));
                     dlg.Filters.Add(new CommonFileDialogFilter("所有文件", "*"));
 
@@ -313,8 +314,8 @@ namespace Just.VersionFile
         {
             MainWindowVM.WriteSetting($"{nameof(VersionFileCtrl)}.{nameof(HasCheckData)}", HasCheckData);
             MainWindowVM.WriteSetting($"{nameof(VersionFileCtrl)}.{nameof(PackFolder)}", PackFolder);
-            MainWindowVM.WriteSetting($"{nameof(VersionFileCtrl)}.{nameof(MainVersion)}", MainVersion);
-            MainWindowVM.WriteSetting($"{nameof(VersionFileCtrl)}.{nameof(MainVersionDescription)}", MainVersionDescription);
+            //MainWindowVM.WriteSetting($"{nameof(VersionFileCtrl)}.{nameof(MainVersion)}", MainVersion);
+            //MainWindowVM.WriteSetting($"{nameof(VersionFileCtrl)}.{nameof(MainVersionDescription)}", MainVersionDescription);
         }
         #endregion
     }
