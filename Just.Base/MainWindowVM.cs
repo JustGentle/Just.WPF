@@ -151,7 +151,7 @@ namespace Just.Base
             return Instance.MainWindow.Dispatcher.Invoke(func);
         }
 
-        private static readonly string _settingFile = AppDomain.CurrentDomain.BaseDirectory + @"\Setting.json";
+        private static readonly string _settingFile = $@"{AppDomain.CurrentDomain.BaseDirectory}\{ConfigurationManager.AppSettings["setting"]}";
         private static readonly JObject _setting = JsonConvert.DeserializeObject<JObject>(
             File.ReadAllText(_settingFile, Encoding.UTF8));
         private static Configuration cfg = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);

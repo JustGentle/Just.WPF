@@ -16,7 +16,7 @@ namespace Just.WPF
         private IContainer DependencyResolverInitialize()
         {
             var config = new ConfigurationBuilder();
-            config.AddJsonFile("Autofac.json");
+            config.AddJsonFile(System.Configuration.ConfigurationManager.AppSettings["autofac"]);
             var module = new ConfigurationModule(config.Build());
             var builder = new ContainerBuilder();
             builder.RegisterModule(module);
