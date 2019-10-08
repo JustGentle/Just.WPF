@@ -128,8 +128,7 @@ namespace Just.WPF
         {
             while (tbContent.HasItems)
             {
-                var item = tbContent.Items[0] as TabItem;
-                if(item == null)
+                if (!(tbContent.Items[0] is TabItem item))
                 {
                     this.tbContent.Items.RemoveAt(0);
                 }
