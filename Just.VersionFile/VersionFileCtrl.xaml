@@ -56,8 +56,7 @@
                 Command="{Binding PackFolderBrowser}"
                 ToolTip="选择文件夹"
                 IsEnabled="{Binding Doing,Converter={StaticResource BoolReverseConverter}}">
-                <Image Source="/Images/folder.png" Height="22"/>
-                <!--<Path Style="{DynamicResource FolderPath}" Stroke="Orange" Height="12"/>-->
+                <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
             </Button>
         </Grid>
         <Button Grid.Row="0" Grid.Column="2"

@@ -17,6 +17,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <cvt:BoolToVisibilityConverter x:Key="BoolReverseToVisibilityConverter" Reverse="True" />
             <cvt:BoolReverseConverter x:Key="BoolReverseConverter" />
             <cvt:ValueToBoolConverter x:Key="ValueToBoolConverter" />
         </ResourceDictionary>
@@ -64,9 +65,10 @@
             <Button
                 Grid.Column="2"
                 Margin="-1,0,0,0"
+                Padding="5,0"
                 Command="{Binding WebRootFolderBrowser}"
                 IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}">
-                ...
+                <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
             </Button>
             <Button
                 Grid.Column="3"
@@ -109,9 +111,10 @@
             <Button
                 Grid.Column="4"
                 Margin="-1,0,5,0"
+                Padding="5,0"
                 Command="{Binding BackupFolderBrowser}"
                 IsEnabled="{Binding Backup}">
-                ...
+                <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
             </Button>
         </Grid>
         <Grid Grid.Row="2">
@@ -129,12 +132,16 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid Width="Auto">
-                                    <Image
-                                        Width="16"
-                                        Height="Auto"
-                                        Margin="0,-3,0,0"
-                                        HorizontalAlignment="Left"
-                                        Source="{Binding ImagePath}" />
+                                    <Path Style="{DynamicResource FolderPath}"
+                                          MaxWidth="16" MaxHeight="16"
+                                          Margin="0,-3,0,0"
+                                          HorizontalAlignment="Left"
+                                          Visibility="{Binding IsFolder,Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    <Path Style="{DynamicResource FilePath}"
+                                          MaxWidth="16" MaxHeight="16"
+                                          Margin="0,-3,0,0"
+                                          HorizontalAlignment="Left"
+                                          Visibility="{Binding IsFolder,Converter={StaticResource BoolReverseToVisibilityConverter}}" />
                                     <TextBlock
                                         x:Name="textBlock"
                                         Margin="18,0,0,0"

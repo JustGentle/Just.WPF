@@ -82,5 +82,12 @@ namespace Just
             }
             return dict;
         }
+
+        public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T> list)
+        {
+            if (list == null)
+                return Enumerable.Empty<T>();
+            return list;
+        }
     }
 }

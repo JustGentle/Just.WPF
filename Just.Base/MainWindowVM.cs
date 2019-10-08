@@ -68,10 +68,10 @@ namespace Just.Base
     'ClassName': 'VersionFileCtrl'
   },
   {
-    'Id': 'WebsiteMapper',
+    'Id': 'WebsiteMklink',
     'Parent': 'iOffice10',
-    'Header': '站点文件映射*',
-    'ClassName': 'WebsiteMapperCtrl'
+    'Header': '站点文件映射',
+    'ClassName': 'WebsiteMklinkCtrl'
   },
   {
     'Id': 'ConfigManager',

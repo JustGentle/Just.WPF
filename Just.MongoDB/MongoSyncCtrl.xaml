@@ -65,8 +65,7 @@
                 Padding="5,0"
                 Command="{Binding JsonFolderBrowser}"
                 ToolTip="选择文件夹">
-                <Image Source="/Images/folder.png" Height="22"/>
-                <!--<Path Style="{DynamicResource FolderPath}" Stroke="Orange" Height="12"/>-->
+                <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
             </Button>
             <Button
                 Grid.Column="3"
@@ -74,8 +73,7 @@
                 Padding="5,0"
                 Command="{Binding JsonFileBrowser}"
                 ToolTip="选择文件">
-                <Image Source="/Images/file.png" Height="22"/>
-                <!--<Path Style="{DynamicResource FilePath}" Stroke="Blue" Height="12"/>-->
+                <Path Style="{DynamicResource FilePath}" MaxWidth="16" MaxHeight="16"/>
             </Button>
             <Button
                 Grid.Column="4"

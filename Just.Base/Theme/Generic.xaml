@@ -38,18 +38,24 @@
         <Setter Property="Stroke" Value="Black" />
         <Setter Property="Data" Value="{DynamicResource ClosePathData}" />
     </Style>
-    <PathGeometry x:Key="FilePathData" Figures="M0,0 20,0 30,10 30,36 0,36Z M20,0 20,10 30,10"/>
+    <PathGeometry x:Key="FilePathData" Figures="m13 9h5.5l-5.5-5.5v5.5m-7-7h8l6 6v12a2 2 0 0 1 -2 2h-12c-1.11 0-2-.9-2-2v-16c0-1.11.89-2 2-2m5 2h-5v16h5 7v-9h-7v-7z" />
+    <!--Figures="M0,0 20,0 30,10 30,36 0,36Z M20,0 20,10 30,10"/>--> 
     <Style x:Key="FilePath" TargetType="Path">
         <Setter Property="Stretch" Value="Uniform" />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="Stroke" Value="Black" />
+        <Setter Property="Fill" Value="#42a5f5" />
         <Setter Property="Data" Value="{DynamicResource FilePathData}"/>
     </Style>
-    <PathGeometry x:Key="FolderPathData" Figures="M0,0 10,0 15,5 36,5 36,32 0,32Z"/>
+    <PathGeometry x:Key="FolderPathData" Figures="M10 4H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8c0-1.11-.9-2-2-2h-8l-2-2z"/>
+    <!--Figures="M0,0 10,0 15,5 36,5 36,32 0,32Z"/>-->
     <Style x:Key="FolderPath" TargetType="Path">
         <Setter Property="Stretch" Value="Uniform" />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="Stroke" Value="Black" />
+        <Setter Property="Fill" Value="#90a4ae" />
         <Setter Property="Data" Value="{DynamicResource FolderPathData}"/>
+    </Style>
+    <PathGeometry x:Key="FolderOpenPathData" Figures="M19 20H4c-1.11 0-2-.9-2-2V6c0-1.11.89-2 2-2h6l2 2h7a2 2 0 0 1 2 2H4v10l2.14-8h17.07l-2.28 8.5c-.23.87-1.01 1.5-1.93 1.5z"/>
+    <Style x:Key="FolderOpenPath" TargetType="Path">
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="Fill" Value="#90a4ae" />
+        <Setter Property="Data" Value="{DynamicResource FolderOpenPathData}"/>
     </Style>
 </ResourceDictionary>

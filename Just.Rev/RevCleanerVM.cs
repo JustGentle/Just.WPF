@@ -259,7 +259,6 @@ namespace Just.Rev
             var folderItem = new RevFileItem
             {
                 IsFolder = true,
-                ImagePath = @"\Images\folder.png",
                 Name = Path.GetFileName(folder),
                 Path = folder,
                 IsKeep = false,
@@ -314,7 +313,7 @@ namespace Just.Rev
 
         private RevFileItem NewRevFileItem(string file, bool? keep = null)
         {
-            var item = new RevFileItem { ImagePath = GetFileIcon(file), Name = Path.GetFileName(file), Path = file, UpdateTime = File.GetLastWriteTime(file).ToString("yyyy-MM-dd HH:mm") };
+            var item = new RevFileItem { Name = Path.GetFileName(file), Path = file, UpdateTime = File.GetLastWriteTime(file).ToString("yyyy-MM-dd HH:mm") };
             var rev = GetRevFile(file);
             if (dic.ContainsKey(rev))
             {
@@ -341,49 +340,6 @@ namespace Just.Rev
         {
             var result = file.StartsWith(dist) ? file.Replace(dist, "").Trim('\\').Replace('\\', '/').ToLower() : file;
             return result;
-        }
-
-        private string GetFileIcon(string file)
-        {
-            var imgFolder = @"\Images\";
-            var img = "file.png";
-            return imgFolder + img;
-        }
-        public bool ImageExists(string img)
-        {
-            var resourcePath = img.Replace('\\', '/').TrimStart('/').ToLower();
-            return ResourceExists(resourcePath);
-        }
-        public static bool ResourceExists(string resourcePath)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-
-            return ResourceExists(assembly, resourcePath);
-        }
-        public static bool ResourceExists(Assembly assembly, string resourcePath)
-        {
-            return GetResourcePaths(assembly)
-                .Contains(resourcePath.ToLowerInvariant());
-        }
-        public static IEnumerable<object> GetResourcePaths(Assembly assembly)
-        {
-            var culture = System.Threading.Thread.CurrentThread.CurrentCulture;
-            var resourceName = assembly.GetName().Name + ".g";
-            var resourceManager = new ResourceManager(resourceName, assembly);
-
-            try
-            {
-                var resourceSet = resourceManager.GetResourceSet(culture, true, true);
-
-                foreach (System.Collections.DictionaryEntry resource in resourceSet)
-                {
-                    yield return resource.Key;
-                }
-            }
-            finally
-            {
-                resourceManager.ReleaseAllResources();
-            }
         }
         #endregion
 

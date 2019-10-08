@@ -23,6 +23,12 @@
       "ClassName": "VersionFileCtrl"
     },
     {
+      "Id": "WebsiteMklink",
+      "Parent": "iOffice10",
+      "Header": "站点文件映射",
+      "ClassName": "WebsiteMklinkCtrl"
+    },
+    {
       "Id": "RegexNet",
       "Header": "正则表达式",
       "ClassName": "RegexNetCtrl"
@@ -69,5 +75,15 @@
     "PrivilegeSetting.config",
     "serviceModelClient.config",
     "Version.ver"
+  ],
+  "WebsiteMklinkCtrl.IgnorePath": [
+    "Log"
+  ],
+  "WebsiteMklinkCtrl.ActualFiles": [
+    "connectionStrings.config",
+    "db.config",
+    "serviceModelClient.config",
+    "sso.config",
+    "Web.config"
   ]
 }

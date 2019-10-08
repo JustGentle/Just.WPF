@@ -36,6 +36,15 @@
           "type": "Just.Base.IDependency"
         }
       ]
+    },
+    {
+      "type": "Just.WebsiteMklink.WebsiteMklinkCtrl, Just.WebsiteMklink",
+      "services": [
+        {
+          "key": "WebsiteMklinkCtrl",
+          "type": "Just.Base.IDependency"
+        }
+      ]
     }
   ]
 }
