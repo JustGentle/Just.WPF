@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using GenLibrary.MVVM.Base;
@@ -292,7 +293,8 @@ namespace Just.WebsiteMklink
             {
                 try
                 {
-                    File.Copy(file, targetFile, true);
+                    DeleteFile(targetFile);
+                    File.Copy(file, targetFile);
                     _logBuilder.AppendLine(" >>>复制成功");
                 }
                 catch (Exception e)
@@ -303,15 +305,37 @@ namespace Just.WebsiteMklink
             }
             else
             {
-                if (File.Exists(targetFile))
-                    File.Delete(targetFile);
-                if (CreateSymbolicLink(targetFile, file, SymbolicLink.File))
-                    _logBuilder.AppendLine(" >>>映射成功");
-                else
+                try
+                {
+                    DeleteFile(targetFile);
+                    if (CreateSymbolicLink(targetFile, file, SymbolicLink.File))
+                        _logBuilder.AppendLine(" >>>映射成功");
+                    else
+                        _logBuilder.AppendLine(" >>>映射失败！！！");
+                }
+                catch (Exception e)
+                {
                     _logBuilder.AppendLine(" >>>映射失败！！！");
+                    Logger.Error("映射文件错误", e);
+                }
             }
 
             AppendLog();
+        }
+        private void DeleteFile(string file)
+        {
+            if (!File.Exists(file)) return;
+            var attr = File.GetAttributes(file);
+            //设置文件属性有延迟，直到生效前重复执行操作
+            Task.Run(() =>
+            {
+                while (attr.HasFlag(FileAttributes.ReadOnly))
+                {
+                    File.SetAttributes(file, attr ^ FileAttributes.ReadOnly);
+                    attr = File.GetAttributes(file);
+                }
+            }).Wait(200);//（超时毫秒）
+            File.Delete(file);
         }
 
         [DllImport("kernel32.dll")]
