@@ -162,7 +162,7 @@ namespace Just.Rev
                     catch (System.Exception ex)
                     {
                         Logger.Error("清理补丁错误", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("执行错误：" + ex.Message); });
+                        MainWindowVM.NotifyError("执行错误：" + ex.Message);
                     }
                 });
                 return _RevAction;
@@ -195,7 +195,7 @@ namespace Just.Rev
                 dist = Path.Combine(WebRootFolder, "dist");
                 if (!Directory.Exists(dist))
                 {
-                    MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("找不到dist文件夹"); });
+                    MainWindowVM.NotifyWarn("找不到dist文件夹");
                     MainWindowVM.ShowStatus();
                     Status = ActionStatus.Begin;
                     return;
@@ -203,7 +203,7 @@ namespace Just.Rev
                 revmanifest = Path.Combine(dist, "rev-manifest.json");
                 if (!File.Exists(revmanifest))
                 {
-                    MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("找不到dist/rev-manifest.json文件"); });
+                    MainWindowVM.NotifyWarn("找不到dist/rev-manifest.json文件");
                     MainWindowVM.ShowStatus();
                     Status = ActionStatus.Begin;
                     return;
@@ -215,12 +215,12 @@ namespace Just.Rev
                 if (tokenSource.IsCancellationRequested)
                 {
                     Status = ActionStatus.Begin;
-                    MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("停止扫描"); });
+                    MainWindowVM.NotifyWarn("停止扫描");
                 }
                 else
                 {
                     Status = ActionStatus.Finished;
-                    MainWindowVM.DispatcherInvoke(() => { NotifyWin.Info("扫描完成"); });
+                    MainWindowVM.NotifyInfo("扫描完成");
                     Step = ActionStep.Clear;
                     Status = ActionStatus.Begin;
                     if (!Preview)
@@ -351,11 +351,7 @@ namespace Just.Rev
             tokenSource = new CancellationTokenSource();
             Task.Run(() =>
             {
-                bool? isConfirm = null;
-                MainWindowVM.DispatcherInvoke(() =>
-                {
-                    isConfirm = MessageWin.Confirm("即将删除多余补丁文件，是否确定？");
-                });
+                bool? isConfirm = MainWindowVM.MessageConfirm("即将删除多余补丁文件，是否确定？");
                 if (isConfirm != true)
                 {
                     Status = ActionStatus.Begin;
@@ -366,7 +362,7 @@ namespace Just.Rev
                     if (string.IsNullOrWhiteSpace(BackupFolder))
                     {
                         Status = ActionStatus.Begin;
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn($"备份目录不能为空"); });
+                        MainWindowVM.NotifyWarn($"备份目录不能为空");
                         return;
                     }
                     try
@@ -377,7 +373,7 @@ namespace Just.Rev
                     {
                         Logger.Error($"创建备份目录失败:{BackupFolder}", ex);
                         Status = ActionStatus.Begin;
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error($"创建备份目录失败:{BackupFolder}\n{ex.Message}"); });
+                        MainWindowVM.NotifyError($"创建备份目录失败:{BackupFolder}\n{ex.Message}");
                         return;
                     }
                 }
@@ -385,12 +381,12 @@ namespace Just.Rev
                 if (tokenSource.IsCancellationRequested)
                 {
                     Status = ActionStatus.Begin;
-                    MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("停止清理"); });
+                    MainWindowVM.NotifyWarn("停止清理");
                 }
                 else
                 {
                     Status = ActionStatus.Finished;
-                    MainWindowVM.DispatcherInvoke(() => { NotifyWin.Info("清理完成"); });
+                    MainWindowVM.NotifyInfo("清理完成");
                     Step = ActionStep.Scan;
                     Status = ActionStatus.Begin;
                 }
@@ -478,7 +474,7 @@ namespace Just.Rev
                     catch (System.Exception ex)
                     {
                         Logger.Error($"清理补丁文件错误:{child.Path}", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error($"{child.Path}\n{ex.Message}"); });
+                        MainWindowVM.NotifyError($"{child.Path}\n{ex.Message}");
                         i++;
                     }
                 }
@@ -567,7 +563,7 @@ namespace Just.Rev
                     var result = FindNextItem(_, _findText);
                     if (result == null)
                     {
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("未找到任何结果", "查找"); });
+                        MainWindowVM.NotifyWarn("未找到任何结果", "查找");
                     }
                 });
                 return _FindNext;
@@ -672,10 +668,7 @@ namespace Just.Rev
                     if (string.IsNullOrEmpty(_?.Path)) return;
                     if (!Directory.Exists(_.Path) && !File.Exists(_.Path))
                     {
-                        MainWindowVM.DispatcherInvoke(() =>
-                        {
-                            NotifyWin.Warn(_.Path, "路径不存在");
-                        });
+                        MainWindowVM.NotifyWarn(_.Path, "路径不存在");
                     }
                     System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo("Explorer.exe")
                     {

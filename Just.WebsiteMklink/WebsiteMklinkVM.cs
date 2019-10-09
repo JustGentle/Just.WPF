@@ -114,7 +114,7 @@ namespace Just.WebsiteMklink
                     catch (Exception ex)
                     {
                         Logger.Error("获取IIS站点错误", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("获取IIS站点错误"); });
+                        MainWindowVM.NotifyError("获取IIS站点错误");
                     }
                 });
                 return _SourceWebBrowser;
@@ -136,7 +136,7 @@ namespace Just.WebsiteMklink
                     catch (Exception ex)
                     {
                         Logger.Error("获取IIS站点错误", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("获取IIS站点错误"); });
+                        MainWindowVM.NotifyError("获取IIS站点错误");
                     }
                 });
                 return _TargetWebBrowser;
@@ -187,17 +187,17 @@ namespace Just.WebsiteMklink
                 {
                     if (string.IsNullOrEmpty(SourceFolder))
                     {
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("请先选择来源站点！"); });
+                        MainWindowVM.NotifyWarn("请先选择来源站点！");
                         return;
                     }
                     if (!Directory.Exists(SourceFolder))
                     {
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("来源站点目录不存在！"); });
+                        MainWindowVM.NotifyWarn("来源站点目录不存在！");
                         return;
                     }
                     if (string.IsNullOrEmpty(TargetFolder))
                     {
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("请先选择目标站点！"); });
+                        MainWindowVM.NotifyWarn("请先选择目标站点！");
                         return;
                     }
                     if (Directory.Exists(TargetFolder))
@@ -206,7 +206,7 @@ namespace Just.WebsiteMklink
                         var dirs = Directory.GetDirectories(TargetFolder);
                         if (files.Any() || dirs.Any())
                         {
-                            var rst = MainWindowVM.DispatcherInvoke(() => { return MessageWin.Confirm("目标站点已存在文件，是否覆盖？"); });
+                            var rst = MainWindowVM.MessageConfirm("目标站点已存在文件，是否覆盖？");
                             if (rst != true)
                                 return;
                         }
@@ -239,12 +239,12 @@ namespace Just.WebsiteMklink
                         }
 
                         AppendLog("==========完成==========");
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Info("映射完成！"); });
+                        MainWindowVM.NotifyInfo("映射完成！");
                     }
                     catch (Exception ex)
                     {
                         Logger.Error("映射过程出现错误", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("映射过程出现错误！"); });
+                        MainWindowVM.NotifyError("映射过程出现错误！");
                     }
                     MainWindowVM.ShowStatus();
                     Doing = false;

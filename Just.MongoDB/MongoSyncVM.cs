@@ -157,7 +157,7 @@ namespace Just.MongoDB
                     {
                         if (string.IsNullOrWhiteSpace(JsonPath))
                         {
-                            MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("脚本路径不能为空"); });
+                            MainWindowVM.NotifyWarn("脚本路径不能为空");
                             return;
                         }
                         MainWindowVM.ShowStatus("开始读取...");
@@ -190,7 +190,7 @@ namespace Just.MongoDB
                         catch (Exception ex)
                         {
                             Logger.Error("脚本读取错误", ex);
-                            MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("读取错误：" + ex.Message); });
+                            MainWindowVM.NotifyError("读取错误：" + ex.Message);
                         }
                         Doing = false;
                         MainWindowVM.ShowStatus();
@@ -214,7 +214,7 @@ namespace Just.MongoDB
             }
             if (!Directory.Exists(path))
             {
-                MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("路径不存在：" + JsonPath); });
+                MainWindowVM.NotifyWarn("路径不存在：" + JsonPath);
                 return;
             }
             var folders = Directory.GetDirectories(path);
@@ -318,12 +318,12 @@ namespace Just.MongoDB
                     {
                         var node = Tree.Children[0].Children.FirstOrDefault(n => n.IsEnable != true);
                         if (node != null) node.IsSelected = true;
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("数据冲突，请修正后再执行！"); });
+                        MainWindowVM.NotifyWarn("数据冲突，请修正后再执行！");
                         return;
                     }
                     if (string.IsNullOrWhiteSpace(MongoDBAddress))
                     {
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("链接地址不能为空"); });
+                        MainWindowVM.NotifyWarn("链接地址不能为空");
                         return;
                     }
                     Doing = true;
@@ -405,23 +405,23 @@ namespace Just.MongoDB
                             {
                                 UpdateValueByChildrenCount(Tree.Children[i]);
                             }
-                            MainWindowVM.DispatcherInvoke(() => { NotifyWin.Info(HasDBAction ? "同步成功" : "检查完成"); });
+                            MainWindowVM.NotifyInfo(HasDBAction ? "同步成功" : "检查完成");
                         }
                     }
                     catch (TimeoutException ex)
                     {
                         Logger.Error("MongoDB连接超时", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("连接超时！", "同步错误"); });
+                        MainWindowVM.NotifyError("连接超时！", "同步错误");
                     }
                     catch (MongoConfigurationException ex)
                     {
                         Logger.Error("MongoDB链接地址错误", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("请检查【链接地址】是否正确！\n" + ex.Message, "同步错误"); });
+                        MainWindowVM.NotifyError("请检查【链接地址】是否正确！\n" + ex.Message, "同步错误");
                     }
                     catch (Exception ex)
                     {
                         Logger.Error("MongoDB同步错误", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error(ex.Message, "同步错误"); });
+                        MainWindowVM.NotifyError(ex.Message, "同步错误");
                     }
                     MainWindowVM.ShowStatus();
                     Doing = false;
@@ -756,7 +756,7 @@ namespace Just.MongoDB
                 {
                     if (string.IsNullOrWhiteSpace(MongoDBAddress))
                     {
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("链接地址不能为空"); });
+                        MainWindowVM.NotifyWarn("链接地址不能为空");
                         return;
                     }
                     MainWindowVM.ShowStatus("读取...");
@@ -782,10 +782,7 @@ namespace Just.MongoDB
                         var json = sb.ToString();
                         if (string.IsNullOrEmpty(json))
                         {
-                            MainWindowVM.DispatcherInvoke(() =>
-                            {
-                                NotifyWin.Warn("当前数据为空", "导出脚本");
-                            });
+                            MainWindowVM.NotifyWarn("当前数据为空", "导出脚本");
                         }
                         else
                         {
@@ -802,27 +799,24 @@ namespace Just.MongoDB
                             {
                                 var fileName = sfd.FileName;
                                 File.WriteAllBytes(fileName, Encoding.UTF8.GetBytes(json));
-                                MainWindowVM.DispatcherInvoke(() =>
-                                {
-                                    NotifyWin.Info("导出完成", "导出脚本");
-                                });
+                                MainWindowVM.NotifyInfo("导出完成", "导出脚本");
                             }
                         }
                     }
                     catch (TimeoutException ex)
                     {
                         Logger.Error("MongoDB连接超时", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("连接超时！", "导出脚本"); });
+                        MainWindowVM.NotifyError("连接超时！", "导出脚本");
                     }
                     catch (MongoConfigurationException ex)
                     {
                         Logger.Error("MongoDB链接地址错误", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("请检查【链接地址】是否正确！\n" + ex.Message, "导出脚本"); });
+                        MainWindowVM.NotifyError("请检查【链接地址】是否正确！\n" + ex.Message, "导出脚本");
                     }
                     catch (Exception ex)
                     {
                         Logger.Error("导出脚本错误", ex);
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error(ex.Message, "导出脚本"); });
+                        MainWindowVM.NotifyError(ex.Message, "导出脚本");
                     }
                     MainWindowVM.ShowStatus();
                 });
@@ -883,7 +877,7 @@ namespace Just.MongoDB
                     var result = FindNextItem(_, FindText);
                     if (result == null)
                     {
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("未找到下一个", "查找"); });
+                        MainWindowVM.NotifyWarn("未找到下一个", "查找");
                     }
                 });
                 return _FindNext;
@@ -902,7 +896,7 @@ namespace Just.MongoDB
                     var result = FindNextItem(_, FindText, true);
                     if (result == null)
                     {
-                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("未找到上一个", "查找"); });
+                        MainWindowVM.NotifyWarn("未找到上一个", "查找");
                     }
                 });
                 return _FindPrev;

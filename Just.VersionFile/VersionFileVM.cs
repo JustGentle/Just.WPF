@@ -80,26 +80,26 @@ namespace Just.VersionFile
                     {
                         if (string.IsNullOrWhiteSpace(PackFolder))
                         {
-                            MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("升级包路径不能为空"); });
+                            MainWindowVM.NotifyWarn("升级包路径不能为空");
                             return;
                         }
                         //补丁包基于上一个版本生成
                         if (IsPatch && (_versionFile.Version == null || !_versionFile.Version.ContainsKey(KeyMainVersion)))
                         {
-                            if (MainWindowVM.DispatcherInvoke(() => MessageWin.Confirm("未读取上一版本，确定生成补丁？")) != true)
+                            if (MainWindowVM.MessageConfirm("未读取上一版本，确定生成补丁？") != true)
                             {
                                 return;
                             }
                         }
                         if (string.IsNullOrWhiteSpace(MainVersion) || (IsPatch && string.IsNullOrWhiteSpace(PatchVersion)))
                         {
-                            MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("版本号不能为空"); });
+                            MainWindowVM.NotifyWarn("版本号不能为空");
                             return;
                         }
                         var path = $@"{PackFolder}\{VersionFileName}";
                         if (File.Exists(path))
                         {
-                            if (MainWindowVM.DispatcherInvoke(() => MessageWin.Confirm("版本信息文件已存在，是否覆盖？")) != true)
+                            if (MainWindowVM.MessageConfirm("版本信息文件已存在，是否覆盖？") != true)
                             {
                                 return;
                             }
@@ -127,7 +127,7 @@ namespace Just.VersionFile
                                 {
                                     Doing = false;
                                     MainWindowVM.ShowStatus();
-                                    MainWindowVM.DispatcherInvoke(() => { NotifyWin.Warn("停止生成"); });
+                                    MainWindowVM.NotifyWarn("停止生成");
                                     return;
                                 }
                                 if (IsPatch)
@@ -147,12 +147,12 @@ namespace Just.VersionFile
                             var encode = AES.Encrypt(json);
                             File.WriteAllText(path, encode, Encoding.UTF8);
                             _versionFile = file;
-                            MainWindowVM.DispatcherInvoke(() => { NotifyWin.Info("生成成功"); });
+                            MainWindowVM.NotifyInfo("生成成功");
                         }
                         catch (Exception ex)
                         {
                             Logger.Error("生成版本文件错误", ex);
-                            MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("生成错误：" + ex.Message); });
+                            MainWindowVM.NotifyError("生成错误：" + ex.Message);
                         }
                         Doing = false;
                         MainWindowVM.ShowStatus();
@@ -263,12 +263,12 @@ namespace Just.VersionFile
                                 HasCheckData = false;
                             }
                             _versionFile = file;
-                            MainWindowVM.DispatcherInvoke(() => { NotifyWin.Info("读取成功"); });
+                            MainWindowVM.NotifyInfo("读取成功");
                         }
                         catch (Exception ex)
                         {
                             Logger.Error("读取版本文件错误", ex);
-                            MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("读取错误：" + ex.Message); });
+                            MainWindowVM.NotifyError("读取错误：" + ex.Message);
                         }
                     }
                 });

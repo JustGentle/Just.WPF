@@ -131,7 +131,18 @@ namespace Just.Base
         }
         #endregion
 
-        #region 静态方法
+        #region DispatcherInvoke
+        public static void DispatcherInvoke(Action action)
+        {
+            Instance.MainWindow.Dispatcher.Invoke(action);
+        }
+        public static TResult DispatcherInvoke<TResult>(Func<TResult> func)
+        {
+            return Instance.MainWindow.Dispatcher.Invoke(func);
+        }
+        #endregion
+
+        #region Status
         /// <summary>
         /// 显示状态文本
         /// </summary>
@@ -142,15 +153,47 @@ namespace Just.Base
             Instance.IsShowStatusProcess = isProcess;
             Instance.StatusProcess = process;
         }
-        public static void DispatcherInvoke(Action action)
-        {
-            Instance.MainWindow.Dispatcher.Invoke(action);
-        }
-        public static TResult DispatcherInvoke<TResult>(Func<TResult> func)
-        {
-            return Instance.MainWindow.Dispatcher.Invoke(func);
-        }
+        #endregion
 
+        #region Notify
+        public static void NotifyInfo(string msg, string title = "提示")
+        {
+            DispatcherInvoke(() => { NotifyWin.Info(msg, title); });
+        }
+        public static void NotifyWarn(string msg, string title = "警告")
+        {
+            DispatcherInvoke(() => { NotifyWin.Warn(msg, title); });
+        }
+        public static void NotifyError(string msg, string title = "错误")
+        {
+            DispatcherInvoke(() => { NotifyWin.Error(msg, title); });
+        }
+        #endregion
+
+        #region 静态方法
+        public static void MessageInfo(string msg, string title = "提示")
+        {
+            DispatcherInvoke(() => { MessageWin.Info(msg, title); });
+        }
+        public static void MessageWarn(string msg, string title = "警告")
+        {
+            DispatcherInvoke(() => { MessageWin.Warn(msg, title); });
+        }
+        public static void MessageError(string msg, string title = "错误")
+        {
+            DispatcherInvoke(() => { MessageWin.Error(msg, title); });
+        }
+        public static bool? MessageConfirm(string msg, string title = "确认")
+        {
+            return DispatcherInvoke(() => { return MessageWin.Confirm(msg, title); });
+        }
+        public static string MessageInput(string value = "", string msg = "", string title = "查找")
+        {
+            return DispatcherInvoke(() => { return MessageWin.Input(value, msg, title); });
+        }
+        #endregion
+
+        #region Setting
         private static readonly string _settingFile = $@"{AppDomain.CurrentDomain.BaseDirectory}\{ConfigurationManager.AppSettings["setting"]}";
         private static readonly JObject _setting = JsonConvert.DeserializeObject<JObject>(
             File.ReadAllText(_settingFile, Encoding.UTF8));
