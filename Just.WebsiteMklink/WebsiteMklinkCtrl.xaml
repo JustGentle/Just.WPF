@@ -94,7 +94,8 @@
         </Button>
         <Button  Grid.Row="2" Grid.Column="4" Margin="5,0,0,0" Content="映射" Style="{StaticResource MainButton}" Command="{Binding Mklink}"/>
 
-        <TextBox Grid.Row="3" Grid.ColumnSpan="99" IsReadOnly="True"
+        <TextBox Grid.Row="3" Grid.ColumnSpan="99"
+                 IsReadOnly="True" Name="TextBoxLog"
                  Text="{Binding Log}" ToolTip="过程日志"
                  Margin="0,10,0,0" Style="{StaticResource MutliLineBox}" Background="LightYellow" Foreground="DarkRed"/>
     </Grid>

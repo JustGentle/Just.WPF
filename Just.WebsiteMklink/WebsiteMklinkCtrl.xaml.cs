@@ -13,7 +13,14 @@ namespace Just.WebsiteMklink
         {
             InitializeComponent();
             this.DataContext = _vm;
+            _vm.LogAppended += _vm_LogAppended;
             _vm.ReadSetting();
+        }
+
+        private void _vm_LogAppended(object sender, System.EventArgs e)
+        {
+            if (TextBoxLog.IsFocused) return;
+            TextBoxLog.ScrollToEnd();
         }
 
         public void WriteSettings()

@@ -26,6 +26,8 @@ namespace Just.WebsiteMklink
         public string SourceFolder { get; set; }
         public string TargetFolder { get; set; }
         public string Log { get; set; }
+
+        public event EventHandler LogAppended;
         #endregion
 
         #region 浏览和打开文件夹
@@ -258,7 +260,11 @@ namespace Just.WebsiteMklink
         private void AppendLog(string msg = null)
         {
             if (!string.IsNullOrEmpty(msg)) _logBuilder.AppendLine(msg);
-            MainWindowVM.DispatcherInvoke(() => { Log = _logBuilder.ToString(); });
+            MainWindowVM.DispatcherInvoke(() => 
+            {
+                Log = _logBuilder.ToString();
+                LogAppended?.Invoke(this, EventArgs.Empty);
+            });
         }
 
         private void MklinkDir(string dir)
