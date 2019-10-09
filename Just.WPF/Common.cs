@@ -62,7 +62,11 @@ namespace Just.WPF
 
                     var view = CreateView(code, title);
                     if (view == null) return;
-                    tab.Content = CreateView(code, title);
+                    tab.Content = new ContentControl
+                    {
+                        Margin = new Thickness(10),
+                        Content = view
+                    };
                 }
             }
         }

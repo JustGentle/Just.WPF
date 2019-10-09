@@ -46,6 +46,8 @@ namespace Just.WPF
             DependencyResolverInitialize();
             _vm = MainWindowVM.Instance;
             this.DataContext = _vm;
+
+            _vm.ShowVersion(this.GetType().Assembly);
         }
 
         /// <summary>
@@ -242,6 +244,10 @@ namespace Just.WPF
                 var node = GetNode(item.Tag?.ToString());
                 if (node != null) node.IsSelected = false;
             }
+            var selectedTab = tbContent.SelectedItem as TabItem;
+            var assembly = (selectedTab?.Content as ContentControl)?.Content.GetType().Assembly;
+            assembly = assembly ?? this.GetType().Assembly;
+            _vm.ShowVersion(assembly, selectedTab?.Header.ToString());
         }
         #endregion
 

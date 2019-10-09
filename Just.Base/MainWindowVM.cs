@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 
@@ -27,6 +28,10 @@ namespace Just.Base
                 return _Instance;
             }
         }
+        public MainWindowVM()
+        {
+            _Instance = this;
+        }
         #endregion
 
         #region 属性
@@ -35,9 +40,11 @@ namespace Just.Base
         public string StatusText { get; set; } = "就绪";
         public bool IsShowStatusProcess { get; set; } = false;
         public int StatusProcess { get; set; } = 0;
+        public string VersionText { get; set; } = "版本：v1.0";
+        public string VersionHint { get; set; }
         #endregion
 
-        #region 方法
+        #region 菜单
         public void LoadMainMenu()
         {
             try
@@ -129,6 +136,14 @@ namespace Just.Base
         public MenuNode GetMenuItem(Type view)
         {
             return MainMenu.FirstOrDefault(e => e.ClassName == view.Name);
+        }
+        public void ShowVersion(Assembly assembly, string Title = "主程序")
+        {
+            var version = assembly.GetName().Version;
+            VersionText = $"版本：v{version}";
+            var baseTime = new DateTime(2000, 1, 1);
+            var buildTime = TimeZone.CurrentTimeZone.ToLocalTime(baseTime.AddDays(version.Build).AddSeconds(version.Revision));
+            VersionHint = $"{Title}\n生成时间：{buildTime:yyyy-MM-dd HH:mm:ss}";
         }
         #endregion
 

@@ -35,10 +35,11 @@
         Height="Auto"
         LastChildFill="True">
         <!--  左侧菜单  -->
-        <Grid Width="250" DockPanel.Dock="Left">
+        <Grid Width="250" DockPanel.Dock="Left" Background="{StaticResource TreeView.Background}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="80" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
             <!--  可以考虑链接到Web(不能用MouseUp否则与MovementBorder冲突)  -->
             <!-- MouseLeftButtonDown="AboutMenuItem_MouseUp" -->
@@ -57,6 +58,9 @@
                 </StackPanel>
             </Border>
             <TreeView Name="tvMenu" Grid.Row="1" Style="{StaticResource MenuTree}" />
+            <TextBlock Grid.Row="2" Margin="10"
+                       Text="{Binding VersionText}" ToolTip="{Binding VersionHint}"
+                       Foreground="{StaticResource TreeView.Foreground}" />
         </Grid>
 
         <!--  顶部菜单  -->

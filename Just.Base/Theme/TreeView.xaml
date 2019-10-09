@@ -2,19 +2,16 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary>
-        </ResourceDictionary>
-    </ResourceDictionary.MergedDictionaries>
 
+    <SolidColorBrush x:Key="TreeView.Foreground" Opacity="0.5" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="TreeView.Background" Color="#001529" />
+    <SolidColorBrush x:Key="TreeViewItem.Background" Color="#000C17" />
+
+    <SolidColorBrush x:Key="TreeView.ForegroundSelected" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="TreeView.BackgroundSelected" Color="#1890FF" />
+    
     <Style TargetType="{x:Type TreeView}" x:Key="MenuTree">
         <Style.Resources>
-            <SolidColorBrush x:Key="TreeView.Foreground" Opacity="0.5" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="TreeView.Background" Color="#001529" />
-            <SolidColorBrush x:Key="TreeViewItem.Background" Color="#000C17" />
-
-            <SolidColorBrush x:Key="TreeView.ForegroundSelected" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="TreeView.BackgroundSelected" Color="#1890FF" />
             
             <sys:Double x:Key="TreeView.FontSize">14</sys:Double>
         </Style.Resources>
