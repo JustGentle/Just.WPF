@@ -193,6 +193,9 @@
     <None Include="1.Autofac.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="2.DefaultSetting.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="FodyWeavers.xsd">
       <SubType>Designer</SubType>
     </None>

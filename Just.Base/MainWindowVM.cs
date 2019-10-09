@@ -98,7 +98,8 @@ namespace Just.Base
   }
 ]
 ";
-                var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json);
+                //var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json);
+                var nodes = ReadSetting(nameof(MainMenu), new List<MenuNode>());
 #else
                 var nodes = ReadSetting(nameof(MainMenu), new List<MenuNode>());
 #endif
@@ -170,7 +171,7 @@ namespace Just.Base
         }
         #endregion
 
-        #region 静态方法
+        #region Message
         public static void MessageInfo(string msg, string title = "提示")
         {
             DispatcherInvoke(() => { MessageWin.Info(msg, title); });
@@ -197,10 +198,14 @@ namespace Just.Base
         private static readonly string _settingFile = $@"{AppDomain.CurrentDomain.BaseDirectory}\{ConfigurationManager.AppSettings["setting"]}";
         private static readonly JObject _setting = JsonConvert.DeserializeObject<JObject>(
             File.ReadAllText(_settingFile, Encoding.UTF8));
-        private static Configuration cfg = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+        private static readonly string _defaultSettingFile = $@"{AppDomain.CurrentDomain.BaseDirectory}\{ConfigurationManager.AppSettings["default"]}";
+        private static readonly JObject _defaultSetting = JsonConvert.DeserializeObject<JObject>(
+            File.ReadAllText(_defaultSettingFile, Encoding.UTF8));
+
         public static T ReadSetting<T>(string key, T defaultValue = default(T))
         {
-            var token = _setting[key];
+            var dtoken = _defaultSetting[key];
+            var token = _setting[key] ?? dtoken;
             var value = token == null ? defaultValue : token.ToObject<T>();
             return value;
         }
