@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.DirectoryServices;
 using System.IO;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Windows.Input;
 using GenLibrary.MVVM.Base;
 using Just.Base;
 using Just.Base.Views;
+using Microsoft.Web.Administration;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using PropertyChanged;
 
@@ -18,12 +20,14 @@ namespace Just.WebsiteMklink
     [AddINotifyPropertyChangedInterface]
     public class WebsiteMklinkVM
     {
+        #region 绑定数据
         public bool Doing { get; set; }
         public string SourceFolder { get; set; }
         public string TargetFolder { get; set; }
         public string Log { get; set; }
+        #endregion
 
-
+        #region 浏览和打开文件夹
         private ICommand _SourceFolderBrowser;
         public ICommand SourceFolderBrowser
         {
@@ -55,19 +59,6 @@ namespace Just.WebsiteMklink
                     System.Diagnostics.Process.Start("explorer.exe", SourceFolder);
                 });
                 return _OpenSourceFolder;
-            }
-        }
-        private ICommand _SourceWebBrowser;
-        public ICommand SourceWebBrowser
-        {
-            get
-            {
-                _SourceWebBrowser = _SourceWebBrowser ?? new RelayCommand<RoutedEventArgs>(_ =>
-                {
-                    var sites = GetSiteList();
-                    MainWindowVM.DispatcherInvoke(() => { MessageWin.Info(string.Join(", ", sites.Select(s => s.Name))); });
-                });
-                return _SourceWebBrowser;
             }
         }
 
@@ -104,53 +95,86 @@ namespace Just.WebsiteMklink
                 return _OpenTargetFolder;
             }
         }
+        #endregion
 
-
-        List<SiteInfo> GetSiteList(DirectoryEntry entry = null)
+        #region 选择IIS站点
+        private ICommand _SourceWebBrowser;
+        public ICommand SourceWebBrowser
         {
-            entry = entry ?? new DirectoryEntry("IIS://localhost/w3svc");
-            var result = new List<SiteInfo>();
-            foreach (DirectoryEntry childEntry in entry.Children)
+            get
             {
-                if (childEntry.SchemaClassName == "IIsWebServer")
+                _SourceWebBrowser = _SourceWebBrowser ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
-                    var sites = GetSiteList(childEntry);
-                    var site = new SiteInfo
+                    try
                     {
-                        Name = childEntry.Properties["ServerComment"].Value.ToString(),
-                        Path = sites[0].Path,
-                        IsApp = true,
-                        Children = sites[0].Children
-                    };
-                    result.Add(site);
-                }
-                else if (childEntry.SchemaClassName == "IIsWebVirtualDir")
-                {
-                    var sites = GetSiteList(childEntry);
-                    var site = new SiteInfo
+                        var dir = GetFolderByWebSite();
+                        if (dir == null) return;
+                        SourceFolder = dir;
+                    }
+                    catch (Exception ex)
                     {
-                        Name = childEntry.Name,
-                        Path = childEntry.Properties["Path"].Value.ToString(),
-                        Children = sites
-                    };
-                    if (childEntry.Properties.Contains("AppRoot")
-                        && childEntry.Properties["AppRoot"].Value != null
-                        && !string.IsNullOrEmpty(childEntry.Properties["AppRoot"].Value.ToString()))
-                        site.IsApp = true;
-                    result.Add(site);
-                    return result;
-                }
+                        Logger.Error("获取IIS站点错误", ex);
+                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("获取IIS站点错误"); });
+                    }
+                });
+                return _SourceWebBrowser;
             }
-            return result;
         }
-        public class SiteInfo
+        private ICommand _TargetWebBrowser;
+        public ICommand TargetWebBrowser
         {
-            public string Name { get; set; }
-            public string Path { get; set; }
-            public bool IsApp { get; set; }
-            public List<SiteInfo> Children { get; set; }
+            get
+            {
+                _TargetWebBrowser = _TargetWebBrowser ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    try
+                    {
+                        var dir = GetFolderByWebSite();
+                        if (dir == null) return;
+                        TargetFolder = dir;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("获取IIS站点错误", ex);
+                        MainWindowVM.DispatcherInvoke(() => { NotifyWin.Error("获取IIS站点错误"); });
+                    }
+                });
+                return _TargetWebBrowser;
+            }
         }
 
+        private string GetFolderByWebSite()
+        {
+            var sites = GetSiteInfos();
+            var items = sites
+                .OrderBy(s => s.State == ObjectState.Started ? 0 : 1)
+                .Select(s => new Tuple<string, object>($"{s.Name}{(s.State == ObjectState.Started ? string.Empty : "【停止】")}", s));
+            var win = new ListWin { Items = new ObservableCollection<Tuple<string, object>>(items) };
+            if (win.ShowDialog() != true) return null;
+            if (!(win.SelectedItem is SiteInfo site)) return null;
+            return site.Dir;
+        }
+        private IEnumerable<SiteInfo> GetSiteInfos()
+        {
+            var mgr = new ServerManager();
+            return mgr.Sites.Select(s => new SiteInfo
+            {
+                Id = s.Id,
+                Name = s.Name,
+                State = s.State,
+                Dir = s.Applications.First().VirtualDirectories.First().PhysicalPath
+            });
+        }
+        class SiteInfo
+        {
+            public long Id { get; set; }
+            public string Name { get; set; }
+            public ObjectState State { get; set; }
+            public string Dir { get; set; }
+        }
+        #endregion
+
+        #region 映射
         private StringBuilder _logBuilder = new StringBuilder();
         private string[] IgnorePath { get; set; }
         private string[] ActualFiles { get; set; }
@@ -229,19 +253,13 @@ namespace Just.WebsiteMklink
             }
         }
 
+        
         private void AppendLog(string msg = null)
         {
             if (!string.IsNullOrEmpty(msg)) _logBuilder.AppendLine(msg);
             MainWindowVM.DispatcherInvoke(() => { Log = _logBuilder.ToString(); });
         }
 
-        [DllImport("kernel32.dll")]
-        static extern bool CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, SymbolicLink dwFlags);
-        enum SymbolicLink
-        {
-            File = 0,
-            Directory = 1
-        }
         private void MklinkDir(string dir)
         {
             var dirName = Path.GetFileName(dir);
@@ -296,7 +314,16 @@ namespace Just.WebsiteMklink
             AppendLog();
         }
 
+        [DllImport("kernel32.dll")]
+        static extern bool CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, SymbolicLink dwFlags);
+        enum SymbolicLink
+        {
+            File = 0,
+            Directory = 1
+        }
+        #endregion
 
+        #region Setting
         internal void ReadSetting()
         {
             IgnorePath = MainWindowVM.ReadSetting($"{nameof(WebsiteMklinkCtrl)}.{nameof(IgnorePath)}", IgnorePath);
@@ -311,5 +338,6 @@ namespace Just.WebsiteMklink
             MainWindowVM.WriteSetting($"{nameof(WebsiteMklinkCtrl)}.{nameof(SourceFolder)}", SourceFolder);
             MainWindowVM.WriteSetting($"{nameof(WebsiteMklinkCtrl)}.{nameof(TargetFolder)}", TargetFolder);
         }
+        #endregion
     }
 }

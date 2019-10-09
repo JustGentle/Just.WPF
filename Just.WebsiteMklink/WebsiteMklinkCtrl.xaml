@@ -55,8 +55,7 @@
                 Margin="-1,0,0,0"
                 Padding="5,0"
                 Command="{Binding SourceWebBrowser}"
-                ToolTip="选择IIS站点"
-                Visibility="Collapsed">
+                ToolTip="选择IIS站点">
             <Image Source="/Just.WebsiteMklink;Component/Images/iis.png" RenderOptions.BitmapScalingMode="NearestNeighbor" />
         </Button>
         <Button
@@ -82,8 +81,7 @@
                 Margin="-1,0,0,0"
                 Padding="5,0"
                 Command="{Binding TargetWebBrowser}"
-                ToolTip="选择IIS站点"
-                Visibility="Collapsed">
+                ToolTip="选择IIS站点">
             <Image Source="/Just.WebsiteMklink;Component/Images/iis.png" RenderOptions.BitmapScalingMode="NearestNeighbor" />
         </Button>
         <Button

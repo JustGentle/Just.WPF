@@ -76,6 +76,9 @@
     <Compile Include="Theme\VisualTreeHelperEx.cs" />
     <Compile Include="Utils\EncodingGetter.cs" />
     <Compile Include="Views\IChildView.cs" />
+    <Compile Include="Views\ListWin.xaml.cs">
+      <DependentUpon>ListWin.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MessageWin.xaml.cs">
       <DependentUpon>MessageWin.xaml</DependentUpon>
     </Compile>
@@ -140,6 +143,10 @@
     <Page Include="Theme\TreeView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ListWin.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MessageWin.xaml">
       <SubType>Designer</SubType>

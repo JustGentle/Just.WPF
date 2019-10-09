@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Just.Base.Views"
         xmlns:cvt="clr-namespace:Just.Base.Converters"
+        mc:Ignorable="d"
         x:Name="MessageWindow"
         Title="提示"
         Width="300"
@@ -14,7 +15,7 @@
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
-        mc:Ignorable="d"
+        ShowInTaskbar="False"
         Loaded="MessageWindow_Loaded">
     <Window.Resources>
         <ResourceDictionary>
