@@ -50,6 +50,7 @@ namespace Just.Base
             try
             {
 #if DEBUG
+                /*
                 var json = @"
 [
   {
@@ -105,7 +106,7 @@ namespace Just.Base
   }
 ]
 ";
-                //var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json);
+                var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json);*/
                 var nodes = ReadSetting(nameof(MainMenu), new List<MenuNode>());
 #else
                 var nodes = ReadSetting(nameof(MainMenu), new List<MenuNode>());
@@ -159,15 +160,30 @@ namespace Just.Base
         #endregion
 
         #region Status
+        private static DateTime _lastStatusTime;
+        private static TimeSpan _statusTimeSpan = TimeSpan.MinValue;
+        public static void BeginStatusInterval(long timeSpanMilliseconds = 500)
+        {
+            _statusTimeSpan = TimeSpan.FromMilliseconds(timeSpanMilliseconds);
+        }
+        public static void EndStatusInterval()
+        {
+            _statusTimeSpan = TimeSpan.MinValue;
+        }
         /// <summary>
         /// 显示状态文本
         /// </summary>
         /// <param name="text"></param>
-        public static void ShowStatus(string text = "就绪", bool isProcess = false, int process = 0)
+        public static void ShowStatus(string text = "就绪", bool isProcess = false, int? process = null)
         {
-            Instance.StatusText = text;
+            var now = DateTime.Now;
+            if (_statusTimeSpan != TimeSpan.MinValue && now - _lastStatusTime < _statusTimeSpan)
+                return;
+            _lastStatusTime = now;
+
+            if(text != null) Instance.StatusText = text;
             Instance.IsShowStatusProcess = isProcess;
-            Instance.StatusProcess = process;
+            if(process.HasValue) Instance.StatusProcess = process.Value;
         }
         #endregion
 

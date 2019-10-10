@@ -76,6 +76,8 @@
     "serviceModelClient.config",
     "Version.ver"
   ],
+  "VersionFileCtrl.IsMakePack": true,
+  "VersionFileCtrl.Password": "aK8QESqctoiGHeoiyoVizA==",
   "WebsiteMklinkCtrl.IgnorePath": [
     "Log"
   ],

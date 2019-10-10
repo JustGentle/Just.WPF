@@ -61,6 +61,16 @@ namespace Just
             return str?.Split(separator, StringSplitOptions.None);
         }
 
+        private const string RegChars = "\\.+*?^$|(){}[]{}";
+        public static string ToRegPattern(this string text)
+        {
+            foreach (var chr in RegChars)
+            {
+                text = text.Replace(chr.ToString(), @"\" + chr);
+            }
+            return text;
+        }
+
         public static Dictionary<TKey, TValue> AddOrUpdate<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue value)
         {
             dict = dict ?? new Dictionary<TKey, TValue>();

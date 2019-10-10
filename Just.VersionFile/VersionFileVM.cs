@@ -1,6 +1,9 @@
 ﻿using GenLibrary.MVVM.Base;
+using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 using Just.Base;
 using Just.Base.Crypto;
+using Just.Base.Utils;
 using Just.Base.Views;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
@@ -24,12 +27,14 @@ namespace Just.VersionFile
         private const string KeyMainVersion = "Main";
         private const string KeyPatchVersion = "Patch";
         private const string VersionFileName = "Version.ver";
-        private VersionFileInfo _versionFile = new VersionFileInfo();
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
+        private VersionFileInfo _VersionFile { get; set; } = new VersionFileInfo();
 
+        #region 绑定数据
         public bool Doing { get; set; }
+        public bool CantStop { get; set; }
 
-        public bool HasCheckData { get; set; }
+        public bool HasCheckData { get; set; } = true;
 
         public string PackFolder { get; set; }
         public string MainVersion { get; set; } = DateTime.Now.ToString("yyyyMMdd");
@@ -39,8 +44,16 @@ namespace Just.VersionFile
         public string PatchVersion { get; set; } = DateTime.Now.ToString("yyyyMMdd.HHmm");
         public string PatchVersionDescription { get; set; } = $"范围：所有{Environment.NewLine}内容：功能优化{Environment.NewLine}基于{DateTime.Now:yyyyMMdd}版本";
 
+        public bool HasVersionData
+        {
+            get
+            {
+                return _VersionFile.Version?.Any() ?? false;
+            }
+        }
+        #endregion
 
-
+        #region 选择路径
         private ICommand _PackFolderBrowser;
         public ICommand PackFolderBrowser
         {
@@ -50,7 +63,8 @@ namespace Just.VersionFile
                 {
                     var dlg = new CommonOpenFileDialog
                     {
-                        IsFolderPicker = true
+                        IsFolderPicker = true,
+                        InitialDirectory = Dialog.GetInitialDirectory(PackFolder)
                     };
 
                     if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
@@ -61,7 +75,10 @@ namespace Just.VersionFile
                 return _PackFolderBrowser;
             }
         }
+        #endregion
 
+        #region 生成和打包
+        private bool IsMakePack { get; set; }
         private ICommand _CreateFile;
         public ICommand CreateFile
         {
@@ -83,27 +100,45 @@ namespace Just.VersionFile
                             MainWindowVM.NotifyWarn("升级包路径不能为空");
                             return;
                         }
-                        //补丁包基于上一个版本生成
-                        if (IsPatch && (_versionFile.Version == null || !_versionFile.Version.ContainsKey(KeyMainVersion)))
-                        {
-                            if (MainWindowVM.MessageConfirm("未读取上一版本，确定生成补丁？") != true)
-                            {
-                                return;
-                            }
-                        }
                         if (string.IsNullOrWhiteSpace(MainVersion) || (IsPatch && string.IsNullOrWhiteSpace(PatchVersion)))
                         {
                             MainWindowVM.NotifyWarn("版本号不能为空");
                             return;
                         }
-                        var path = $@"{PackFolder}\{VersionFileName}";
-                        if (File.Exists(path))
+
+                        var pack = string.Empty;
+                        if (IsMakePack)
+                        {
+                            var dlg = new CommonSaveFileDialog
+                            {
+                                Title = "保存升级包",
+                                DefaultExtension = "i10",
+                                InitialDirectory = Dialog.GetInitialDirectory(PackFolder),//上级目录
+                                DefaultFileName = $"v{(IsPatch ? PatchVersion : MainVersion)} {(IsPatch ? "补丁包" : "完整包")}.i10"
+                            };
+                            dlg.Filters.Add(new CommonFileDialogFilter("iOffice10升级包", "i10"));
+                            if (MainWindowVM.DispatcherInvoke(dlg.ShowDialog) != CommonFileDialogResult.Ok)
+                                return;
+                            pack = dlg.FileName;
+                        }
+
+                        //补丁包基于上一个版本生成
+                        if (IsPatch && (_VersionFile.Version == null || !_VersionFile.Version.ContainsKey(KeyMainVersion)))
+                        {
+                            if (MainWindowVM.MessageConfirm("未读取基础版本，确定生成补丁？") != true)
+                            {
+                                return;
+                            }
+                        }
+                        var ver = $@"{PackFolder}\{VersionFileName}";
+                        if (File.Exists(ver))
                         {
                             if (MainWindowVM.MessageConfirm("版本信息文件已存在，是否覆盖？") != true)
                             {
                                 return;
                             }
                         }
+
                         MainWindowVM.ShowStatus("开始生成...");
                         Doing = true;
                         try
@@ -145,8 +180,13 @@ namespace Just.VersionFile
                             }
                             var json = JsonConvert.SerializeObject(file);
                             var encode = AES.Encrypt(json);
-                            File.WriteAllText(path, encode, Encoding.UTF8);
-                            _versionFile = file;
+                            File.WriteAllText(ver, encode, Encoding.UTF8);
+                            _VersionFile = file;
+                            if (IsMakePack)
+                            {
+                                MainWindowVM.ShowStatus("打包...");
+                                MakePack(pack);
+                            }
                             MainWindowVM.NotifyInfo("生成成功");
                         }
                         catch (Exception ex)
@@ -161,11 +201,43 @@ namespace Just.VersionFile
                 return _CreateFile;
             }
         }
+
         //不取哈希的文件夹(反斜杠结尾)、文件
         private string[] IgnoreHashs { get; set; }
+        private string Password { get; set; } = string.Empty;
+        private int? fileCount = null;
         private Dictionary<string, string> GetAllFileHash()
         {
             var result = new Dictionary<string, string>();
+            var files = GetAllFiles();
+            fileCount = files.Count;
+            MainWindowVM.BeginStatusInterval();
+            for (int i = 0; i < fileCount; i++)
+            {
+                if (_tokenSource.IsCancellationRequested) return null;
+                try
+                {
+                    var file = files[i];
+                    var key = file.Remove(0, PackFolder.Length + 1).Replace("\\", "/");
+                    result.Add(key, MD5.GetFileHash(file));
+                    MainWindowVM.ShowStatus($"生成文件校验信息...{i}/{fileCount}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("获取文件哈希值错误", ex);
+                }
+            }
+            MainWindowVM.EndStatusInterval();
+            return result;
+        }
+        private int GetAllFileCount()
+        {
+            var files = GetAllFiles();
+            fileCount = files.Count;
+            return fileCount.Value;
+        }
+        private List<string> GetAllFiles()
+        {
             //1.取顶层文件
             var files = Directory.GetFiles(PackFolder)
                 .Where(f => !IgnoreHashs.Any(i => f.Equals($@"{PackFolder}\{i}", StringComparison.OrdinalIgnoreCase)))
@@ -180,31 +252,41 @@ namespace Just.VersionFile
                 if (_tokenSource.IsCancellationRequested) return null;
                 files.AddRange(Directory.GetFiles(dir, "*", SearchOption.AllDirectories));
             }
-            var fileCount = files.Count;
-            var timer = DateTime.Now.Ticks;
-            var interval = 1000 * 10000;
-            for (int i = 0; i < fileCount; i++)
-            {
-                if (_tokenSource.IsCancellationRequested) return null;
-                try
-                {
-                    var file = files[i];
-                    var key = file.Remove(0, PackFolder.Length + 1).Replace("\\", "/");
-                    result.Add(key, MD5.GetFileHash(file));
-                    if (DateTime.Now.Ticks - timer > interval)
-                    {
-                        timer = DateTime.Now.Ticks;
-                        MainWindowVM.ShowStatus($"生成文件校验信息...{i}/{fileCount}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error("获取文件哈希值错误", ex);
-                }
-            }
-            return result;
+            return files;
         }
 
+        private void MakePack(string save)
+        {
+            //TODO: 打包脚本
+            CantStop = true;
+            MainWindowVM.ShowStatus("打包...扫描文件");
+            fileCount = fileCount ?? GetAllFileCount();
+            var count = 0;
+            //排除的文件和目录(包含版本文件)
+            var fileFilter = string.Join(";",
+                IgnoreHashs.Where(i => !i.EndsWith("/") && !i.Equals(VersionFileName))
+                .Select(i => $"-^{(PackFolder + "\\" + i).ToRegPattern()}$"));
+            var dirFilter = string.Join(";",
+                IgnoreHashs.Where(i => i.EndsWith("/"))
+                .Select(i => $"-^{(PackFolder + "\\" + i.TrimEnd('/')).ToRegPattern()}$"));
+            //压缩
+            var evt = new FastZipEvents
+            {
+                CompletedFile = (sender, e) => count++,
+                ProcessFile = (sender, e) => MainWindowVM.ShowStatus("打包..." + e.Name.Remove(0, PackFolder.Length + 1), true, count * 100 / fileCount),
+                ProgressInterval = TimeSpan.FromSeconds(1)
+            };
+            var fast = new FastZip(evt) { Password = Password };
+            MainWindowVM.BeginStatusInterval();
+            fast.CreateZip(save, PackFolder, true, fileFilter, dirFilter);
+            MainWindowVM.EndStatusInterval();
+            MainWindowVM.ShowStatus("打包...完成");
+            CantStop = false;
+            return;
+        }
+        #endregion
+
+        #region 读取和查看
         private ICommand _ReadFile;
         public ICommand ReadFile
         {
@@ -262,7 +344,7 @@ namespace Just.VersionFile
                             {
                                 HasCheckData = false;
                             }
-                            _versionFile = file;
+                            _VersionFile = file;
                             MainWindowVM.NotifyInfo("读取成功");
                         }
                         catch (Exception ex)
@@ -285,13 +367,15 @@ namespace Just.VersionFile
                 {
                     MainWindowVM.DispatcherInvoke(() =>
                     {
-                        var json = JsonConvert.SerializeObject(_versionFile, Formatting.Indented);
+                        var copy = JsonConvert.DeserializeObject<VersionFileInfo>(JsonConvert.SerializeObject(_VersionFile));
+                        copy.CheckData = new Dictionary<string, string> { { "[校验信息数量]", (_VersionFile?.CheckData?.Count ?? 0).ToString() } };
+                        var json = JsonConvert.SerializeObject(copy, Formatting.Indented);
                         var n = new MessageWin
                         {
-                            Title = $"版本信息({_versionFile?.CheckData?.Count ?? 0})",
+                            Title = $"版本信息",
                             Message = json,
                             MessageAlignment = HorizontalAlignment.Left,
-                            Width = 800
+                            Width = 500
                         };
                         n.ShowDialog();
                     });
@@ -299,6 +383,7 @@ namespace Just.VersionFile
                 return _ShowFile;
             }
         }
+        #endregion
 
         #region Setting
         public void ReadSetting()
@@ -308,7 +393,16 @@ namespace Just.VersionFile
             //MainVersion = MainWindowVM.ReadSetting($"{nameof(VersionFileCtrl)}.{nameof(MainVersion)}", MainVersion);
             //MainVersionDescription = MainWindowVM.ReadSetting($"{nameof(VersionFileCtrl)}.{nameof(MainVersionDescription)}", MainVersionDescription);
 
+            IsMakePack = MainWindowVM.ReadSetting($"{nameof(VersionFileCtrl)}.{nameof(IsMakePack)}", IsMakePack);
             IgnoreHashs = MainWindowVM.ReadSetting($"{nameof(VersionFileCtrl)}.{nameof(IgnoreHashs)}", IgnoreHashs);
+            try
+            {
+                Password = AES.Decrypt(MainWindowVM.ReadSetting($"{nameof(VersionFileCtrl)}.{nameof(Password)}", AES.Encrypt(Password)));
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("读取密码错误", ex);
+            }
         }
         public void WriteSetting()
         {
