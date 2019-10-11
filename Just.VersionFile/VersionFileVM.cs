@@ -167,6 +167,7 @@ namespace Just.VersionFile
                                 }
                                 if (IsPatch)
                                 {
+                                    file.CheckData = _VersionFile.CheckData;
                                     file.CheckData = file.CheckData.AddOrUpdate(checkData);
                                 }
                                 else
