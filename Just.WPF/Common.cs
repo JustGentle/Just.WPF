@@ -2,7 +2,6 @@
 using Autofac.Configuration;
 using Just.Base;
 using Just.Base.Views;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,11 +14,8 @@ namespace Just.WPF
         private IContainer Container { get; set; }
         private IContainer DependencyResolverInitialize()
         {
-            var config = new ConfigurationBuilder();
-            config.AddJsonFile(System.Configuration.ConfigurationManager.AppSettings["autofac"]);
-            var module = new ConfigurationModule(config.Build());
             var builder = new ContainerBuilder();
-            builder.RegisterModule(module);
+            builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
             Container = builder.Build();
             return Container;
         }
