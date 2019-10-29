@@ -51,13 +51,13 @@
                                 <Grid SnapsToDevicePixels="true">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition />
-                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="auto" />
                                     </Grid.ColumnDefinitions>
                                     <ContentPresenter
                                         x:Name="PART_HeaderContent"
                                         Grid.Column="0"
                                         Margin="5"
-                                        HorizontalAlignment="Center"
+                                        HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
                                         ContentSource="Header"
                                         TextElement.FontSize="{DynamicResource TabItem.FontSize}"

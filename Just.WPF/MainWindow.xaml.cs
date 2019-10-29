@@ -252,6 +252,10 @@ namespace Just.WPF
         #endregion
 
         #region 顶部菜单
+        private void Logo_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            System.Diagnostics.Process.Start("explorer.exe", AppDomain.CurrentDomain.BaseDirectory);
+        }
         /// <summary>
         /// 关于
         /// </summary>

@@ -45,7 +45,8 @@
             <!-- MouseLeftButtonDown="AboutMenuItem_MouseUp" -->
             <Border
                 Cursor="Hand"
-                Style="{DynamicResource TitleBorder}">
+                Style="{DynamicResource TitleBorder}"
+                MouseUp="Logo_MouseUp">
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <Image Source="/hongfan.ico" Stretch="Uniform" Height="32"/>
                     <!--<Path Height="32" Style="{DynamicResource LogoPath}" />-->
@@ -228,7 +229,7 @@
             Width="Auto"
             Height="Auto"
             Background="White">
-            <TextBlock TextAlignment="Center" Foreground="{DynamicResource DisableForeBrush}">未打开子窗口</TextBlock>
+            <TextBlock Name="txtNoItem" TextAlignment="Center" Foreground="{DynamicResource DisableForeBrush}">未打开子窗口</TextBlock>
             <TabControl Name="tbContent" Style="{DynamicResource TabControl_WithClose}" SelectionChanged="TbContent_SelectionChanged" />
         </Grid>
     </DockPanel>

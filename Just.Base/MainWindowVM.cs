@@ -242,7 +242,9 @@ namespace Just.Base
         }
         public static void WriteSetting<T>(string key, T value)
         {
-            _setting[key] = value == null ? null : JToken.FromObject(value);
+            //不存在或与默认值不相同才写入
+            if (_setting.ContainsKey(key) || JsonConvert.SerializeObject(_defaultSetting[key]) != JsonConvert.SerializeObject(value))
+                _setting[key] = value == null ? null : JToken.FromObject(value);
         }
         public static void SaveSetting()
         {

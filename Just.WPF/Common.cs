@@ -65,6 +65,7 @@ namespace Just.WPF
                     };
                 }
             }
+            txtNoItem.Visibility = Visibility.Collapsed;
         }
         private UserControl CreateView(string className, string title)
         {
@@ -91,7 +92,13 @@ namespace Just.WPF
 
         private void ChildView_Unloaded(object sender, RoutedEventArgs e)
         {
-            (sender as IChildView)?.WriteSettings();
+            if(sender is IChildView writer)
+            {
+                writer.WriteSettings();
+                MainWindowVM.SaveSetting();
+            }
+            if (!this.tbContent.HasItems)
+                txtNoItem.Visibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -120,8 +127,11 @@ namespace Just.WPF
                 && content.Content is IChildView writer)
             {
                 writer.WriteSettings();
+                MainWindowVM.SaveSetting();
             }
             this.tbContent.Items.Remove(item);
+            if(!this.tbContent.HasItems)
+                txtNoItem.Visibility = Visibility.Visible;
         }
 
         public void CloseAll()
