@@ -147,7 +147,7 @@ namespace Just.VersionFile
                             {
                                 Version = new Dictionary<string, VersionInfo>
                                 {
-                                    { KeyMainVersion, new VersionInfo{ Name = "主要版本", Version = MainVersion, Description = MainVersionDescription } }
+                                    { KeyMainVersion, new VersionInfo{ Name = "程序版本", Version = MainVersion, Description = MainVersionDescription } }
                                 }
                             };
                             if (IsPatch)
