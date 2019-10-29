@@ -32,6 +32,11 @@
       "Id": "RegexNet",
       "Header": "正则表达式",
       "ClassName": "RegexNetCtrl"
+    },
+    {
+      "Id": "ExtractTfs",
+      "Header": "提取变更集",
+      "ClassName": "ExtractTfsCtrl"
     }
   ],
   "VersionFileCtrl.IgnoreHashs": [
@@ -87,5 +92,14 @@
     "serviceModelClient.config",
     "sso.config",
     "Web.config"
-  ]
+  ],
+  "ExtractTfsCtrl.CollectionUri": "http://kfb-tfs:8080/tfs/HAP.2.0",
+  "ExtractTfsCtrl.ItemPath": "$/",
+  "ExtractTfsCtrl._FileRegex": {
+    "^(?<start>.*)\\\\iOffice10\\.Integration\\\\iOffice10\\.Integration\\\\(?<folder>Content|Scripts|Views|Areas|app|fonts)\\\\(?<end>.+)$": "${start}\\${folder}\\${end}",
+    "^(?<start>.*)\\\\(?<sln>iOffice10\\.[^\\\\]+)\\\\(?<proj>iOffice10\\.(?<name>[^\\\\]+))\\\\App\\\\(?<end>.+)$": "${start}\\app\\${name}\\${end}",
+    "^(?<start>.*)\\\\(?<sln>iOffice10\\.[^\\\\]+)\\\\(?<proj>iOffice10\\.(?<name>[^\\\\]+))\\\\(?<folder>Content|Scripts|Views)\\\\(?<end>.+)$": "${start}\\areas\\${name}\\${folder}\\${end}",
+    "^(?<start>.*)\\\\(?<sln>iOffice10\\.[^\\\\]+)\\\\(?<proj>iOffice10\\.[^\\\\]+)\\\\(?<end>.+)\\.(cs|csproj)$": "${start}\\bin\\${proj}.dll",
+    "^(?<start>.*)\\\\iOffice10\\.Integration\\\\iOffice10\\.Integration\\\\(?<end>[^\\\\\\.]+\\.(config|ico|asax))$": "${start}\\${end}"
+  }
 }

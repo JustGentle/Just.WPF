@@ -1,0 +1,101 @@
+﻿<UserControl x:Class="Just.ExtractTfs.ExtractTfsCtrl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Just.ExtractTfs"
+             xmlns:cvt="clr-namespace:Just.Base.Converters;assembly=Just.Base"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Just.Base;Component/Theme/Default.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <cvt:BoolReverseConverter x:Key="BoolReverseConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock>团队项目集合地址：</TextBlock>
+            <TextBox Grid.Column="1" Text="{Binding CollectionUri}"></TextBox>
+            <TextBlock Grid.Column="2" Margin="10,0,0,0">变更集ID：</TextBlock>
+            <TextBox Grid.Column="3" ToolTip="例：100-103,105,107" Text="{Binding ChangesetIds}"></TextBox>
+            <Button Grid.Column="4"
+                Margin="-1,0,0,0"
+                Padding="5,0"
+                Command="{Binding ChangesetBrowser}"
+                IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}" Visibility="Collapsed">选择</Button>
+        </Grid>
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock>项目路径：</TextBlock>
+            <TextBox Grid.Column="1" Text="{Binding ItemPath}"></TextBox>
+            <Button
+                Grid.Column="2"
+                Margin="-1,0,0,0"
+                Padding="5,0"
+                Command="{Binding ItemPathBrowser}"
+                IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}" Visibility="Collapsed">
+                <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
+            </Button>
+        </Grid>
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock>保存路径：</TextBlock>
+            <TextBox Grid.Column="1" Text="{Binding SaveFolder}"></TextBox>
+            <Button
+                Grid.Column="2"
+                Margin="-1,0,0,0"
+                Padding="5,0"
+                Command="{Binding SaveFolderBrowser}"
+                IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}">
+                <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
+            </Button>
+            <Button
+                Grid.Row="0" Grid.Column="3"
+                Margin="-1,0,0,0"
+                Padding="5,0"
+                Command="{Binding OpenSaveFolder}"
+                ToolTip="查看文件夹">
+                <Path Style="{DynamicResource FolderOpenPath}" MaxWidth="16" MaxHeight="16"/>
+            </Button>
+            <Button Grid.Column="4"
+                    Style="{StaticResource MainButton}"
+                    Command="{Binding Extract}"
+                    IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}">提取</Button>
+        </Grid>
+        <Grid Grid.Row="3" Margin="0,10,0,0">
+            <WrapPanel HorizontalAlignment="Right">
+                <CheckBox Margin="10,0,0,0" ToolTip="变更集部分文件在指定项目路径中，部分不在时，提取完整内容" IsChecked="{Binding IsFullChangeset}">完整变更集</CheckBox>
+                <CheckBox Margin="10,0,0,0" ToolTip="按 iOffice10 生成规则调整文件到指定路径" IsChecked="{Binding IsMoveFile}">调整文件</CheckBox>
+                <CheckBox Margin="10,0,0,0" ToolTip="执行 gulp changed 指令编译前端文件" IsChecked="{Binding IsGulpFile}" IsEnabled="{Binding IsMoveFile}">编译前端</CheckBox>
+            </WrapPanel>
+        </Grid>
+    </Grid>
+</UserControl>
