@@ -91,7 +91,7 @@ namespace Just.WPF
             this.WindowState = WindowState.Minimized;
         }
         /// <summary>
-        /// 最大化/欢迎
+        /// 最大化/还原
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -255,6 +255,7 @@ namespace Just.WPF
         private void Logo_MouseUp(object sender, MouseButtonEventArgs e)
         {
             System.Diagnostics.Process.Start("explorer.exe", AppDomain.CurrentDomain.BaseDirectory);
+            e.Handled = true;
         }
         /// <summary>
         /// 关于

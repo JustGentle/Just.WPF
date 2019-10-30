@@ -46,7 +46,7 @@
             <Border
                 Cursor="Hand"
                 Style="{DynamicResource TitleBorder}"
-                MouseUp="Logo_MouseUp">
+                MouseDown="Logo_MouseUp">
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <Image Source="/hongfan.ico" Stretch="Uniform" Height="32"/>
                     <!--<Path Height="32" Style="{DynamicResource LogoPath}" />-->
