@@ -117,7 +117,7 @@
                                 <DataGridTextColumn Header="序号" Binding="{Binding Index}"/>
                                 <DataGridTextColumn Header="组名" Binding="{Binding GroupName}"/>
                                 <DataGridTextColumn Header="值" Binding="{Binding Value}"/>
-                                <DataGridTextColumn Header="位置" Binding="{Binding Index}"/>
+                                <DataGridTextColumn Header="位置" Binding="{Binding Position}"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </DataTemplate>
