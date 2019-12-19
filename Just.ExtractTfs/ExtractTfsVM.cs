@@ -29,6 +29,7 @@ namespace Just.ExtractTfs
         public string ItemPath { get; set; }
         public string ChangesetIds { get; set; }
         public string SaveFolder { get; set; }
+        public string RevFile { get; set; }
         public bool IsMoveFile { get; set; } = true;
         public bool IsGulpFile { get; set; }
         public bool IsFullChangeset { get; set; }
@@ -237,6 +238,28 @@ namespace Just.ExtractTfs
                     System.Diagnostics.Process.Start("explorer.exe", SaveFolder);
                 });
                 return _OpenSaveFolder;
+            }
+        }
+        #endregion
+
+        #region 映射文件
+        private ICommand _RevFileBrowser;
+        public ICommand RevFileBrowser
+        {
+            get
+            {
+                _RevFileBrowser = _RevFileBrowser ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    var dlg = new CommonOpenFileDialog();
+                    dlg.Filters.Add(new CommonFileDialogFilter("映射文件", "*.json"));
+                    dlg.Filters.Add(new CommonFileDialogFilter("所有文件", "*"));
+
+                    if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
+                    {
+                        this.RevFile = dlg.FileName;
+                    }
+                });
+                return _RevFileBrowser;
             }
         }
         #endregion
@@ -477,7 +500,6 @@ namespace Just.ExtractTfs
             item.DownloadFile(path);
         }
 
-        //TODO: dist文件提供选择,其他文件编译后自动移除,自动移动gulpchanged
         private void Gulp(string folder)
         {
             try
@@ -489,6 +511,13 @@ namespace Just.ExtractTfs
                 {
                     var console = string.Empty;
                     MainWindowVM.ShowStatus("gulp...");
+
+                    //rev
+                    var revDist = Path.Combine(output, "dist", "rev-manifest.json");
+                    Directory.CreateDirectory(Path.GetDirectoryName(revDist));
+                    File.Copy(RevFile, revDist, true);
+
+                    //gulp
                     PathHelper.CopyDirectory(path, output);
                     var info = new ProcessStartInfo
                     {
@@ -538,6 +567,7 @@ namespace Just.ExtractTfs
             ItemPath = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(ItemPath)}", ItemPath);
             ChangesetIds = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(ChangesetIds)}", ChangesetIds);
             SaveFolder = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(SaveFolder)}", SaveFolder);
+            RevFile = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(RevFile)}", RevFile);
             IsMoveFile = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsMoveFile)}", IsMoveFile);
             IsGulpFile = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsGulpFile)}", IsGulpFile);
             _FileRegex = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(_FileRegex)}", _FileRegex);
@@ -549,6 +579,7 @@ namespace Just.ExtractTfs
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(ItemPath)}", ItemPath);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(ChangesetIds)}", ChangesetIds);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(SaveFolder)}", SaveFolder);
+            MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(RevFile)}", RevFile);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsMoveFile)}", IsMoveFile);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsGulpFile)}", IsGulpFile);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(_FileRegex)}", _FileRegex);

@@ -27,6 +27,7 @@
             <RowDefinition Height="{Binding ItemPathTreeHeight}" />
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <v:WaitLayer
@@ -127,6 +128,22 @@
                 <CheckBox Margin="10,0,0,0" ToolTip="按 iOffice10 生成规则调整文件到指定路径" IsChecked="{Binding IsMoveFile}">调整文件</CheckBox>
                 <CheckBox Margin="10,0,0,0" ToolTip="执行 gulp changed 指令编译前端文件" IsChecked="{Binding IsGulpFile}" IsEnabled="{Binding IsMoveFile}">编译前端</CheckBox>
             </WrapPanel>
+        </Grid>
+        <Grid Grid.Row="5" Margin="0,10,0,0" Visibility="{Binding IsGulpFile,Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock>映射文件：</TextBlock>
+            <TextBox Grid.Column="1" Text="{Binding RevFile}"></TextBox>
+            <Button
+                Grid.Column="2"
+                Margin="-1,0,0,0"
+                Padding="5,0"
+                Command="{Binding RevFileBrowser}">
+                <Path Style="{DynamicResource FilePath}" MaxWidth="16" MaxHeight="16"/>
+            </Button>
         </Grid>
     </Grid>
 </UserControl>
