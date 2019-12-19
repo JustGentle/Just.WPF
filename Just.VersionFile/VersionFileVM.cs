@@ -209,7 +209,6 @@ namespace Just.VersionFile
         private int? fileCount = null;
         private Dictionary<string, string> GetAllFileHash()
         {
-            //TODO: dist内文件名与基于版本不一致,会有冗余数据
             var result = new Dictionary<string, string>();
             var files = GetAllFiles();
             fileCount = files.Count;

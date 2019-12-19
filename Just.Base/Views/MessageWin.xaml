@@ -15,6 +15,7 @@
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
+        ResizeMode="NoResize"
         ShowInTaskbar="False"
         Loaded="MessageWindow_Loaded">
     <Window.Resources>

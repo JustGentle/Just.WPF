@@ -20,6 +20,8 @@ using System.Windows.Media;
 
 namespace Just.MongoDB
 {
+    //TODO: 同步前可以编辑脚本
+    //TODO: 可以直接操作连接库脚本
     [AddINotifyPropertyChangedInterface]
     public class MongoSyncVM
     {

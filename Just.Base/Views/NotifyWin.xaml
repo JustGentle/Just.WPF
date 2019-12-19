@@ -12,6 +12,7 @@
         AllowsTransparency="True"
         FontSize="14"
         WindowStyle="None"
+        ResizeMode="NoResize"
         Loaded="NotifyWindow_Loaded">
     <Window.Resources>
         <ResourceDictionary>

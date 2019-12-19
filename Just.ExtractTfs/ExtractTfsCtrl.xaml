@@ -125,7 +125,7 @@
         <Grid Grid.Row="4" Margin="0,10,0,0">
             <WrapPanel HorizontalAlignment="Right">
                 <CheckBox Margin="10,0,0,0" ToolTip="变更集部分文件在指定项目路径中，部分不在时，提取完整内容" IsChecked="{Binding IsFullChangeset}">完整变更集</CheckBox>
-                <CheckBox Margin="10,0,0,0" ToolTip="按 iOffice10 生成规则调整文件到指定路径" IsChecked="{Binding IsMoveFile}">调整文件</CheckBox>
+                <CheckBox Margin="10,0,0,0" ToolTip="按 iOffice10 生成规则调整文件到指定路径" IsChecked="{Binding IsMoveFile}">调整路径</CheckBox>
                 <CheckBox Margin="10,0,0,0" ToolTip="执行 gulp changed 指令编译前端文件" IsChecked="{Binding IsGulpFile}" IsEnabled="{Binding IsMoveFile}">编译前端</CheckBox>
             </WrapPanel>
         </Grid>
@@ -141,7 +141,8 @@
                 Grid.Column="2"
                 Margin="-1,0,0,0"
                 Padding="5,0"
-                Command="{Binding RevFileBrowser}">
+                Command="{Binding RevFileBrowser}"
+                ToolTip="选择映射文件 rev-manifest.json">
                 <Path Style="{DynamicResource FilePath}" MaxWidth="16" MaxHeight="16"/>
             </Button>
         </Grid>

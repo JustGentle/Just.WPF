@@ -104,13 +104,26 @@ namespace Just.Base.Views
 
         private void Border_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            this.DragMove();//拖拽移动窗口
+            if (e.ClickCount >= 2)
+                SwitchWindowState();//双击切换窗口最大化
+            else
+                this.DragMove();//拖拽移动窗口
             e.Handled = true;
         }
 
         private void ListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Ok_Click(sender, e);
+        }
+
+        /// <summary>
+        /// 关闭
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CloseMenuItem_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            Cancel_Click(sender, null);
         }
 
         /// <summary>
@@ -126,12 +139,38 @@ namespace Just.Base.Views
         {
             if (this.WindowState == WindowState.Maximized)
             {
+                SizeToContent = SizeToContent.Height;
                 this.WindowState = WindowState.Normal;
             }
             else
             {
                 SizeToContent = SizeToContent.Manual;
                 this.WindowState = WindowState.Maximized;
+            }
+        }
+        /// <summary>
+        /// 状态处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (this.WindowStyle != WindowStyle.None) return;
+
+            //无边框时最大化会全屏覆盖任务栏,需要做处理
+            //NoResize可以取消移动窗口到边缘自动最大化，但会导致最大化时边框显示异常
+            if (this.WindowState == WindowState.Maximized)
+            {
+                this.ResizeMode = ResizeMode.CanResize;
+                this.WindowStyle = WindowStyle.SingleBorderWindow;
+                this.WindowStyle = WindowStyle.None;
+                this.ResizeMode = ResizeMode.NoResize;
+                //隐藏边框,方便右上角直接激活关闭按钮
+                this.LayoutRoot.BorderThickness = new Thickness(0);
+            }
+            else
+            {
+                this.LayoutRoot.BorderThickness = new Thickness(1);
             }
         }
     }

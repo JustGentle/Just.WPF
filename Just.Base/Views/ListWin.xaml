@@ -12,8 +12,24 @@
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
-        ShowInTaskbar="False"
-        AllowsTransparency="True">
+        ResizeMode="NoResize"
+        StateChanged="Window_StateChanged"
+        ShowInTaskbar="False">
+    <Window.Style>
+        <!--  WindowStyle="None"时隐藏边框  -->
+        <Style TargetType="Window">
+            <Setter Property="WindowChrome.WindowChrome">
+                <Setter.Value>
+                    <WindowChrome
+                        CaptionHeight="0"
+                        CornerRadius="0"
+                        GlassFrameThickness="1"
+                        NonClientFrameEdges="None"
+                        ResizeBorderThickness="3" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Style>
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -66,6 +82,22 @@
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=WindowState}" Value="Normal">
                                             <Setter Property="Data" Value="{DynamicResource MaxPathData}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                        </Path>
+                    </Border>
+                    <Border
+                        x:Name="CloseBorder"
+                        MouseLeftButtonUp="CloseMenuItem_MouseUp"
+                        Style="{DynamicResource TopButton}">
+                        <Path x:Name="ClosePath" Width="10">
+                            <Path.Style>
+                                <Style BasedOn="{StaticResource ClosePath}" TargetType="Path">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=CloseBorder, Path=IsMouseOver}" Value="True">
+                                            <Setter Property="Stroke" Value="Red" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>

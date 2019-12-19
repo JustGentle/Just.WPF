@@ -245,4 +245,20 @@
     <Error Condition="!Exists('..\packages\PropertyChanged.Fody.2.6.1\build\PropertyChanged.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\PropertyChanged.Fody.2.6.1\build\PropertyChanged.Fody.props'))" />
   </Target>
   <Import Project="..\packages\Fody.4.2.1\build\Fody.targets" Condition="Exists('..\packages\Fody.4.2.1\build\Fody.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>rmdir /S /Q $(OutDir)cs
+rmdir /S /Q $(OutDir)de
+rmdir /S /Q $(OutDir)en
+rmdir /S /Q $(OutDir)es
+rmdir /S /Q $(OutDir)fr
+rmdir /S /Q $(OutDir)it
+rmdir /S /Q $(OutDir)ja
+rmdir /S /Q $(OutDir)ko
+rmdir /S /Q $(OutDir)pl
+rmdir /S /Q $(OutDir)pt-BR
+rmdir /S /Q $(OutDir)ru
+rmdir /S /Q $(OutDir)tr
+rmdir /S /Q $(OutDir)zh-Hans
+rmdir /S /Q $(OutDir)zh-Hant</PostBuildEvent>
+  </PropertyGroup>
 </Project>
