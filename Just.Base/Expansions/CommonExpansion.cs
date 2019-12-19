@@ -66,9 +66,17 @@ namespace Just
         {
             foreach (var chr in RegChars)
             {
-                text = text.Replace(chr.ToString(), @"\" + chr);
+                text = text?.Replace(chr.ToString(), @"\" + chr);
             }
             return text;
+        }
+        public static string OneLine(this string text)
+        {
+            return text?.Replace("\n", " ").Replace("\r", " ");
+        }
+        public static bool Contains(this string text, string value, StringComparison comparisonType)
+        {
+            return text.IndexOf(value, comparisonType) != -1;
         }
 
         public static Dictionary<TKey, TValue> AddOrUpdate<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue value)
@@ -99,5 +107,7 @@ namespace Just
                 return Enumerable.Empty<T>();
             return list;
         }
+
+
     }
 }

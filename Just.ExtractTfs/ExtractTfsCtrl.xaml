@@ -5,6 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Just.ExtractTfs"
              xmlns:cvt="clr-namespace:Just.Base.Converters;assembly=Just.Base"
+             xmlns:v="clr-namespace:Just.Base.Views;assembly=Just.Base"
+             xmlns:GenControls="clr-namespace:GenLibrary.GenControls;assembly=GenLibrary"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
@@ -13,17 +16,24 @@
                 <ResourceDictionary Source="/Just.Base;Component/Theme/Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <cvt:BoolReverseConverter x:Key="BoolReverseConverter" />
+            <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <cvt:BoolToVisibilityConverter x:Key="ReverseBoolToVisibilityConverter" Reverse="True" />
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="{Binding ItemPathTreeHeight}" />
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition/>
         </Grid.RowDefinitions>
+
+        <v:WaitLayer
+            Grid.RowSpan="999"
+            Panel.ZIndex="{Binding Doing}"
+            Visibility="{Binding Doing, Converter={StaticResource BoolToVisibilityConverter}}" />
+        
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
@@ -39,8 +49,7 @@
             <Button Grid.Column="4"
                 Margin="-1,0,0,0"
                 Padding="5,0"
-                Command="{Binding ChangesetBrowser}"
-                IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}" Visibility="Collapsed">选择</Button>
+                Command="{Binding ChangesetBrowser}">选择</Button>
         </Grid>
         <Grid Grid.Row="1" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
@@ -54,12 +63,36 @@
                 Grid.Column="2"
                 Margin="-1,0,0,0"
                 Padding="5,0"
-                Command="{Binding ItemPathBrowser}"
-                IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}" Visibility="Collapsed">
-                <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
+                Command="{Binding ItemPathBrowser}">
+                <Path Style="{DynamicResource DropDownPath}" MaxWidth="12" MaxHeight="12"/>
             </Button>
         </Grid>
-        <Grid Grid.Row="2" Margin="0,10,0,0">
+        <Grid Grid.Row="2" Margin="0,5,0,0">
+            <GenControls:TreeListView DataContext="{Binding ItemPathTree}" Name="ItemTree">
+                <GenControls:TreeListView.Columns>
+                    <GridViewColumn Width="700" Header="项目路径（双击展开）">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Width="auto">
+                                    <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16" HorizontalAlignment="Left" Visibility="{Binding IsFile,Converter={StaticResource ReverseBoolToVisibilityConverter}}"/>
+                                    <Path Style="{DynamicResource FilePath}" MaxWidth="16" MaxHeight="16" HorizontalAlignment="Left" Visibility="{Binding IsFile,Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <TextBlock Margin="18,0,0,0" Text="{Binding Name}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GenControls:TreeListView.Columns>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="SelectedItemChanged">
+                        <i:InvokeCommandAction Command="{Binding DataContext.ItemPathSelected, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=UserControl}}" CommandParameter="{Binding ElementName=ItemTree}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="MouseDoubleClick">
+                        <i:InvokeCommandAction Command="{Binding DataContext.ItemPathDoubleClick, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=UserControl}}" CommandParameter="{Binding ElementName=ItemTree}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </GenControls:TreeListView>
+        </Grid>
+        <Grid Grid.Row="3" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition/>
@@ -73,8 +106,7 @@
                 Grid.Column="2"
                 Margin="-1,0,0,0"
                 Padding="5,0"
-                Command="{Binding SaveFolderBrowser}"
-                IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}">
+                Command="{Binding SaveFolderBrowser}">
                 <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
             </Button>
             <Button
@@ -87,10 +119,9 @@
             </Button>
             <Button Grid.Column="4"
                     Style="{StaticResource MainButton}"
-                    Command="{Binding Extract}"
-                    IsEnabled="{Binding Doing, Converter={StaticResource BoolReverseConverter}}">提取</Button>
+                    Command="{Binding Extract}">提取</Button>
         </Grid>
-        <Grid Grid.Row="3" Margin="0,10,0,0">
+        <Grid Grid.Row="4" Margin="0,10,0,0">
             <WrapPanel HorizontalAlignment="Right">
                 <CheckBox Margin="10,0,0,0" ToolTip="变更集部分文件在指定项目路径中，部分不在时，提取完整内容" IsChecked="{Binding IsFullChangeset}">完整变更集</CheckBox>
                 <CheckBox Margin="10,0,0,0" ToolTip="按 iOffice10 生成规则调整文件到指定路径" IsChecked="{Binding IsMoveFile}">调整文件</CheckBox>

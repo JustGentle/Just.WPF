@@ -117,6 +117,10 @@
                 <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
             </Button>
         </Grid>
+        <v:WaitLayer
+            Grid.Row="2"
+            Panel.ZIndex="{Binding Doing}"
+            Visibility="{Binding Doing, Converter={StaticResource BoolToVisibilityConverter}}" />
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="609*" />
@@ -211,9 +215,5 @@
                 </GenControls:TreeListView.ContextMenu>
             </GenControls:TreeListView>
         </Grid>
-        <v:WaitLayer
-            Grid.Row="2"
-            Panel.ZIndex="{Binding Doing}"
-            Visibility="{Binding Doing, Converter={StaticResource BoolToVisibilityConverter}}" />
     </Grid>
 </UserControl>

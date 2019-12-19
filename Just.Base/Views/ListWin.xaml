@@ -28,15 +28,11 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <Border
-                Margin="10,0"
-                BorderBrush="{DynamicResource NormalBorderBrush}"
-                BorderThickness="0,0,0,0.5"
-                MouseLeftButtonDown="Border_MouseLeftButtonDown"
-                Background="{StaticResource NearTransparentBrush}">
+            <Grid>
                 <TextBlock
                     Margin="10"
                     HorizontalAlignment="Center"
@@ -45,24 +41,57 @@
                     Text="{Binding Title}"
                     TextAlignment="Center"
                     TextWrapping="Wrap"/>
-            </Border>
-            <ListBox Grid.Row="1" Name="ListSelect"
+                <Border
+                    MouseLeftButtonDown="Border_MouseLeftButtonDown"
+                    Margin="10,0"
+                    BorderBrush="{DynamicResource NormalBorderBrush}"
+                    BorderThickness="0,0,0,0.5"
+                    Background="{StaticResource NearTransparentBrush}">
+                </Border>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Border
+                        x:Name="WinStateBorder"
+                        MouseLeftButtonUp="WinStateMenuItem_MouseUp"
+                        Style="{DynamicResource TopButton}">
+                        <Path x:Name="WinStatePath" Width="10">
+                            <Path.Style>
+                                <Style BasedOn="{StaticResource ClosePath}" TargetType="Path">
+                                    <Setter Property="Data" Value="{DynamicResource NormalPathData}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=WinStateBorder, Path=IsMouseOver}" Value="True">
+                                            <Setter Property="Stroke" Value="{DynamicResource MainForeBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=WindowState}" Value="Maximized">
+                                            <Setter Property="Data" Value="{DynamicResource NormalPathData}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=WindowState}" Value="Normal">
+                                            <Setter Property="Data" Value="{DynamicResource MaxPathData}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                        </Path>
+                    </Border>
+                </StackPanel>
+            </Grid>
+            <TextBox Grid.Row="1" Margin="10,0" ToolTip="筛选..." Text="{Binding Filter,UpdateSourceTrigger=PropertyChanged,Delay=1000}"></TextBox>
+            <ListBox Grid.Row="2" Name="ListSelect"
                      Margin="10"
                      ItemsSource="{Binding Items}"
+                     SelectionMode="{Binding MultiSelect}"
                      DisplayMemberPath="Item1"
                      SelectedValuePath="Item2"
                      Height="Auto"
-                     MaxHeight="300"
                      BorderBrush="Transparent"
                      MouseDoubleClick="ListBox_MouseDoubleClick"
                      Visibility="{Binding HasItems,Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <TextBlock Grid.Row="1"
+            <TextBlock Grid.Row="2"
                        Margin="10" Foreground="{StaticResource DisableForeBrush}"
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        Text="没有可选项"
                        Visibility="{Binding HasItems,Converter={StaticResource BoolReverseToVisibilityConverter}}"/>
             <Border
-                Grid.Row="2"
+                Grid.Row="3"
                 Margin="5"
                 BorderBrush="{DynamicResource NormalBorderBrush}"
                 BorderThickness="0,0.5,0,0">

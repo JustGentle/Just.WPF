@@ -578,7 +578,6 @@ namespace Just.MongoDB
         #endregion
 
         #region 树节点
-        private const string ResourcesBase = "/Just.MongoDB;Component";
         private MongoNode AddTreeNode(string key, object value, MongoNode parent)
         {
             if (string.IsNullOrEmpty(key))
@@ -597,7 +596,7 @@ namespace Just.MongoDB
             {
                 node.Value = "null";
                 node.Type = "Null";
-                node.ImagePath = ResourcesBase + @"/Images/null.png";
+                node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/null.png";
             }
             else if (value is ObjectId id)
             {
@@ -609,32 +608,32 @@ namespace Just.MongoDB
                 {
                     node.Value = value.ToString();
                     node.Type = value.GetType().Name;
-                    node.ImagePath = ResourcesBase + @"/Images/id.png";
+                    node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/id.png";
                 }
             }
             else if(value is bool)
             {
                 node.Value = value.ToString().ToLower();
                 node.Type = value.GetType().Name;
-                node.ImagePath = ResourcesBase + @"/Images/id.png";
+                node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/id.png";
             }
             else if (value is string || value is int || value is long || value is double || value is decimal || value is ObjectId)
             {
                 node.Value = value.ToString();
                 node.Type = value.GetType().Name;
-                node.ImagePath = ResourcesBase + @"/Images/id.png";
+                node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/id.png";
             }
             else if (value is DateTime t)
             {
                 node.Value = t.ToString("yyyy-MM-dd HH:mm:ss.fff");
                 node.Type = value.GetType().Name;
-                node.ImagePath = ResourcesBase + @"/Images/id.png";
+                node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/id.png";
             }
             else if (value is System.Collections.ICollection c)
             {
                 node.Value = $"[{c.Count}]";
                 node.Type = nameof(Array);
-                node.ImagePath = ResourcesBase + @"/Images/arr.png";
+                node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/arr.png";
                 var i = 0;
                 foreach (var item in c)
                 {
@@ -646,7 +645,7 @@ namespace Just.MongoDB
             {
                 node.Value = $"{{{d.ElementCount}}}";
                 node.Type = nameof(Object);
-                node.ImagePath = ResourcesBase + @"/Images/obj.png";
+                node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/obj.png";
                 foreach (var item in d.Elements)
                 {
                     AddTreeNode(item.Name, item.Value, node);
@@ -661,7 +660,7 @@ namespace Just.MongoDB
             {
                 var props = value.GetType().GetProperties();
                 node.Value = string.Empty;// $"{{{props.Length}}}";
-                node.ImagePath = ResourcesBase + @"/Images/obj.png";
+                node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/obj.png";
                 node.Type = nameof(Object);
                 if (value is CacheSysProfileMode cache)
                 {
@@ -719,7 +718,7 @@ namespace Just.MongoDB
                 var array = v.AsBsonArray;
                 node.Value = $"[{array.Count}]";
                 node.Type = "Array";
-                node.ImagePath = ResourcesBase + @"/Images/arr.png";
+                node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/arr.png";
                 var i = 0;
                 foreach (var item in array)
                 {

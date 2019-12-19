@@ -1,5 +1,6 @@
 ﻿using GenLibrary.MVVM.Base;
 using Just.Base;
+using Just.Base.Utils;
 using Just.Base.Views;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using PropertyChanged;
@@ -428,15 +429,11 @@ namespace Just.Rev
                             if (Backup)
                             {
                                 var bak = Path.Combine(BackupFolder, child.Path.Replace(WebRootFolder, "").TrimStart('\\'));
-                                MoveDirectory(child.Path, bak);
+                                PathHelper.MoveDirectory(child.Path, bak);
                             }
                             else
                             {
-                                foreach (var file in Directory.EnumerateFiles(child.Path, "*", SearchOption.AllDirectories))
-                                {
-                                    File.SetAttributes(file, FileAttributes.Normal);
-                                }
-                                Directory.Delete(child.Path, true);
+                                PathHelper.DeleteDirectoryWithNormal(child.Path);
                             }
                         }
                         else if (File.Exists(child.Path))
@@ -449,15 +446,13 @@ namespace Just.Rev
                                 if (File.Exists(bak))
                                 {
                                     //bak = GetFilePathNotExists(bak);
-                                    File.SetAttributes(bak, FileAttributes.Normal);
-                                    File.Delete(bak);
+                                    PathHelper.DeleteFileWithNormal(bak);
                                 }
                                 File.Move(child.Path, bak);
                             }
                             else
                             {
-                                File.SetAttributes(child.Path, FileAttributes.Normal);
-                                File.Delete(child.Path);
+                                PathHelper.DeleteFileWithNormal(child.Path);
                             }
                         }
                         if (child.IsFolder)
@@ -480,48 +475,6 @@ namespace Just.Rev
                 }
             }
             fileItem.UpdateCountInfo();
-        }
-        private string GetFilePathNotExists(string filePath)
-        {
-            var dir = Path.GetDirectoryName(filePath);
-            var fileName = Path.GetFileNameWithoutExtension(filePath);
-            var extension = Path.GetExtension(filePath);
-            var index = 0;
-            while (File.Exists(filePath))
-            {
-                index++;
-                filePath = Path.Combine(dir, $"{fileName} ({index}){extension}");
-            }
-            return filePath;
-        }
-        private void MoveDirectory(string source, string target)
-        {
-            var sourcePath = source.TrimEnd('\\', ' ');
-            var targetPath = target.TrimEnd('\\', ' ');
-            if (sourcePath.ToLower().Equals(targetPath.ToLower())) return;
-
-            var files = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
-                                 .GroupBy(s => Path.GetDirectoryName(s));
-            foreach (var folder in files)
-            {
-                var targetFolder = folder.Key.Replace(sourcePath, targetPath);
-                Directory.CreateDirectory(targetFolder);
-                foreach (var file in folder)
-                {
-                    var targetFile = Path.Combine(targetFolder, Path.GetFileName(file));
-                    if (File.Exists(targetFile))
-                    {
-                        File.SetAttributes(targetFile, FileAttributes.Normal);
-                        File.Delete(targetFile);
-                    }
-                    File.Move(file, targetFile);
-                }
-            }
-            foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
-            {
-                File.SetAttributes(file, FileAttributes.Normal);
-            }
-            Directory.Delete(source, true);
         }
         #endregion
 

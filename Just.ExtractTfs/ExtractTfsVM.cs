@@ -1,11 +1,14 @@
 ﻿using GenLibrary.MVVM.Base;
 using Just.Base;
+using Just.Base.Utils;
+using Just.Base.Views;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using PropertyChanged;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -29,9 +32,180 @@ namespace Just.ExtractTfs
         public bool IsMoveFile { get; set; } = true;
         public bool IsGulpFile { get; set; }
         public bool IsFullChangeset { get; set; }
+        public int? ItemPathTreeHeight { get; set; } = 0;
+
+        public SourceItemNode ItemPathTree { get; set; }
         #endregion
 
-        #region 方法
+        #region 选择
+        private string _cacheHisItemPath = string.Empty;
+        private IEnumerable<Tuple<string, object>> _cacheHis = Enumerable.Empty<Tuple<string, object>>();
+        private ICommand _ChangesetBrowser;
+        public ICommand ChangesetBrowser
+        {
+            get
+            {
+                _ChangesetBrowser = _ChangesetBrowser ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            if (!_Connected || _cacheHisItemPath != ItemPath)
+                            {
+                                MainWindowVM.ShowStatus("连接项目集合...");
+                                if (!ConnectServer()) return;
+                                MainWindowVM.ShowStatus("获取变更集...");
+                                var his = _server.QueryHistory(new QueryHistoryParameters(ItemPath, RecursionType.Full) { IncludeChanges = false, IncludeDownloadInfo = false });
+                                _cacheHis = his.Select(h => new Tuple<string, object>($"{h.ChangesetId} ({h.CreationDate:yyyy-MM-dd HH:mm}) - {h.Owner} - {h.Comment.OneLine()}", h)).ToList();
+                                _cacheHisItemPath = ItemPath;
+                            }
+                            MainWindowVM.ShowStatus("选择...");
+                            MainWindowVM.DispatcherInvoke(() =>
+                            {
+                                var selector = new ListWin
+                                {
+                                    MultiSelect = true,
+                                    Width = 1024,
+                                    Items = _cacheHis
+                                };
+                                if (selector.ShowDialog() != true) return;
+                                ChangesetIds = GetChangesetIds(selector.SelectedItems.Cast<Changeset>());
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error("获取变更集失败", ex);
+                            MainWindowVM.NotifyError("获取变更集失败：" + ex.Message);
+                        }
+                        finally
+                        {
+                            MainWindowVM.ShowStatus();
+                        }
+                    });
+                });
+                return _ChangesetBrowser;
+            }
+        }
+        private string GetChangesetIds(IEnumerable<Changeset> changesets)
+        {
+            var idList = changesets.Select(c => c.ChangesetId).OrderBy(i => i).ToList();
+            var ids = new StringBuilder();
+            int min = -1, max = -1;
+            for (int i = 0; i < idList.Count; i++)
+            {
+                var id = idList[i];
+                //不连续,或最后一个则添加
+                if (id - max != 1 || i + 1 == idList.Count)
+                {
+                    //最后一个为连续值,则并入连续值
+                    if (id - max == 1) max = id;
+                    //连续多个
+                    if (min != max)
+                    {
+                        ids.Append("-").Append(max);
+                    }
+                    //单值
+                    if (id != max)
+                    {
+                        if (i != 0) ids.Append(",");
+                        ids.Append(id);
+                    }
+                    min = id;
+                }
+                //否则并入连续值
+                max = id;
+            }
+            return ids.ToString();
+        }
+
+        private ICommand _ItemPathBrowser;
+        public ICommand ItemPathBrowser
+        {
+            get
+            {
+                _ItemPathBrowser = _ItemPathBrowser ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    try
+                    {
+                        ItemPathTreeHeight = ItemPathTreeHeight.HasValue ? null as int? : 0;
+                        if (ItemPathTreeHeight.HasValue) return;
+                        if (!ConnectServer()) return;
+
+                        if (ItemPathTree == null) InitItemPathTree();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("获取源码结构错误", ex);
+                        MainWindowVM.NotifyError("获取源码结构错误:" + ex.Message);
+                    }
+                });
+                return _ItemPathBrowser;
+            }
+        }
+        private void InitItemPathTree()
+        {
+            MainWindowVM.ShowStatus("加载项目路径节点...");
+            ItemPathTree = new SourceItemNode(null);
+            var root = new SourceItemNode(new Item(_server, ItemType.Folder, "$/")) { IsExpanded = true };
+            ItemPathTree.Children.Add(root);
+            LoadChildrenNode(root, ItemPath);
+            MainWindowVM.ShowStatus();
+        }
+        private void LoadChildrenNode(SourceItemNode node, string toPath = null)
+        {
+            if (node.IsFile) return;
+            node.Children.Clear();
+            var itemSet = _server.GetItems(node.SourceItem.ServerItem + "/*");
+            var nodes = itemSet.Items.Select(i => new SourceItemNode(i));
+            foreach (var item in nodes)
+            {
+                if (toPath?.StartsWith(item.ServerPath + "/") ?? false)
+                {
+                    item.IsExpanded = true;
+                    LoadChildrenNode(item, toPath);
+                }
+                else if(item.ServerPath.Equals(toPath))
+                {
+                    item.IsSelected = true;
+                }
+                node.Children.Add(item);
+            }
+        }
+        private ICommand _ItemPathSelected;
+        public ICommand ItemPathSelected
+        {
+            get
+            {
+                _ItemPathSelected = _ItemPathSelected ?? new RelayCommand<GenLibrary.GenControls.TreeListView>(_ =>
+                {
+                    if (!(_.SelectedItem is SourceItemNode node)) return;
+                    ItemPath = node.SourceItem.ServerItem;
+                });
+                return _ItemPathSelected;
+            }
+        }
+        private ICommand _ItemPathDoubleClick;
+        public ICommand ItemPathDoubleClick
+        {
+            get
+            {
+                _ItemPathDoubleClick = _ItemPathDoubleClick ?? new RelayCommand<GenLibrary.GenControls.TreeListView>(_ =>
+                {
+                    if (!(_.SelectedItem is SourceItemNode node)) return;
+                    if (node.Children.Any())
+                    {
+                        node.IsExpanded = !node.IsExpanded;
+                        return;
+                    }
+                    LoadChildrenNode(node);
+                });
+                return _ItemPathDoubleClick;
+            }
+        }
+        #endregion
+
+        #region 保存路径
         private ICommand _SaveFolderBrowser;
         public ICommand SaveFolderBrowser
         {
@@ -65,7 +239,9 @@ namespace Just.ExtractTfs
                 return _OpenSaveFolder;
             }
         }
+        #endregion
 
+        #region 提取
         private TfsTeamProjectCollection _collection;
         private VersionControlServer _server;
         private ICommand _Extract;
@@ -75,11 +251,6 @@ namespace Just.ExtractTfs
             {
                 _Extract = _Extract ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
-                    if (string.IsNullOrEmpty(CollectionUri))
-                    {
-                        MainWindowVM.NotifyWarn("项目集合路径不能为空");
-                        return;
-                    }
                     if (string.IsNullOrEmpty(ChangesetIds))
                     {
                         MainWindowVM.NotifyWarn("变更集Id不能为空");
@@ -101,7 +272,7 @@ namespace Just.ExtractTfs
                             changesetIdList = GetChangesetIdList();
 
                             MainWindowVM.ShowStatus("连接项目集合...");
-                            ConnectServer();
+                            if (!ConnectServer()) return;
 
                             MainWindowVM.ShowStatus("查找变更集...");
                             changesetIdList = FilterChangesetIdList(changesetIdList);
@@ -122,7 +293,7 @@ namespace Just.ExtractTfs
                             MainWindowVM.ShowStatus("提取变更集文件...", true);
                             var folder = Path.Combine(SaveFolder, DateTime.Now.ToString("yyyy-MM-dd.HHmmss.fff"));
                             DownLoadItems(folder, items);
-                            if(IsGulpFile) Gulp(folder);
+                            if (IsGulpFile) Gulp(folder);
 
                             if (MainWindowVM.MessageConfirm("提取完成，是否打开") != true) return;
                             System.Diagnostics.Process.Start("explorer.exe", folder);
@@ -190,12 +361,21 @@ namespace Just.ExtractTfs
             //去重
             return result.Distinct().ToList();
         }
-        private void ConnectServer()
+
+        private bool _Connected => _collection?.Uri.AbsoluteUri.Equals(CollectionUri, StringComparison.OrdinalIgnoreCase) ?? false;
+        private bool ConnectServer()
         {
+            if (string.IsNullOrEmpty(CollectionUri))
+            {
+                MainWindowVM.NotifyWarn("项目集合路径不能为空");
+                return false;
+            }
             try
             {
+                if (_Connected) return true;
                 _collection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri(CollectionUri));
                 _server = _collection.GetService<VersionControlServer>();
+                return true;
             }
             catch (Exception ex)
             {
@@ -258,10 +438,16 @@ namespace Just.ExtractTfs
             MainWindowVM.EndStatusInterval();
             MainWindowVM.ShowStatus($"提取变更集文件...{count}/{count}", true, 100);//50%
         }
+
+        private List<string> _roots = new List<string>();
+        private string _RootRegex { get; set; }
+        private Regex _rootRegex;
         private Dictionary<string, string> _FileRegex { get; set; }
         private Dictionary<string, Regex> _fileRegex = new Dictionary<string, Regex>();
         private void InitFileRegex()
         {
+            _roots = new List<string>();
+            _rootRegex = new Regex(_RootRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             _fileRegex = new Dictionary<string, Regex>();
             if (_FileRegex == null) return;
             foreach (var kv in _FileRegex)
@@ -271,8 +457,11 @@ namespace Just.ExtractTfs
         }
         private string GetItemFileName(string folder, Item item)
         {
+            //TODO: 项目文件夹不一定是项目实际名称
             var file = item.ServerItem.TrimStart('$', '/').Replace("/", "\\");
             if (!IsMoveFile) return file;
+            var path = _rootRegex.Match(file).Value;
+            if (!string.IsNullOrEmpty(path) && !_roots.Contains(path, StringComparer.OrdinalIgnoreCase)) _roots.Add(path);
             foreach (var kv in _fileRegex)
             {
                 if (kv.Value.IsMatch(file))
@@ -287,48 +476,57 @@ namespace Just.ExtractTfs
         {
             item.DownloadFile(path);
         }
+
+        //TODO: dist文件提供选择,其他文件编译后自动移除,自动移动gulpchanged
         private void Gulp(string folder)
         {
-            var outputs = Directory.GetDirectories(folder);
-            var path = $@"{AppDomain.CurrentDomain.BaseDirectory}\gulp";
-            var topFiles = Directory.GetFiles(path);
-            var topFolders = Directory.GetDirectories(path);
-            var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
-            foreach (var output in outputs)
+            try
             {
-                var console = string.Empty;
-                MainWindowVM.ShowStatus("gulp...");
-                foreach (var file in files)
+                var outputs = _roots.Select(r => Path.Combine(folder, r));
+                if (!outputs.Any()) return;
+                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "gulp");
+                foreach (var output in outputs)
                 {
-                    var copy = Path.Combine(output, file.Remove(0, path.Length + 1));
-                    Directory.CreateDirectory(Path.GetDirectoryName(copy));
-                    File.Copy(file, copy);
+                    var console = string.Empty;
+                    MainWindowVM.ShowStatus("gulp...");
+                    PathHelper.CopyDirectory(path, output);
+                    var info = new ProcessStartInfo
+                    {
+                        FileName = "cmd",
+                        UseShellExecute = false,
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        StandardOutputEncoding = Encoding.UTF8,
+                        StandardErrorEncoding = Encoding.UTF8,
+                        WorkingDirectory = output,
+                        CreateNoWindow = true
+                    };
+                    var cmd = Process.Start(info);
+                    cmd.StandardInput.WriteLine("cnpm install");
+                    cmd.StandardInput.WriteLine("gulp changed");
+                    cmd.StandardInput.WriteLine("exit");
+                    console += cmd.StandardOutput.ReadToEnd() + cmd.StandardError.ReadToEnd();
+                    cmd.WaitForExit();
+                    cmd.Close();
+                    File.WriteAllText(Path.Combine(output, "gulp.log"), console, Encoding.UTF8);
+                    //var node_modules = Path.Combine(output, "node_modules");
+                    //if (Directory.Exists(node_modules))
+                    //{
+                    //    cmd = Process.Start(info);
+                    //    cmd.StandardInput.WriteLine("rmdir /s/q node_modules");
+                    //    cmd.StandardInput.WriteLine("exit");
+                    //    console += cmd.StandardOutput.ReadToEnd() + cmd.StandardError.ReadToEnd();
+                    //    cmd.WaitForExit();
+                    //    cmd.Close();
+                    //    File.WriteAllText(Path.Combine(output, "gulp.log"), console, Encoding.UTF8);
+                    //}
                 }
-                var info = new ProcessStartInfo
-                {
-                    FileName = "cmd",
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    StandardOutputEncoding = Encoding.UTF8,
-                    StandardErrorEncoding = Encoding.UTF8,
-                    WorkingDirectory = output,
-                    CreateNoWindow = true
-                };
-                var cmd = Process.Start(info);
-                cmd.StandardInput.WriteLine("cnpm install");
-                cmd.StandardInput.WriteLine("gulp changed");
-                cmd.StandardInput.WriteLine("exit");
-                console += cmd.StandardOutput.ReadToEnd() + cmd.StandardError.ReadToEnd();
-                cmd.WaitForExit();
-                cmd.Close();
-                File.WriteAllText(Path.Combine(output, "gulp.log"), console, Encoding.UTF8);
-                foreach (var topFile in topFiles)
-                {
-                    var copy = Path.Combine(output, topFile.Remove(0, path.Length + 1));
-                    File.Delete(copy);
-                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("编译前端资源出现错误", ex);
+                MainWindowVM.NotifyError("编译前端资源出现错误：" + ex.Message);
             }
         }
         #endregion
@@ -341,7 +539,9 @@ namespace Just.ExtractTfs
             ChangesetIds = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(ChangesetIds)}", ChangesetIds);
             SaveFolder = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(SaveFolder)}", SaveFolder);
             IsMoveFile = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsMoveFile)}", IsMoveFile);
+            IsGulpFile = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsGulpFile)}", IsGulpFile);
             _FileRegex = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(_FileRegex)}", _FileRegex);
+            _RootRegex = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(_RootRegex)}", _RootRegex);
         }
         public void WriteSetting()
         {
@@ -350,7 +550,9 @@ namespace Just.ExtractTfs
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(ChangesetIds)}", ChangesetIds);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(SaveFolder)}", SaveFolder);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsMoveFile)}", IsMoveFile);
+            MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsGulpFile)}", IsGulpFile);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(_FileRegex)}", _FileRegex);
+            MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(_RootRegex)}", _RootRegex);
         }
         #endregion
     }

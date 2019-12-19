@@ -101,5 +101,6 @@
     "^(?<start>.*)\\\\(?<sln>iOffice10\\.[^\\\\]+)\\\\(?<proj>iOffice10\\.(?<name>[^\\\\]+))\\\\(?<folder>Content|Scripts|Views)\\\\(?<end>.+)$": "${start}\\areas\\${name}\\${folder}\\${end}",
     "^(?<start>.*)\\\\(?<sln>iOffice10\\.[^\\\\]+)\\\\(?<proj>iOffice10\\.[^\\\\]+)\\\\(?<end>.+)\\.(cs|csproj)$": "${start}\\bin\\${proj}.dll",
     "^(?<start>.*)\\\\iOffice10\\.Integration\\\\iOffice10\\.Integration\\\\(?<end>[^\\\\\\.]+\\.(config|ico|asax))$": "${start}\\${end}"
-  }
+  },
+  "ExtractTfsCtrl._RootRegex": "^.*(?=\\\\iOffice10\\.[^\\\\]+\\\\iOffice10\\.[^\\\\]+\\\\(Content|Scripts|Views|Areas|app|fonts)\\\\.+)"
 }

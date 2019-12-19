@@ -17,6 +17,8 @@ namespace Just.Base
     [AddINotifyPropertyChangedInterface]
     public class MainWindowVM
     {
+        public const string ResourcesBase = "/Just.MongoDB;Component";
+
         #region 单例
         public Window MainWindow { get; set; }
         private static MainWindowVM _Instance;

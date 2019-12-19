@@ -83,6 +83,7 @@
     <Compile Include="Theme\VisualTreeHelperEx.cs" />
     <Compile Include="Utils\Dialog.cs" />
     <Compile Include="Utils\EncodingGetter.cs" />
+    <Compile Include="Utils\PathHelper.cs" />
     <Compile Include="Views\IChildView.cs" />
     <Compile Include="Views\ListWin.xaml.cs">
       <DependentUpon>ListWin.xaml</DependentUpon>
@@ -90,6 +91,7 @@
     <Compile Include="Views\MessageWin.xaml.cs">
       <DependentUpon>MessageWin.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\NodeItemBase.cs" />
     <Compile Include="Views\NotifyWin.xaml.cs">
       <DependentUpon>NotifyWin.xaml</DependentUpon>
     </Compile>
