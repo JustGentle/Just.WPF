@@ -1,4 +1,5 @@
 ﻿{
+  "Title": "工具箱",
   "MainMenu": [
     {
       "Id": "iOffice10",
@@ -17,26 +18,10 @@
       "ClassName": "MongoSyncCtrl"
     },
     {
-      "Id": "VersionFile",
-      "Parent": "iOffice10",
-      "Header": "版本文件生成",
-      "ClassName": "VersionFileCtrl"
-    },
-    {
       "Id": "WebsiteMklink",
       "Parent": "iOffice10",
       "Header": "站点文件映射",
       "ClassName": "WebsiteMklinkCtrl"
-    },
-    {
-      "Id": "RegexNet",
-      "Header": "正则表达式",
-      "ClassName": "RegexNetCtrl"
-    },
-    {
-      "Id": "ExtractTfs",
-      "Header": "提取变更集",
-      "ClassName": "ExtractTfsCtrl"
     }
   ],
   "VersionFileCtrl.IgnoreHashs": [

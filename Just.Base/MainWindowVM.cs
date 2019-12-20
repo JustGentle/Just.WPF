@@ -26,7 +26,7 @@ namespace Just.Base
         {
             get
             {
-                _Instance = _Instance ?? new MainWindowVM();
+                _Instance = _Instance ?? new MainWindowVM() { Title = ReadSetting(nameof(Title), "工具箱") };
                 return _Instance;
             }
         }
@@ -37,6 +37,7 @@ namespace Just.Base
         #endregion
 
         #region 属性
+        public string Title { get; set; } = "工具箱";
         public ObservableCollection<MenuNode> MainMenu { get; set; } = new ObservableCollection<MenuNode>();
         public List<MenuNode> StartOn { get; set; } = new List<MenuNode>();
         public string StatusText { get; set; } = "就绪";

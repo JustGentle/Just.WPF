@@ -11,7 +11,7 @@
         StateChanged="Window_StateChanged"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
-        Title="工具箱" Height="768" Width="1024">
+        Title="{Binding Title}" Height="768" Width="1024">
     <Window.Style>
         <!--  WindowStyle="None"时隐藏边框  -->
         <Style TargetType="Window">
@@ -47,16 +47,18 @@
                 Cursor="Hand"
                 Style="{DynamicResource TitleBorder}"
                 MouseDown="Logo_MouseUp">
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                    <Image Source="/hongfan.ico" Stretch="Uniform" Height="32"/>
-                    <!--<Path Height="32" Style="{DynamicResource LogoPath}" />-->
-                    <TextBlock
+                <Viewbox Stretch="Uniform" Height="32" Margin="5,0">
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <Image Source="/hongfan.ico" Stretch="Uniform" Height="32"/>
+                        <!--<Path Height="32" Style="{DynamicResource LogoPath}" />-->
+                        <TextBlock
                         Margin="10,0,0,0"
                         FontSize="24"
                         Foreground="White"
                         VerticalAlignment="Center"
                         Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=Title}" />
-                </StackPanel>
+                    </StackPanel>
+                </Viewbox>
             </Border>
             <TreeView Name="tvMenu" Grid.Row="1" Style="{StaticResource MenuTree}" />
             <TextBlock Grid.Row="2" Margin="10"
