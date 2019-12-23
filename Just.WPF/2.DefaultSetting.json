@@ -22,6 +22,12 @@
       "Parent": "iOffice10",
       "Header": "站点文件映射",
       "ClassName": "WebsiteMklinkCtrl"
+    },
+    {
+      "Id": "LogUDP",
+      "Parent": "iOffice10",
+      "Header": "UDP日志监听",
+      "ClassName": "LogUDPCtrl"
     }
   ],
   "VersionFileCtrl.IgnoreHashs": [
