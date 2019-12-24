@@ -7,6 +7,7 @@
              xmlns:cvt="clr-namespace:Just.Base.Converters;assembly=Just.Base"
              xmlns:v="clr-namespace:Just.Base.Views;assembly=Just.Base"
              xmlns:GenControls="clr-namespace:GenLibrary.GenControls;assembly=GenLibrary"
+             xmlns:editor="http://icsharpcode.net/sharpdevelop/avalonedit"
              d:DesignHeight="580"
              d:DesignWidth="730"
              mc:Ignorable="d">
@@ -91,7 +92,7 @@
             <StackPanel Orientation="Horizontal">
                 <TextBlock>链接地址:</TextBlock>
                 <TextBox
-                    Width="300"
+                    Width="280"
                     Margin="5,0,0,0"
                     Text="{Binding MongoDBAddress}"
                     ToolTip="MongoDB链接字符串"/>
@@ -175,11 +176,9 @@
             </Button>
         </Grid>
         <Grid Grid.Row="2" Margin="0,5,0,0">
-            <StackPanel HorizontalAlignment="Left"
-                        Orientation="Horizontal"
-                        Visibility="{Binding IsJsonView,Converter={StaticResource BoolReverseToVisibilityConverter}}">
+            <WrapPanel HorizontalAlignment="Left" Orientation="Horizontal">
                 <TextBlock>　查　找:</TextBlock>
-                <TextBox Width="300" Margin="5,0,0,0" Text="{Binding FindText,UpdateSourceTrigger=PropertyChanged}" ToolTip="请输入查找文本">
+                <TextBox Width="280" Margin="5,0,0,0" Text="{Binding FindText}" ToolTip="请输入查找文本">
                     <TextBox.InputBindings>
                         <KeyBinding Command="{Binding Find}" Key="Enter"/>
                     </TextBox.InputBindings>
@@ -187,13 +186,13 @@
                 <Button Style="{StaticResource BlueButton}" Margin="5,0,0,0" Command="{Binding Find}" ToolTip="从头查找（Ctrl+F）">查找</Button>
                 <Button Margin="5,0,0,0" Command="{Binding FindNext}" ToolTip="从当前选中位置向下查找（F3）">下一个</Button>
                 <Button Margin="5,0,0,0" Command="{Binding FindPrev}" ToolTip="从当前选中位置向上查找（Alt+F3）">上一个</Button>
-            </StackPanel>
+            </WrapPanel>
             <StackPanel
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">
                 <Button
                     Command="{Binding SaveJson}"
-                    Style="{StaticResource MainButton}"
+                    Style="{StaticResource GreenButton}"
                     Visibility="{Binding IsJsonView,Converter={StaticResource BoolToVisibilityConverter}}">
                     另存为
                 </Button>
@@ -297,13 +296,28 @@
                     </ContextMenu>
                 </GenControls:TreeListView.ContextMenu>
             </GenControls:TreeListView>
-            <TextBox
-                VerticalContentAlignment="Top"
-                HorizontalScrollBarVisibility="Auto"
-                Text="{Binding Json}"
-                VerticalScrollBarVisibility="Auto"
+            <editor:TextEditor
+                Name="codeEditor"
                 IsReadOnly="True"
-                Visibility="{Binding IsJsonView, Converter={StaticResource BoolToVisibilityConverter}}" />
+                FontFamily="Courier New" FontSize="14"
+                Foreground="#D4D4D4" Background="#1E1E1E"
+                SyntaxHighlighting="Custom"
+                ShowLineNumbers="True"
+                VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                Visibility="{Binding IsJsonView, Converter={StaticResource BoolToVisibilityConverter}}"
+                Document="{Binding JsonDocument}"
+                Loaded="CodeEditor_Loaded">
+                <editor:TextEditor.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem
+                        Header="全部收缩"
+                        Click="MenuItemCollapse_Click"/>
+                        <MenuItem
+                        Header="全部展开"
+                        Click="MenuItemExpand_Click"/>
+                    </ContextMenu>
+                </editor:TextEditor.ContextMenu>
+            </editor:TextEditor>
         </Grid>
     </Grid>
 </UserControl>

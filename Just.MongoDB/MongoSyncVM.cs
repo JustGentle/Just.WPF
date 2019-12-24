@@ -1,4 +1,5 @@
 ﻿using GenLibrary.MVVM.Base;
+using ICSharpCode.AvalonEdit.Document;
 using Just.Base;
 using Just.Base.Utils;
 using Just.Base.Views;
@@ -47,6 +48,8 @@ namespace Just.MongoDB
 
         #region 读取
         public string Json { get; set; }
+        public TextDocument JsonDocument { get; set; } = new TextDocument();
+        public event Action OnJsonChanged;
         public ObservableCollection<CacheSysProfileMode> SysProfiles { get; set; }
 
         private ICommand _JsonFileBrowser;
@@ -169,9 +172,6 @@ namespace Just.MongoDB
                             json = new StringBuilder();
                             SysProfiles = new ObservableCollection<CacheSysProfileMode>();
                             Scan(JsonPath);
-                            //全部脚本 = 读取的脚本内容
-                            if (json.Length > 0) Json = Format(json.ToString());
-                            CopyJson.Execute(_);
                             MainWindowVM.ShowStatus("加载树...");
                             MainWindowVM.DispatcherInvoke(() => { Tree = new MongoNode(); });
                             if (SysProfiles.Any())
@@ -181,13 +181,17 @@ namespace Just.MongoDB
                                 node.SetEnableByChildren();
                                 node.IsExpanded = true;
                                 //全部脚本 = 脚本节点生成脚本
-                                Json = GetNodeOutterJson(node);
+                                Json = GetNodeOutterJson(node).Trim();
                             }
                             else
                             {
                                 SysProfiles = null;
                             }
-
+                            MainWindowVM.DispatcherInvoke(() =>
+                            {
+                                JsonDocument.Text = Json;
+                                OnJsonChanged?.Invoke();
+                            });
                         }
                         catch (Exception ex)
                         {
@@ -827,8 +831,154 @@ namespace Just.MongoDB
         #endregion
 
         #region 右键菜单
+        //复制节点脚本
+        private ICommand _CopyNodeJson;
+        public ICommand CopyNodeJson
+        {
+            get
+            {
+                _CopyNodeJson = _CopyNodeJson ?? new RelayCommand<MongoNode>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    if (_ == null) return;
+                    var json = GetNodeOutterJson(_);
+                    if (string.IsNullOrEmpty(json)) return;
+                    MainWindowVM.DispatcherInvoke(() =>
+                    {
+                        Clipboard.SetText(json);
+                        NotifyWin.Info("已复制到剪贴板", "复制节点脚本");
+                    });
+                });
+                return _CopyNodeJson;
+            }
+        }
+        //查看节点脚本
+        private ICommand _ShowNodeJson;
+        public ICommand ShowNodeJson
+        {
+            get
+            {
+                _ShowNodeJson = _ShowNodeJson ?? new RelayCommand<MongoNode>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    if (_ == null) return;
+                    var json = GetNodeOutterJson(_);
+                    if (string.IsNullOrEmpty(json))
+                    {
+                        MainWindowVM.DispatcherInvoke(() =>
+                        {
+                            NotifyWin.Warn("节点脚本为空", "查看节点脚本");
+                        });
+                    }
+                    MainWindowVM.DispatcherInvoke(() =>
+                    {
+                        var n = new MessageWin
+                        {
+                            Title = _.Key.Contains(":") ? _.Value : _.Key, //CacheSysProfileMode节点标题显示Display
+                            Message = json,
+                            OkContent = "复制",
+                            CancelContent = "关闭",
+                            IsConfirm = true,
+                            MessageAlignment = HorizontalAlignment.Left,
+                            Foreground = (SolidColorBrush)Application.Current.FindResource("MainForeBrush"),
+                            Width = 500,
+                            Owner = MainWindowVM.Instance.MainWindow
+                        };
+                        if (n.ShowDialog() == true)
+                        {
+                            Clipboard.SetText(json);
+                            NotifyWin.Info("已复制到剪贴板", "复制节点脚本");
+                        }
+                    });
+                });
+                return _ShowNodeJson;
+            }
+        }
+
+        //TODO: 忽略Null值节点
+        private string GetNodeOutterJson(MongoNode node, bool withKey = false)
+        {
+            if (node == null) return string.Empty;
+            //是否包含Key（顶级不含，数组元素不含，属性含）
+            var keyOrEmpty = withKey ? $"\"{node.Key}\": " : null;
+            //不同类型不同起止字符
+            string valueOpen = null, valueClose = null;
+            //容器节点各子节点分离，不含起止符
+            var isBreak = node.Key == ContainerNodeText;
+            if (!isBreak)
+            {
+                switch (node.Type)
+                {
+                    case nameof(Object):
+                        valueOpen = "{";
+                        valueClose = "}";
+                        break;
+                    case nameof(Array):
+                        valueOpen = "[";
+                        valueClose = "]";
+                        break;
+                    case nameof(ObjectId):
+                        valueOpen = "ObjectId(\"";
+                        valueClose = "\")";
+                        break;
+                    case nameof(DateTime):
+                        valueOpen = "ISODate(\"";
+                        valueClose = "\")";
+                        break;
+                    case nameof(String):
+                    case "string":
+                        valueOpen = valueClose = "\"";
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return $"{keyOrEmpty}{valueOpen}{GetNodeInnerJson(node, isBreak)}{valueClose}";
+        }
+        private string GetNodeInnerJson(MongoNode node, bool isBreak = false)
+        {
+            if (node == null) return string.Empty;
+            var sb = new StringBuilder();
+            if (node.Type == nameof(Object) || node.Type == nameof(Array))
+            {
+                //子节点
+                if (node.Children != null && node.Children.Any())
+                {
+                    var indent = isBreak ? "" : "  ";//缩进
+                    var itemJsons = new List<string>();
+                    foreach (var item in node.Children)
+                    {
+                        //数组子元素不含Key，对象属性含Key
+                        bool childWithKey = true;
+                        if (node.Type == nameof(Array)) childWithKey = false;
+                        var itemJson = GetNodeOutterJson(item, childWithKey);
+                        var lines = itemJson.Split(Environment.NewLine);
+                        //每行加缩进
+                        foreach (var line in lines)
+                        {
+                            sb.AppendLine().Append(indent).Append(line);
+                        }
+                        //容器节点各子节点分离，不含分隔符
+                        if (!isBreak) sb.Append(",");
+                    }
+                    //移除最后一个分隔符
+                    if (!isBreak) sb.Remove(sb.Length - 1, 1);
+                    sb.AppendLine();
+                }
+            }
+            else
+            {
+                //双引号转义
+                sb.Append(node.Value?.Replace("\"", "\\\""));
+            }
+            return sb.ToString();
+        }
+        #endregion
+
+        #region 查找
+        public event Func<int, string, bool, int> FindNextText;
         //查找
-        public static string FindText { get; set; } = string.Empty;
+        public string FindText { get; set; } = string.Empty;
         private ICommand _Find;
         public ICommand Find
         {
@@ -837,10 +987,21 @@ namespace Just.MongoDB
                 _Find = _Find ?? new RelayCommand<MongoNode>(_ =>
                 {
                     if (string.IsNullOrEmpty(FindText)) return;
-                    var result = FindNextItem(null, FindText);
-                    if (result == null)
+                    if (IsJsonView)
                     {
-                        NotifyWin.Warn("未找到任何结果", "查找");
+                        var result = FindNextText?.Invoke(0, FindText, false);
+                        if (!result.HasValue || result == -1)
+                        {
+                            MainWindowVM.NotifyWarn("未找到任何结果", "查找");
+                        }
+                    }
+                    else
+                    {
+                        var result = FindNextItem(null, FindText);
+                        if (result == null)
+                        {
+                            NotifyWin.Warn("未找到任何结果", "查找");
+                        }
                     }
                 });
                 return _Find;
@@ -853,7 +1014,7 @@ namespace Just.MongoDB
             {
                 _FindDialog = _FindDialog ?? new RelayCommand<MongoNode>(_ =>
                 {
-                    if (IsJsonView) return;
+                    //if (IsJsonView) return;
                     MainWindowVM.DispatcherInvoke(() =>
                     {
                         var text = MessageWin.Input(FindText);
@@ -872,13 +1033,23 @@ namespace Just.MongoDB
             {
                 _FindNext = _FindNext ?? new RelayCommand<MongoNode>(_ =>
                 {
-                    if (IsJsonView) return;
                     if (string.IsNullOrEmpty(FindText)) return;
-                    _ = _ ?? GetSelectedItem();
-                    var result = FindNextItem(_, FindText);
-                    if (result == null)
+                    if (IsJsonView)
                     {
-                        MainWindowVM.NotifyWarn("未找到下一个", "查找");
+                        var result = FindNextText?.Invoke(-1, FindText, false);
+                        if (!result.HasValue || result == -1)
+                        {
+                            MainWindowVM.NotifyWarn("未找到下一个", "查找");
+                        }
+                    }
+                    else
+                    {
+                        _ = _ ?? GetSelectedItem();
+                        var result = FindNextItem(_, FindText);
+                        if (result == null)
+                        {
+                            MainWindowVM.NotifyWarn("未找到下一个", "查找");
+                        }
                     }
                 });
                 return _FindNext;
@@ -891,18 +1062,29 @@ namespace Just.MongoDB
             {
                 _FindPrev = _FindPrev ?? new RelayCommand<MongoNode>(_ =>
                 {
-                    if (IsJsonView) return;
                     if (string.IsNullOrEmpty(FindText)) return;
-                    _ = _ ?? GetSelectedItem();
-                    var result = FindNextItem(_, FindText, true);
-                    if (result == null)
+                    if (IsJsonView)
                     {
-                        MainWindowVM.NotifyWarn("未找到上一个", "查找");
+                        var result = FindNextText?.Invoke(-1, FindText, true);
+                        if (!result.HasValue || result == -1)
+                        {
+                            MainWindowVM.NotifyWarn("未找到上一个", "查找");
+                        }
+                    }
+                    else
+                    {
+                        _ = _ ?? GetSelectedItem();
+                        var result = FindNextItem(_, FindText, true);
+                        if (result == null)
+                        {
+                            MainWindowVM.NotifyWarn("未找到上一个", "查找");
+                        }
                     }
                 });
                 return _FindPrev;
             }
         }
+        
         private MongoNode GetSelectedItem(MongoNode node = null)
         {
             node = node ?? Tree;
@@ -1026,148 +1208,6 @@ namespace Just.MongoDB
             return false;
         }
 
-        //复制节点脚本
-        private ICommand _CopyNodeJson;
-        public ICommand CopyNodeJson
-        {
-            get
-            {
-                _CopyNodeJson = _CopyNodeJson ?? new RelayCommand<MongoNode>(_ =>
-                {
-                    _ = _ ?? GetSelectedItem();
-                    if (_ == null) return;
-                    var json = GetNodeOutterJson(_);
-                    if (string.IsNullOrEmpty(json)) return;
-                    MainWindowVM.DispatcherInvoke(() =>
-                    {
-                        Clipboard.SetText(json);
-                        NotifyWin.Info("已复制到剪贴板", "复制节点脚本");
-                    });
-                });
-                return _CopyNodeJson;
-            }
-        }
-        //查看节点脚本
-        private ICommand _ShowNodeJson;
-        public ICommand ShowNodeJson
-        {
-            get
-            {
-                _ShowNodeJson = _ShowNodeJson ?? new RelayCommand<MongoNode>(_ =>
-                {
-                    _ = _ ?? GetSelectedItem();
-                    if (_ == null) return;
-                    var json = GetNodeOutterJson(_);
-                    if (string.IsNullOrEmpty(json))
-                    {
-                        MainWindowVM.DispatcherInvoke(() =>
-                        {
-                            NotifyWin.Warn("节点脚本为空", "查看节点脚本");
-                        });
-                    }
-                    MainWindowVM.DispatcherInvoke(() =>
-                    {
-                        var n = new MessageWin
-                        {
-                            Title = _.Key.Contains(":") ? _.Value : _.Key, //CacheSysProfileMode节点标题显示Display
-                            Message = json,
-                            OkContent = "复制",
-                            CancelContent = "关闭",
-                            IsConfirm = true,
-                            MessageAlignment = HorizontalAlignment.Left,
-                            Foreground = (SolidColorBrush)Application.Current.FindResource("MainForeBrush"),
-                            Width = 500,
-                            Owner = MainWindowVM.Instance.MainWindow
-                        };
-                        if (n.ShowDialog() == true)
-                        {
-                            Clipboard.SetText(json);
-                            NotifyWin.Info("已复制到剪贴板", "复制节点脚本");
-                        }
-                    });
-                });
-                return _ShowNodeJson;
-            }
-        }
-
-        //TODO: 忽略Null值节点
-        private string GetNodeOutterJson(MongoNode node, bool withKey = false)
-        {
-            if (node == null) return string.Empty;
-            //是否包含Key（顶级不含，数组元素不含，属性含）
-            var keyOrEmpty = withKey ? $"\"{node.Key}\": " : null;
-            //不同类型不同起止字符
-            string valueOpen = null, valueClose = null;
-            //容器节点各子节点分离，不含起止符
-            var isBreak = node.Key == ContainerNodeText;
-            if (!isBreak)
-            {
-                switch (node.Type)
-                {
-                    case nameof(Object):
-                        valueOpen = "{";
-                        valueClose = "}";
-                        break;
-                    case nameof(Array):
-                        valueOpen = "[";
-                        valueClose = "]";
-                        break;
-                    case nameof(ObjectId):
-                        valueOpen = "ObjectId(\"";
-                        valueClose = "\")";
-                        break;
-                    case nameof(DateTime):
-                        valueOpen = "ISODate(\"";
-                        valueClose = "\")";
-                        break;
-                    case nameof(String):
-                    case "string":
-                        valueOpen = valueClose = "\"";
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return $"{keyOrEmpty}{valueOpen}{GetNodeInnerJson(node, isBreak)}{valueClose}";
-        }
-        private string GetNodeInnerJson(MongoNode node, bool isBreak = false)
-        {
-            if (node == null) return string.Empty;
-            var sb = new StringBuilder();
-            if (node.Type == nameof(Object) || node.Type == nameof(Array))
-            {
-                //子节点
-                if (node.Children != null && node.Children.Any())
-                {
-                    var indent = "  ";//缩进
-                    var itemJsons = new List<string>();
-                    foreach (var item in node.Children)
-                    {
-                        //数组子元素不含Key，对象属性含Key
-                        bool childWithKey = true;
-                        if (node.Type == nameof(Array)) childWithKey = false;
-                        var itemJson = GetNodeOutterJson(item, childWithKey);
-                        var lines = itemJson.Split(Environment.NewLine);
-                        //每行加缩进
-                        foreach (var line in lines)
-                        {
-                            sb.AppendLine().Append(indent).Append(line);
-                        }
-                        //容器节点各子节点分离，不含分隔符
-                        if (!isBreak) sb.Append(",");
-                    }
-                    //移除最后一个分隔符
-                    if (!isBreak) sb.Remove(sb.Length - 1, 1);
-                    sb.AppendLine();
-                }
-            }
-            else
-            {
-                //双引号转义
-                sb.Append(node.Value?.Replace("\"", "\\\""));
-            }
-            return sb.ToString();
-        }
         #endregion
 
         #region Setting
