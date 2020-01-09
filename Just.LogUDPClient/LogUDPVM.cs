@@ -82,11 +82,14 @@ namespace Just.LogUDPClient
                 {
                     try
                     {
+                        if (!Listening) return;
                         Listening = false;
+                        if (m_server_socket == null) return;
                         m_server_socket.Close();
                         m_server_socket.Dispose();
                         var endTime = DateTime.Now;
                         WriteLine("  <end time=\"{0:yyyy-MM-dd HH:mm:ss.fffffff}\" duration=\"{1}\" />\n</Listen>", endTime, endTime - _startTime);
+                        MainWindowVM.NotifyWarn($"已停止监听端口 {Port}");
                     }
                     catch (Exception ex)
                     {
