@@ -319,8 +319,12 @@ namespace Just.MongoDB
             {
                 _execute = _execute ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
-                    if (!SysProfiles?.Any() ?? true) return;
-                    if (Tree.Children[0].IsEnable != true)
+                    if (!SysProfiles?.Any() ?? true && !CheckOnly) return;
+                    if(!Tree.Children.Any() && CheckOnly)
+                    {
+
+                    }
+                    else if (Tree.Children[0].IsEnable != true)
                     {
                         var node = Tree.Children[0].Children.FirstOrDefault(n => n.IsEnable != true);
                         if (node != null) node.IsSelected = true;
@@ -358,7 +362,7 @@ namespace Just.MongoDB
                             collection.ForEach(next =>
                             {
                                 CacheSysProfileMode found = null;
-                                for (int i = 0; i < SysProfiles.Count; i++)
+                                for (int i = 0; i < (SysProfiles?.Count ?? 0); i++)
                                 {
                                     var item = SysProfiles[i];
                                     if (Same(item, next))
@@ -391,7 +395,7 @@ namespace Just.MongoDB
                                     OnNot(next);
                             });
                             //新增
-                            for (int i = 0; i < SysProfiles.Count; i++)
+                            for (int i = 0; i < (SysProfiles?.Count ?? 0); i++)
                             {
                                 var item = SysProfiles[i];
                                 if (sames.Contains(item) || dups.Contains(item)) continue;

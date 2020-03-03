@@ -159,7 +159,6 @@
                 <Button
                     Margin="5,0,0,0"
                     Command="{Binding Check}"
-                    IsEnabled="{Binding SysProfiles,Converter={StaticResource ValueToBoolConverter}}"
                     Style="{StaticResource GreenButton}"
                     Content="检查"
                     ToolTip="仅检查差异数据,不执行同步">
