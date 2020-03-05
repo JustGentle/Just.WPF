@@ -30,6 +30,7 @@ namespace Just.ExtractTfs
         public string ChangesetIds { get; set; }
         public string SaveFolder { get; set; }
         public string RevFile { get; set; }
+        public string BinFolder { get; set; }
         public bool IsMoveFile { get; set; } = true;
         public bool IsGulpFile { get; set; }
         public bool IsFullChangeset { get; set; }
@@ -260,6 +261,27 @@ namespace Just.ExtractTfs
                     }
                 });
                 return _RevFileBrowser;
+            }
+        }
+        private ICommand _BinFolderBrowser;
+        public ICommand BinFolderBrowser
+        {
+            get
+            {
+                _BinFolderBrowser = _BinFolderBrowser ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    var dlg = new CommonOpenFileDialog
+                    {
+                        IsFolderPicker = true,
+                        InitialDirectory = Dialog.GetInitialDirectory(BinFolder)
+                    };
+
+                    if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
+                    {
+                        this.BinFolder = dlg.FileName;
+                    }
+                });
+                return _BinFolderBrowser;
             }
         }
         #endregion
@@ -497,6 +519,28 @@ namespace Just.ExtractTfs
         }
         private void DownloadItem(Item item, string path)
         {
+            //Bin
+            if (Path.GetDirectoryName(path).EndsWith("\\bin", StringComparison.OrdinalIgnoreCase))
+            {
+                if (File.Exists(path)) return;
+                var source = Path.Combine(BinFolder, Path.GetFileName(path));
+                if (File.Exists(source))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                    try
+                    {
+                        File.Copy(source, path);
+                    }
+                    catch (IOException ex)
+                    {
+                        if(ex.HResult != -2147024816 && ex.HResult != -2147024713)//文件已存在
+                        {
+                            throw;
+                        }
+                    }
+                    return;
+                }
+            }
             item.DownloadFile(path);
         }
 
@@ -568,6 +612,7 @@ namespace Just.ExtractTfs
             ChangesetIds = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(ChangesetIds)}", ChangesetIds);
             SaveFolder = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(SaveFolder)}", SaveFolder);
             RevFile = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(RevFile)}", RevFile);
+            BinFolder = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(BinFolder)}", BinFolder);
             IsMoveFile = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsMoveFile)}", IsMoveFile);
             IsGulpFile = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsGulpFile)}", IsGulpFile);
             _FileRegex = MainWindowVM.ReadSetting($"{nameof(ExtractTfsCtrl)}.{nameof(_FileRegex)}", _FileRegex);
@@ -580,6 +625,7 @@ namespace Just.ExtractTfs
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(ChangesetIds)}", ChangesetIds);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(SaveFolder)}", SaveFolder);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(RevFile)}", RevFile);
+            MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(BinFolder)}", BinFolder);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsMoveFile)}", IsMoveFile);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(IsGulpFile)}", IsGulpFile);
             MainWindowVM.WriteSetting($"{nameof(ExtractTfsCtrl)}.{nameof(_FileRegex)}", _FileRegex);
