@@ -235,6 +235,7 @@ namespace Just.WPF
             if (e.AddedItems.Count > 0)
             {
                 if (!(e.AddedItems[0] is TabItem item)) return;
+                if (item.Tag == null) return;
                 var node = GetNode(item.Tag?.ToString());
                 if(node != null) node.IsSelected = true;
             }

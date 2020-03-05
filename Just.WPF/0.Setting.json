@@ -1,2 +1,54 @@
-{
+﻿{
+  "MainMenu": [
+    {
+      "Id": "iOffice10",
+      "Header": "iOffice10"
+    },
+    {
+      "Id": "RevCleaner",
+      "Parent": "iOffice10",
+      "Header": "历史补丁清理",
+      "ClassName": "RevCleanerCtrl"
+    },
+    {
+      "Id": "MongoSync",
+      "Parent": "iOffice10",
+      "Header": "MongoDB同步",
+      "ClassName": "MongoSyncCtrl"
+    },
+    {
+      "Id": "VersionFile",
+      "Parent": "iOffice10",
+      "Header": "版本文件生成",
+      "ClassName": "VersionFileCtrl"
+    },
+    {
+      "Id": "WebsiteMklink",
+      "Parent": "iOffice10",
+      "Header": "站点文件映射",
+      "ClassName": "WebsiteMklinkCtrl"
+    },
+    {
+      "Id": "ExtractTfs",
+      "Parent": "iOffice10",
+      "Header": "提取变更集",
+      "ClassName": "ExtractTfsCtrl"
+    },
+    {
+      "Id": "LogUDP",
+      "Parent": "iOffice10",
+      "Header": "UDP日志监听",
+      "ClassName": "LogUDPCtrl"
+    },
+    {
+      "Id": "RegexNet",
+      "Header": "正则表达式",
+      "ClassName": "RegexNetCtrl"
+    },
+    {
+      "Id": "Sql",
+      "Header": "Sql工具",
+      "ClassName": "SqlCtrl"
+    }
+  ]
 }

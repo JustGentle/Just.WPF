@@ -106,6 +106,11 @@ namespace Just.Base
     'Id': 'RegexNet',
     'Header': '正则表达式',
     'ClassName': 'RegexNetCtrl'
+  },
+  {
+    "Id": "Sql",
+    "Header": "Sql工具",
+    "ClassName": "SqlCtrl"
   }
 ]
 ";
