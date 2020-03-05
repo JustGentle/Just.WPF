@@ -21,10 +21,15 @@
             <RowDefinition Height="5"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <WrapPanel Margin="0,5">
-            <Button Content="▶ 执行" Style="{StaticResource GreenButton}" Click="ButtonExec_Click"/>
-            <TextBox Name="cnn" ToolTip="链接字符串" Width="600" Margin="5,0" Text="Data Source =.; Initial Catalog = iOffice10; User ID = sa; Password = asdASD!@#;"/>
-        </WrapPanel>
+        <Grid Margin="0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Name="ButtonExec" Content="▶ 执行" Style="{StaticResource GreenButton}" Click="ButtonExec_Click"/>
+            <Button Name="ButtonStop" Content="■ 停止" Style="{StaticResource RedButton}" Click="ButtonStop_Click" Visibility="Collapsed"/>
+            <TextBox Grid.Column="1" Name="cnn" ToolTip="链接字符串" Margin="5,0" Text="Data Source =.; Initial Catalog = iOffice10; User ID = sa; Password = asdASD!@#;"/>
+        </Grid>
         <Border Grid.Row="1" BorderBrush="{StaticResource NormalBorderBrush}" Padding="3" BorderThickness="1">
             <editor:TextEditor
                 Name="codeEditor"

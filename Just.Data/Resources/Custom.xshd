@@ -185,6 +185,7 @@
 			<Word>deferrable</Word>
 			<Word>deferred</Word>
 			<Word>degrees</Word>
+      <Word>delay</Word>
 			<Word>delete</Word>
 			<Word>dense_rank</Word>
 			<Word>depth</Word>
@@ -610,6 +611,7 @@
 			<Word>varying</Word>
 			<Word>view</Word>
 			<Word>vsize</Word>
+      <Word>waitfor</Word>
 			<Word>when</Word>
 			<Word>whenever</Word>
 			<Word>where</Word>
