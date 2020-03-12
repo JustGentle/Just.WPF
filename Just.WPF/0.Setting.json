@@ -17,28 +17,22 @@
       "ClassName": "MongoSyncCtrl"
     },
     {
-      "Id": "VersionFile",
-      "Parent": "iOffice10",
-      "Header": "版本文件生成",
-      "ClassName": "VersionFileCtrl"
-    },
-    {
       "Id": "WebsiteMklink",
       "Parent": "iOffice10",
       "Header": "站点文件映射",
       "ClassName": "WebsiteMklinkCtrl"
     },
     {
-      "Id": "ExtractTfs",
-      "Parent": "iOffice10",
-      "Header": "提取变更集",
-      "ClassName": "ExtractTfsCtrl"
-    },
-    {
       "Id": "LogUDP",
       "Parent": "iOffice10",
       "Header": "UDP日志监听",
       "ClassName": "LogUDPCtrl"
+    },
+    {
+      "Id": "AttaClear",
+      "Parent": "iOffice10",
+      "Header": "残留附件清理",
+      "ClassName": "AttaClearCtrl"
     },
     {
       "Id": "RegexNet",
@@ -49,6 +43,22 @@
       "Id": "Sql",
       "Header": "Sql工具",
       "ClassName": "SqlCtrl"
+    },
+    {
+      "Id": "DevTool",
+      "Header": "开发工具"
+    },
+    {
+      "Id": "ExtractTfs",
+      "Parent": "DevTool",
+      "Header": "提取变更集",
+      "ClassName": "ExtractTfsCtrl"
+    },
+    {
+      "Id": "VersionFile",
+      "Parent": "DevTool",
+      "Header": "版本文件生成",
+      "ClassName": "VersionFileCtrl"
     }
   ]
 }

@@ -1,8 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using PropertyChanged;
+using System.Collections.ObjectModel;
 using System.Windows.Media;
 
 namespace Just.Base.Views
 {
+    [AddINotifyPropertyChangedInterface]
     public abstract class NodeItemBase<T>
     {
         public virtual bool IsExpanded { get; set; }
