@@ -697,7 +697,7 @@ namespace Just.Attachment
                 _OpenLocation = _OpenLocation ?? new RelayCommand<AttaItemNode>(_ =>
                 {
                     _ = _ ?? GetSelectedItem();
-                    OpenFolder(_?.Path);
+                    OpenFolder(_?.Path, true);
                 });
                 return _OpenLocation;
             }
@@ -739,7 +739,7 @@ namespace Just.Attachment
             }
         }
 
-        private bool OpenFolder(string folder)
+        private bool OpenFolder(string folder, bool select = false)
         {
             if (string.IsNullOrEmpty(folder)) return false;
             if (!Directory.Exists(folder) && !File.Exists(folder))
@@ -747,11 +747,14 @@ namespace Just.Attachment
                 MainWindowVM.NotifyWarn(folder, "路径不存在");
                 return false;
             }
-            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo("Explorer.exe")
+            if (select)
             {
-                Arguments = $"/e,/select,\"{folder}\""
-            };
-            System.Diagnostics.Process.Start(psi);
+                System.Diagnostics.Process.Start("explorer.exe", $"/e,/select,\"{folder}\"");
+            }
+            else
+            {
+                System.Diagnostics.Process.Start("explorer.exe", folder);
+            }
             return true;
         }
         #endregion
