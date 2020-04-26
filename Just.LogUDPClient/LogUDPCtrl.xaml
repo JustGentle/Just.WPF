@@ -56,6 +56,9 @@
                     <MenuItem
                         Header="全部展开"
                         Click="MenuItemExpand_Click"/>
+                    <MenuItem
+                        Header="全部清除"
+                        Click="MenuItemClear_Click"/>
                     <Separator />
                     <MenuItem
                         Header="另存为"

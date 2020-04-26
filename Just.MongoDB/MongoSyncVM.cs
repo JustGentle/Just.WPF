@@ -52,6 +52,7 @@ namespace Just.MongoDB
         public event Action OnJsonChanged;
         public ObservableCollection<CacheSysProfileMode> SysProfiles { get; set; }
 
+        private const string FileSeparator = "|";
         private ICommand _JsonFileBrowser;
         public ICommand JsonFileBrowser
         {
@@ -67,7 +68,8 @@ namespace Just.MongoDB
 
                     if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
                     {
-                        this.JsonPath = string.Join(",", dlg.FileNames);
+                        this.JsonPath = string.Join(FileSeparator, dlg.FileNames);
+                        this.ReadJson.Execute(null);
                     }
                 });
                 return _JsonFileBrowser;
@@ -89,6 +91,7 @@ namespace Just.MongoDB
                     if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
                     {
                         this.JsonPath = dlg.FileName;
+                        this.ReadJson.Execute(null);
                     }
                 });
                 return _JsonFolderBrowser;
@@ -209,9 +212,9 @@ namespace Just.MongoDB
         private void Scan(string path)
         {
             MainWindowVM.ShowStatus("扫描..." + path);
-            if (path.Contains(",") || File.Exists(path))
+            if (path.Contains(FileSeparator) || File.Exists(path))
             {
-                var fs = path.Split(',');
+                var fs = path.Split(FileSeparator);
                 foreach (var item in fs)
                 {
                     ScanFile(item);
@@ -799,10 +802,10 @@ namespace Just.MongoDB
                             var sfd = new CommonSaveFileDialog($"导出脚本 - {MongoDBAddress}")
                             {
                                 DefaultFileName = $"Mongo - {DateTime.Now:yyMMddHHmmssfff}",
-                                DefaultExtension = ".txt"
+                                DefaultExtension = ".json"
                             };
-                            sfd.Filters.Add(new CommonFileDialogFilter("文本文件", "*.txt"));
                             sfd.Filters.Add(new CommonFileDialogFilter("脚本文件", "*.json"));
+                            sfd.Filters.Add(new CommonFileDialogFilter("文本文件", "*.txt"));
                             sfd.Filters.Add(new CommonFileDialogFilter("所有文件", "*.*"));
                             if (sfd.ShowDialog(MainWindowVM.Instance.MainWindow) == CommonFileDialogResult.Ok)
                             {

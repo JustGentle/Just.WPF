@@ -103,6 +103,34 @@ namespace Just.LogUDPClient
             }
         }
 
+        private ICommand _Clear;
+        public ICommand Clear
+        {
+            get
+            {
+                _Clear = _Clear ?? new RelayCommand<RoutedEventArgs>(_ =>
+                {
+                    try
+                    {
+                        MainWindowVM.DispatcherInvoke(() =>
+                        {
+                            Document.Text = string.Empty;
+                        });
+                        WriteLine("<log>");
+                        if(Listening)
+                            WriteLine("<Listen port=\"{0}\">\n  <start time=\"{1:yyyy-MM-dd HH:mm:ss.fffffff}\" />", Port, _startTime);
+                    }
+                    catch (Exception ex)
+                    {
+                        var error = $"清屏失败";
+                        Logger.Error(error, ex);
+                        MainWindowVM.NotifyWarn(error);
+                    }
+                });
+                return _Clear;
+            }
+        }
+
         //解析日志格式的正则表达式
         private readonly Regex m_log_re = new Regex(@"(?<=</?)\w+:", RegexOptions.Compiled | RegexOptions.CultureInvariant);
         private Socket m_server_socket; //监听端口返回的socket

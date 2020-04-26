@@ -85,6 +85,10 @@ namespace Just.LogUDPClient
         {
             _foldingManager.AllFoldings.ToList().ForEach(f => f.IsFolded = false);
         }
+        private void MenuItemClear_Click(object sender, RoutedEventArgs e)
+        {
+            _vm.Clear.Execute(null);
+        }
 
         private void MenuItemSave_Click(object sender, RoutedEventArgs e)
         {
