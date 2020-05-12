@@ -21,6 +21,7 @@ using System.Xml.Linq;
 
 namespace Just.Attachment
 {
+    //TODO: 多种存储方式改成接口+工厂
     [AddINotifyPropertyChangedInterface]
     public class AttaClearVM
     {
@@ -29,8 +30,9 @@ namespace Just.Attachment
         public bool Backup { get; set; } = true;
         public string BackupFolder { get; set; }
         public AttaItemNode Data { get; set; } = new AttaItemNode { IsKeep = true };
-        public bool IsFullPath { get; set; } = false;
         public bool Preview { get; set; } = true;
+        //只扫描启用的存储空间
+        public bool OnlyEnable { get; set; } = true;
         public bool Doing => Status == ActionStatus.Doing;
 
         public ActionStep Step { get; set; } = ActionStep.Scan;
@@ -113,6 +115,7 @@ namespace Just.Attachment
 
         #region 执行
         private IEnumerable<string> dbAttas;
+        private IStore store;
         private CancellationTokenSource tokenSource;
         private bool CheckCancel()
         {
@@ -125,6 +128,32 @@ namespace Just.Attachment
                 MainWindowVM.ShowStatus("停止");
             });
             return true;
+        }
+        private IStore GetStore(StoreServerConfig config)
+        {
+            IStore result;
+            if (config == null)
+                return null;
+            switch (config?.StoreMode)
+            {
+                case StoreModeEnum.Local:
+                    result = new LocalStore();
+                    break;
+                case StoreModeEnum.Share:
+                    result = new ShareStore();
+                    break;
+                case StoreModeEnum.Ftp:
+                    result = new FtpStore();
+                    break;
+                default:
+                    MainWindowVM.NotifyWarn($"存储空间ID={config.ID}，模式={config.StoreMode}", "存储模式未支持");
+                    return null;
+            }
+            if (!result.Init(config))
+            {
+                return null;
+            }
+            return result;
         }
 
         private ICommand _DoAction;
@@ -273,52 +302,48 @@ namespace Just.Attachment
             var sql = "SELECT name FROM sys.tables WHERE name LIKE 'AttachmentInfos%'";
             var tables = connection.Query<string>(sql);
             var sqls = tables.Select(t => $@"
-    SELECT [{t}].ID, FileReName, Extension, Suffix, DirectoryPath, Root, StoreMode
+    SELECT [{t}].ID, FileReName, Extension, Suffix, DirectoryPath, Root, StoreMode, Server, UserName, Password, Domain
     FROM dbo.[{t}]
          JOIN dbo.DirectoryInfos ON DirectoryInfos.ID = [{t}].DirectoryID
          JOIN dbo.StoreServerConfigs ON StoreServerConfigs.ID = DirectoryInfos.StoreServerConfigID"
             );
             sql = string.Join(" UNION ALL ", sqls);
-            var attas = connection.Query(sql);
-            var result = attas.Select(atta => IsFullPath ? GetFullPath(atta) : atta.FileReName.ToString()).Cast<string>();
+            var attas = connection.Query<AttachmentInfo>(sql);
+            var result = attas.Select(atta => atta.FileReName.ToString()).Cast<string>();
             return result;
         }
         private IEnumerable<StoreServerConfig> GetStoreServerConfigs(IDbConnection connection)
         {
             var sql = "SELECT [ID], [Server], [Root], [StoreMode], [Username], [Password], [Domain], [Suffix], [IsEnabled] FROM[iOffice10.Attachment].[dbo].[StoreServerConfigs]";
+            if (OnlyEnable)
+                sql += "WHERE IsEnabled=1";
             var result = connection.Query<StoreServerConfig>(sql);
             return result;
         }
-        private AttaItemNode ScanStore(StoreServerConfig store)
+        private AttaItemNode ScanStore(StoreServerConfig config)
         {
-            MainWindowVM.ShowStatus($"扫描存储...{store.Root}");
-            var node = new AttaItemNode();
-            switch (store.StoreMode)
+            MainWindowVM.ShowStatus($"扫描存储...{config.Root}");
+            try
             {
-                case StoreMedeEnum.Share:
-                    if (!Directory.Exists(store.Path))
-                    {
-                        return null;
-                    }
-                    node = ScanFolder(store.Path, Data);
-                    break;
-                case StoreMedeEnum.Local:
-                default:
-                    if (!Directory.Exists(store.Path))
-                    {
-                        return null;
-                    }
-                    node = ScanFolder(store.Path, Data);
-                    break;
+                store = GetStore(config);
+                if (store == null)
+                    return null;
+                var node = ScanFolder(config.Path, Data);
+                return node;
             }
-            return node;
+            catch (Exception ex)
+            {
+                Logger.Error("扫描存储错误", ex);
+                MainWindowVM.NotifyError($"{config.Root} - {ex.Message}", "扫描存储错误");
+                return null;
+            }
         }
 
         private AttaItemNode ScanFolder(string folder, AttaItemNode parent)
         {
             MainWindowVM.ShowStatus($"扫描目录...{folder}");
-            var folders = Directory.GetDirectories(folder).ToList();
-            var files = Directory.GetFiles(folder).ToList();
+            var folders = store.GetDirectories(folder).ToList();
+            var files = store.GetFiles(folder).ToList();
             var folderItem = new AttaItemNode
             {
                 IsFolder = true,
@@ -326,7 +351,8 @@ namespace Just.Attachment
                 IsKeep = false,
                 IsExpanded = parent == Data,
                 FileCount = files.Count,
-                FolderCount = folders.Count
+                FolderCount = folders.Count,
+                Config = store.Config
             };
 
             var items = new List<AttaItemNode>();
@@ -375,8 +401,9 @@ namespace Just.Attachment
             var item = new AttaItemNode
             {
                 Path = file,
-                UpdateTime = File.GetLastWriteTime(file).ToString("yyyy-MM-dd HH:mm"),
-                IsKeep = IsKeepFile(file)
+                UpdateTime = store.GetWriteTime(file)?.ToString("yyyy-MM-dd HH:mm"),
+                IsKeep = IsKeepFile(file),
+                Config = store.Config
             };
             if (keep.HasValue) item.IsKeep = keep.Value;
             return item;
@@ -384,38 +411,8 @@ namespace Just.Attachment
         private bool IsKeepFile(string file)
         {
             if (dbAttas == null) return false;
-            if (!dbAttas.Contains(IsFullPath ? file : Path.GetFileNameWithoutExtension(file), StringComparer.OrdinalIgnoreCase)) return false;
+            if (!dbAttas.Contains(Path.GetFileNameWithoutExtension(file), StringComparer.OrdinalIgnoreCase)) return false;
             return true;
-        }
-
-        private string GetFullPath(dynamic atta)
-        {
-            if (atta.StoreMode == (int)StoreMedeEnum.Share)
-                return GetShareFullPath(atta);
-            else
-                return GetLocalFullPath(atta);
-        }
-        private string GetLocalFullPath(dynamic atta)
-        {
-            string suffix = (string.IsNullOrEmpty(atta.Suffix) ? atta.Extension : atta.Suffix);
-            if (!suffix.StartsWith("."))
-            {
-                suffix = "." + suffix;
-            }
-            string path = Path.Combine(atta.Root, atta.DirectoryPath, $"{atta.FileReName}{suffix}");
-            return path;
-        }
-        private string GetShareFullPath(dynamic atta)
-        {
-            string suffix = (string.IsNullOrEmpty(atta.Suffix) ? atta.Extension : atta.Suffix);
-            if (!suffix.StartsWith("."))
-            {
-                suffix = "." + suffix;
-            }
-            string server = $@"\\{atta.Server}";
-            string root = (atta.Root as string).Trim('\\');
-            string path = Path.Combine($@"\\{atta.Server}", root, atta.DirectoryPath, $"{atta.FileReName}{suffix}");
-            return path;
         }
         #endregion
 
@@ -471,18 +468,21 @@ namespace Just.Attachment
         }
         private void Clear(AttaItemNode fileItem, string rootFolder = null)
         {
-            if (string.IsNullOrEmpty(rootFolder))
-            {
-                if (string.IsNullOrEmpty(fileItem.Path)) rootFolder = string.Empty;
-                rootFolder = Path.GetDirectoryName(fileItem.Path);
-            }
-
             var i = 0;
             while (i < fileItem.Children.Count)
             {
                 if (tokenSource.IsCancellationRequested) break;
 
                 var child = fileItem.Children[i];
+                if(fileItem == Data)
+                {
+                    store = GetStore(child.Config);
+                }
+                if (string.IsNullOrEmpty(rootFolder))
+                {
+                    if (string.IsNullOrEmpty(fileItem.Path)) rootFolder = string.Empty;
+                    rootFolder = store.GetParentDirectory(fileItem.Path);
+                }
                 //1.保留 则不处理, 2.未知 则处理子项 3.不保留 则删除
                 if (!child.IsKeep.HasValue)
                 {
@@ -505,35 +505,30 @@ namespace Just.Attachment
                     MainWindowVM.ShowStatus($"清理...{fileItem.Path}");
                     try
                     {
-                        if (Directory.Exists(child.Path))
+                        var bak = child.Path;
+                        if (!string.IsNullOrEmpty(rootFolder) && bak.StartsWith(rootFolder))
+                            bak = bak.Remove(0, rootFolder.Length).TrimStart('\\', '/');
+                        bak = Path.Combine(BackupFolder, bak).Replace('/', '\\');
+                        if (store.DirectoryExists(child.Path))
                         {
                             if (Backup)
                             {
-                                var bak = Path.Combine(BackupFolder, child.Path.Replace(rootFolder, "").TrimStart('\\'));
-                                PathHelper.MoveDirectory(child.Path, bak);
+                                store.MoveDirectory(child.Path, bak);
                             }
                             else
                             {
-                                PathHelper.DeleteDirectoryWithNormal(child.Path);
+                                store.DeleteDirectory(child.Path);
                             }
                         }
-                        else if (File.Exists(child.Path))
+                        else if (store.FileExists(child.Path))
                         {
                             if (Backup)
                             {
-                                var bak = Path.Combine(BackupFolder, child.Path.Replace(rootFolder, "").TrimStart('\\'));
-                                var dir = Path.GetDirectoryName(bak);
-                                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                                if (File.Exists(bak))
-                                {
-                                    //bak = GetFilePathNotExists(bak);
-                                    PathHelper.DeleteFileWithNormal(bak);
-                                }
-                                File.Move(child.Path, bak);
+                                store.MoveFile(child.Path, bak);
                             }
                             else
                             {
-                                PathHelper.DeleteFileWithNormal(child.Path);
+                                store.DeleteFile(child.Path);
                             }
                         }
                         if (child.IsFolder)
@@ -553,6 +548,12 @@ namespace Just.Attachment
                         MainWindowVM.NotifyError($"{child.Path}\n{ex.Message}");
                         i++;
                     }
+                }
+
+                if (fileItem == Data)
+                {
+                    store?.Dispose();
+                    store = null;
                 }
             }
             fileItem.UpdateCountInfo();
@@ -765,12 +766,14 @@ namespace Just.Attachment
             CfgFile = MainWindowVM.ReadSetting($"{nameof(AttaClearCtrl)}.{nameof(CfgFile)}", CfgFile);
             Backup = MainWindowVM.ReadSetting($"{nameof(AttaClearCtrl)}.{nameof(Backup)}", Backup);
             BackupFolder = MainWindowVM.ReadSetting($"{nameof(AttaClearCtrl)}.{nameof(BackupFolder)}", BackupFolder);
+            OnlyEnable = MainWindowVM.ReadSetting($"{nameof(AttaClearCtrl)}.{nameof(OnlyEnable)}", OnlyEnable);
         }
         public void WriteSetting()
         {
             MainWindowVM.WriteSetting($"{nameof(AttaClearCtrl)}.{nameof(CfgFile)}", CfgFile);
             MainWindowVM.WriteSetting($"{nameof(AttaClearCtrl)}.{nameof(Backup)}", Backup);
             MainWindowVM.WriteSetting($"{nameof(AttaClearCtrl)}.{nameof(BackupFolder)}", BackupFolder);
+            MainWindowVM.WriteSetting($"{nameof(AttaClearCtrl)}.{nameof(OnlyEnable)}", OnlyEnable);
         }
         #endregion
 
@@ -787,38 +790,6 @@ namespace Just.Attachment
             Scan,
             [Description("清理")]
             Clear
-        }
-        enum StoreMedeEnum
-        {
-            Local = 0,
-            Share = 1
-        }
-        class StoreServerConfig
-        {
-            public int ID { get; set; }
-            public string Server { get; set; }
-            public string Root { get; set; }
-            public StoreMedeEnum StoreMode { get; set; }
-            public string Username { get; set; }
-            public string Password { get; set; }
-            public string Domain { get; set; }
-            public string Suffix { get; set; }
-            public bool IsEnabled { get; set; }
-
-            public string Path
-            {
-                get
-                {
-                    switch (StoreMode)
-                    {
-                        case StoreMedeEnum.Share:
-                            return $@"\\{Server}\{Root.Trim('\\')}";
-                        case StoreMedeEnum.Local:
-                        default:
-                            return Root;
-                    }
-                }
-            }
         }
         #endregion
     }

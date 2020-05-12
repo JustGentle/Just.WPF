@@ -26,6 +26,8 @@ namespace Just.Attachment
         public int FileCount = 0;
         public int FolderCount = 0;
 
+        public StoreServerConfig Config { get; set; }
+
         public string UpdateCountInfo()
         {
             if (!IsFolder) return UpdateTime;
