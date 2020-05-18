@@ -204,7 +204,7 @@ namespace Just.Attachment
                 {
                     using (var reader = new StreamReader(ftpStream, Encoding.UTF8))
                     {
-                        while (reader.Peek() > 0)
+                        while (reader.Peek() >= 0)
                         {
                             yield return reader.ReadLine();
                         }
@@ -229,7 +229,7 @@ namespace Just.Attachment
                 {
                     using (var reader = new StreamReader(ftpStream, Encoding.UTF8))
                     {
-                        while (reader.Peek() > 0)
+                        while (reader.Peek() >= 0)
                         {
                             var detail = GetDetailInfo(reader.ReadLine());
                             if (detail.IsDirectory)
@@ -258,7 +258,7 @@ namespace Just.Attachment
                 {
                     using (var reader = new StreamReader(ftpStream, Encoding.UTF8))
                     {
-                        while (reader.Peek() > 0)
+                        while (reader.Peek() >= 0)
                         {
                             var detail = GetDetailInfo(reader.ReadLine());
                             if (!detail.IsDirectory)
@@ -287,7 +287,7 @@ namespace Just.Attachment
                 {
                     using (var reader = new StreamReader(ftpStream, Encoding.UTF8))
                     {
-                        while (reader.Peek() > 0)
+                        while (reader.Peek() >= 0)
                         {
                             yield return GetDetailInfo(reader.ReadLine());
                         }
