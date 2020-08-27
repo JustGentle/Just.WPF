@@ -35,7 +35,7 @@
         <TextBox Grid.Row="1"  Grid.Column="1" ToolTip="i10链接" Margin="5" Text="{Binding ConnectionString10}"/>
 
         <StackPanel Grid.Row="2"  Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
-            <TextBlock Text="★注：09和10【人员ID】必须一致，请在应用服务器上执行操作" Margin="10,0,10,0" Foreground="OrangeRed" FontWeight="Bold"/>
+            <TextBlock Text="★注：请在应用服务器上执行操作，使用mrBaseInf.EmpID和PriUsers.09ID关联" Margin="10,0,10,0" Foreground="OrangeRed" FontWeight="Bold"/>
             <CheckBox Content="覆盖已有签名图" Margin="10,0,0,0" VerticalAlignment="Center" IsChecked="{Binding IsOverwrite}"/>
             <CheckBox Content="异常时停止" Margin="10,0,0,0" VerticalAlignment="Center" IsChecked="{Binding IsStopWhenError}"/>
             <Button Content="执行" Margin="10,0,0,0" Style="{StaticResource MainButton}" Command="{Binding Do}" Visibility="{Binding Doing,Converter={StaticResource BoolReverseToVisibilityConverter}}"/>

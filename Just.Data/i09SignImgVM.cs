@@ -214,13 +214,13 @@ SELECT TOP(1) N'{sign09.EmpID}' -- FileName - nvarchar(300)
 ,PriUsers.Name -- UploaderName - nvarchar(50)
 ,2 -- Status - int
 ,'{contentType}' -- ContentType - varchar(100)
-,N'undeavatar{sign09.EmpID}' -- ObjectID - nvarchar(100)
+,N'undeavatar' + CAST(PriUsers.ID AS varchar(50)) -- ObjectID - nvarchar(100)
 ,{config.StoreServerConfigID} -- DirectoryID - int
 ,0 -- SortNum - int
 ,0 -- Compress - bit
 FROM [{PrivilegeDBName}].[dbo].[PriUsers]
-WHERE PriUsers.ID = {sign09.EmpID}
-AND NOT EXISTS(SELECT 1 FROM [{AttachmentDBName}].[dbo].[AttachmentInfosPortal] WHERE ObjectID = 'undeavatar{sign09.EmpID}')";
+WHERE PriUsers.[09ID] = {sign09.EmpID}
+AND NOT EXISTS(SELECT 1 FROM [{AttachmentDBName}].[dbo].[AttachmentInfosPortal] WHERE ObjectID = 'undeavatar' + CAST(PriUsers.ID AS varchar(50)))";
             if (IsOverwrite)
             {
                 //更新已有签名图附件数据
@@ -241,8 +241,8 @@ SET FileName = N'{sign09.EmpID}'
 , SymmetricKey = NULL
 , InitializationVector = NULL
 FROM [{PrivilegeDBName}].[dbo].[PriUsers]
-WHERE PriUsers.ID = {sign09.EmpID}
-AND AttachmentInfosPortal.ObjectID = 'undeavatar{sign09.EmpID}'
+WHERE PriUsers.[09ID] = {sign09.EmpID}
+AND AttachmentInfosPortal.ObjectID = 'undeavatar' + CAST(PriUsers.ID AS varchar(50))
 ";
             }
             var result = connection10.Execute(new CommandDefinition(sql, cancellationToken: token));
