@@ -108,6 +108,17 @@ namespace Just
             return list;
         }
 
-
+        public static TResult MaxOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
+        {
+            if (source?.Any() == true)
+                return source.Max(selector);
+            return default;
+        }
+        public static TResult MinOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
+        {
+            if (source?.Any() == true)
+                return source.Min(selector);
+            return default;
+        }
     }
 }

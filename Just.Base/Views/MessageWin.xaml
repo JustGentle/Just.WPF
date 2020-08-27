@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Just.Base.Views"
         xmlns:cvt="clr-namespace:Just.Base.Converters"
+        xmlns:editor="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
         x:Name="MessageWindow"
         Title="提示"
@@ -26,6 +27,7 @@
             
             <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <cvt:ValueToBoolConverter x:Key="ValueToBoolConverter" />
+            <cvt:BoolReverseConverter x:Key="BoolReverseConverter" />
         </ResourceDictionary>
     </Window.Resources>
     <Border BorderBrush="{DynamicResource NormalBorderBrush}" BorderThickness="1" x:Name="LayoutRoot">
@@ -66,10 +68,33 @@
                         TextAlignment="{Binding MessageAlignment}"
                         TextWrapping="Wrap"
                         Visibility="{Binding Message, Converter={StaticResource ValueToBoolConverter}}" />
-                    <TextBox
+                    <!--<TextBox
                         x:Name="InputBox"
                         Text="{Binding InputValue}"
-                        Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}" />-->
+                    <editor:TextEditor
+                        Name="codeEditor"
+                        IsReadOnly="{Binding IsInput, Converter={StaticResource BoolReverseConverter}}"
+                        FontFamily="Courier New" FontSize="14"
+                        Foreground="#D4D4D4" Background="#1E1E1E"
+                        SyntaxHighlighting="Json-Dark"
+                        ShowLineNumbers="True"
+                        VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                        Visibility="{Binding IsEditor, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Document="{Binding InputDocument}"
+                        TextChanged="codeEditor_TextChanged"
+                        >
+                        <!--Loaded="CodeEditor_Loaded"<editor:TextEditor.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem
+                                    Header="全部收缩"
+                                    Click="MenuItemCollapse_Click"/>
+                                <MenuItem
+                                    Header="全部展开"
+                                    Click="MenuItemExpand_Click"/>
+                            </ContextMenu>
+                        </editor:TextEditor.ContextMenu>-->
+                    </editor:TextEditor>
                 </StackPanel>
             </ScrollViewer>
 

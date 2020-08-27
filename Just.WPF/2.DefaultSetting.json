@@ -35,6 +35,19 @@
       "Header": "UDP日志监听",
       "ClassName": "LogUDPCtrl"
     },
+    {
+      "Id": "iKeyEdit",
+      "Parent": "iOffice10",
+      "Header": "iKey工具",
+      "ClassName": "iKeyEditCtrl",
+      "Visible": false
+    },
+    {
+      "Id": "i09SignImg",
+      "Parent": "iOffice10",
+      "Header": "09签名图迁移",
+      "ClassName": "i09SignImg"
+    },
     //BEGIN====开发工具
     {
       "Id": "DevTool",

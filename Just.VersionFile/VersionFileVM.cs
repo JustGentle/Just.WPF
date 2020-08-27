@@ -374,7 +374,8 @@ namespace Just.VersionFile
                         var n = new MessageWin
                         {
                             Title = $"版本信息",
-                            Message = json,
+                            InputValue = json,
+                            IsEditor = true,
                             MessageAlignment = HorizontalAlignment.Left,
                             Width = 500
                         };

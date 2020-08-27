@@ -311,6 +311,8 @@ namespace Just.MongoDB
                 return IsAdd || IsUpdate || IsRemoveDup || IsDeleteOver;
             }
         }
+        public bool HasBackup { get; set; } = false;//今日是否已备份
+        public bool IsBackup { get; set; } = true;//本次是否执行备份
         private bool CheckOnly { get; set; }
 
         private MongoDBHelper mongo = null;
@@ -323,7 +325,7 @@ namespace Just.MongoDB
                 _execute = _execute ?? new RelayCommand<RoutedEventArgs>(_ =>
                 {
                     if (!SysProfiles?.Any() ?? true && !CheckOnly) return;
-                    if(!Tree.Children.Any() && CheckOnly)
+                    if (!Tree.Children.Any() && CheckOnly)
                     {
 
                     }
@@ -343,7 +345,7 @@ namespace Just.MongoDB
                     MainWindowVM.ShowStatus("同步...");
                     try
                     {
-                        if (!HasDBAction || MessageWin.Confirm("同步将会立刻影响系统数据，执行前自动【完整备份】，确定同步？") == true)
+                        if (!HasDBAction || MessageWin.Confirm(IsBackup ? "同步将会立刻影响系统数据，执行前自动【完整备份】，确定同步？" : "同步将会立刻影响系统数据，已经【取消】备份，确定同步？") == true)
                         {
                             //查询原数据
                             var timeoutMS = 3000;
@@ -353,7 +355,8 @@ namespace Just.MongoDB
                                 nameof(CacheSysProfileMode));
                             var collection = mongo.Find<CacheSysProfileMode>();
                             //备份
-                            Backup(collection, nameof(CacheSysProfileMode));
+                            if (!HasBackup || IsBackup)
+                                Backup(collection, nameof(CacheSysProfileMode));
 
                             MainWindowVM.ShowStatus("执行...");
                             //初始化
@@ -475,10 +478,16 @@ namespace Just.MongoDB
         }
         private void Backup(IEnumerable<CacheSysProfileMode> collection, string collectionName)
         {
-            if (!HasDBAction) return;
-            if (!collection?.Any() ?? true) return;
             MainWindowVM.ShowStatus("备份...");
             var names = mongo.Database.ListCollectionNames().ToList().Where(n => n.StartsWith(collectionName));
+            //今天已经备份
+            var today = $"{collectionName}_{DateTime.Now:yyMMdd}";
+            HasBackup = names.Any(name => name.StartsWith(today));
+
+            if (!HasDBAction) return;
+            if (!collection?.Any() ?? true) return;
+
+            //尝试备份，已有名称则追加横杠，最多尝试10次
             var bak = $"{collectionName}_{DateTime.Now:yyMMddHHmmssfff}";
             while (names.Contains(bak))
             {
@@ -488,10 +497,12 @@ namespace Just.MongoDB
                 }
                 bak += "_";
             }
+            //备份
             mongo.Database.CreateCollection(bak);
             mongo.CollectionName = bak;
             mongo.InsertMany(collection);
             mongo.CollectionName = collectionName;
+            HasBackup = true;
         }
         private bool Same(CacheSysProfileMode item, CacheSysProfileMode next)
         {
@@ -624,7 +635,7 @@ namespace Just.MongoDB
                     node.ImagePath = MainWindowVM.ResourcesBase + @"/Images/id.png";
                 }
             }
-            else if(value is bool)
+            else if (value is bool)
             {
                 node.Value = value.ToString().ToLower();
                 node.Type = value.GetType().Name;
@@ -882,9 +893,10 @@ namespace Just.MongoDB
                         var n = new MessageWin
                         {
                             Title = _.Key.Contains(":") ? _.Value : _.Key, //CacheSysProfileMode节点标题显示Display
-                            Message = json,
+                            InputValue = json,
                             OkContent = "复制",
                             CancelContent = "关闭",
+                            IsEditor = true,
                             IsConfirm = true,
                             MessageAlignment = HorizontalAlignment.Left,
                             Foreground = (SolidColorBrush)Application.Current.FindResource("MainForeBrush"),
@@ -1091,7 +1103,7 @@ namespace Just.MongoDB
                 return _FindPrev;
             }
         }
-        
+
         private MongoNode GetSelectedItem(MongoNode node = null)
         {
             node = node ?? Tree;

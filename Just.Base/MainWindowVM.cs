@@ -1,4 +1,7 @@
-﻿using Just.Base.Views;
+﻿using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Folding;
+using ICSharpCode.AvalonEdit.Highlighting;
+using Just.Base.Views;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PropertyChanged;
@@ -11,6 +14,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows;
+using System.Xml;
 
 namespace Just.Base
 {
@@ -33,6 +37,7 @@ namespace Just.Base
         public MainWindowVM()
         {
             _Instance = this;
+            RegisterCustomHighlighting();
         }
         #endregion
 
@@ -257,6 +262,48 @@ namespace Just.Base
         public static void SaveSetting()
         {
             File.WriteAllText(_settingFile, _setting.ToString(), Encoding.UTF8);
+        }
+        #endregion
+
+        #region Editor
+        private void RegisterCustomHighlighting()
+        {
+            IHighlightingDefinition customHighlighting;
+            using (Stream s = this.GetType().Assembly.GetManifestResourceStream("Just.Base.Resources.Json-Dark.xshd"))
+            {
+                if (s == null)
+                    throw new InvalidOperationException("Could not find embedded resource");
+                using (XmlReader reader = new XmlTextReader(s))
+                {
+                    customHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.
+                        HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                }
+            }
+            HighlightingManager.Instance.RegisterHighlighting("Json-Dark", new string[] { ".json" }, customHighlighting);
+
+            using (Stream s = this.GetType().Assembly.GetManifestResourceStream("Just.Base.Resources.TSQL.xshd"))
+            {
+                if (s == null)
+                    throw new InvalidOperationException("Could not find embedded resource");
+                using (XmlReader reader = new XmlTextReader(s))
+                {
+                    customHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.
+                        HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                }
+            }
+            HighlightingManager.Instance.RegisterHighlighting("TSQL", new string[] { ".json" }, customHighlighting);
+
+            using (Stream s = this.GetType().Assembly.GetManifestResourceStream("Just.Base.Resources.Xml-Log.xshd"))
+            {
+                if (s == null)
+                    throw new InvalidOperationException("Could not find embedded resource");
+                using (XmlReader reader = new XmlTextReader(s))
+                {
+                    customHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.
+                        HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                }
+            }
+            HighlightingManager.Instance.RegisterHighlighting("Xml-Log", new string[] { ".json" }, customHighlighting);
         }
         #endregion
     }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 
@@ -43,16 +44,27 @@ namespace Just.Base.Views
                 Owner = MainWindowVM.Instance.MainWindow
             }.Show();
         }
-        public static List<double> NotifyTops { get; } = new List<double>();
+        public static List<Point> NotifyPositions { get; } = new List<Point>();
         private static bool NotifyTopOver(Window owner)
         {
             //提示信息超出屏幕时不显示
-            var top = (NotifyTops.Any() ? NotifyTops.Max() : 0);
-            if (owner.Top + owner.ActualHeight < top) return true;
+            var bottom = GetNotifyBottom(100);
+            if (owner.Top + owner.ActualHeight < bottom) return true;
             return false;
         }
+        private static double GetNotifyBottom(double height)
+        {
+            var sorted = NotifyPositions.OrderBy(p => p.X).ToList();
+            sorted.Insert(0, new Point(0, 0));
+            for (int i = 0; i < sorted.Count - 1; i++)
+            {
+                if (sorted[i].Y + height <= sorted[i + 1].X)
+                    return sorted[i].Y;
+            }
+            return sorted.Max(p => p.Y);
+        }
 
-        private double notifyTop;
+        private Point notifyPosition;
 
         public NotifyWin()
         {
@@ -71,25 +83,25 @@ namespace Just.Base.Views
         public static readonly DependencyProperty MessageProperty =
             DependencyProperty.Register("Message", typeof(string), typeof(NotifyWin), new PropertyMetadata(string.Empty));
 
-
-
         private void NotifyWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            notifyTop = (NotifyTops.Any() ? NotifyTops.Max() : 0) + this.ActualHeight;
-            NotifyTops.Add(notifyTop);
+            var bottom = GetNotifyBottom(this.ActualHeight);
+            var top = bottom + this.ActualHeight;
+            notifyPosition = new Point(bottom, top);
+            NotifyPositions.Add(notifyPosition);
             if (this.Owner != null)
             {
                 switch (Owner.WindowState)
                 {
                     case WindowState.Normal:
                         this.Left = this.Owner.Left + this.Owner.ActualWidth - this.ActualWidth;
-                        this.Top = this.Owner.Top + this.Owner.ActualHeight - notifyTop;
+                        this.Top = this.Owner.Top + this.Owner.ActualHeight - top;
                         break;
                     case WindowState.Minimized:
                     case WindowState.Maximized:
                     default:
                         this.Left = SystemParameters.WorkArea.Width - this.ActualWidth;
-                        this.Top = SystemParameters.WorkArea.Height - notifyTop;
+                        this.Top = SystemParameters.WorkArea.Height - top;
                         break;
                 }
             }
@@ -97,7 +109,7 @@ namespace Just.Base.Views
         private void SBFade_Completed(object sender, System.EventArgs e)
         {
             this.Close();
-            NotifyTops.Remove(notifyTop);
+            NotifyPositions.Remove(notifyPosition);
         }
 
         private void Border_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)

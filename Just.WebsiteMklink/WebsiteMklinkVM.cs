@@ -151,7 +151,7 @@ namespace Just.WebsiteMklink
             var sites = GetSiteInfos();
             var items = sites
                 .OrderBy(s => s.State == ObjectState.Started ? 0 : 1)
-                .Select(s => new Tuple<string, object>($"{s.Name}{(s.State == ObjectState.Started ? string.Empty : "【停止】")}", s));
+                .Select(s => new Tuple<string, object>($"{s.Name}{(s.State == ObjectState.Started ? string.Empty : (s.State == ObjectState.Unknown ? "【未知】" : "【停止】"))}", s));
             var win = new ListWin { Items = new ObservableCollection<Tuple<string, object>>(items) };
             if (win.ShowDialog() != true) return null;
             if (!(win.SelectedItem is SiteInfo site)) return null;
@@ -160,13 +160,26 @@ namespace Just.WebsiteMklink
         private IEnumerable<SiteInfo> GetSiteInfos()
         {
             var mgr = new ServerManager();
-            return mgr.Sites.Select(s => new SiteInfo
+            return mgr.Sites.Select(s => GetSiteInfo(s));
+        }
+        private SiteInfo GetSiteInfo(Site site)
+        {
+            var state = ObjectState.Unknown;
+            try
             {
-                Id = s.Id,
-                Name = s.Name,
-                State = s.State,
-                Dir = s.Applications.First().VirtualDirectories.First().PhysicalPath
-            });
+                state = site.State;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"获取IIS站点状态失败：{site.Name}", ex);
+            }
+            return new SiteInfo
+            {
+                Id = site.Id,
+                Name = site.Name,
+                State = state,
+                Dir = site.Applications.FirstOrDefault()?.VirtualDirectories.FirstOrDefault()?.PhysicalPath
+            };
         }
         class SiteInfo
         {
