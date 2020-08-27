@@ -169,10 +169,10 @@ namespace Just.Data
 
         private dynamic GetStoreServerConfig(IDbConnection connection10)
         {
-            //查附件目录和附件存储ID
+            //查附件目录、附件存储ID、附件后缀
             var sql = $@"
-DECLARE @StoreServerConfigID INT
-SELECT @StoreServerConfigID = ModuleInfos.StoreServerConfigID
+DECLARE @StoreServerConfigID INT, @Suffix varchar(50)
+SELECT @StoreServerConfigID = ModuleInfos.StoreServerConfigID, @Suffix = StoreServerConfigs.Suffix
 FROM [{AttachmentDBName}].[dbo].[ModuleInfos]
 JOIN [{AttachmentDBName}].[dbo].[StoreServerConfigs] ON StoreServerConfigs.ID = ModuleInfos.StoreServerConfigID
 WHERE ModuleInfos.Code = 'Portal$UnderLineImg'
@@ -182,7 +182,7 @@ SELECT TOP(1) '1\', @StoreServerConfigID
 FROM [{AttachmentDBName}].[dbo].[DirectoryInfos]
 WHERE NOT EXISTS(SELECT 1 FROM [{AttachmentDBName}].[dbo].[DirectoryInfos] WHERE StoreServerConfigID = @StoreServerConfigID)
 
-SELECT TOP(1) @StoreServerConfigID StoreServerConfigID, StoreServerConfigs.Root + '\' + ISNULL(DirectoryInfos.DirectoryPath, '1\') Path
+SELECT TOP(1) @StoreServerConfigID StoreServerConfigID, @Suffix Suffix, StoreServerConfigs.Root + '\' + ISNULL(DirectoryInfos.DirectoryPath, '1\') Path
 FROM [{AttachmentDBName}].[dbo].[StoreServerConfigs]
 JOIN [{AttachmentDBName}].[dbo].[DirectoryInfos] ON DirectoryInfos.StoreServerConfigID = StoreServerConfigs.ID
 WHERE StoreServerConfigs.ID = @StoreServerConfigID";
@@ -194,9 +194,10 @@ WHERE StoreServerConfigs.ID = @StoreServerConfigID";
             if (data["EmpSign"] == DBNull.Value || data["EmpSign"] is null)
                 return -1;
             string extension = "png", contentType = "image/png";
+            string suffix = string.IsNullOrEmpty(config.Suffix) ? extension : config.Suffix;
             var fileRename = Guid.NewGuid().ToString();
             var sign09 = new { EmpID = (int)data["EmpID"], EmpSign = (byte[])data["EmpSign"] };
-            var fileName = Path.Combine(config.Path, fileRename + "." + extension);
+            var fileName = Path.Combine(config.Path, fileRename + "." + suffix);
             AddLog($"{DateTime.Now:HH:mm:ss.fff} >保存图片({sign09.EmpID})：{fileName}");
             File.WriteAllBytes(fileName, sign09.EmpSign);
             AddLog($"{DateTime.Now:HH:mm:ss.fff} >上传附件({sign09.EmpID})");
