@@ -42,6 +42,9 @@
             <Button Content="停止" Margin="10,0,0,0" Style="{StaticResource RedButton}" Command="{Binding Do}" Visibility="{Binding Doing,Converter={StaticResource BoolToVisibilityConverter}}"/>
         </StackPanel>
 
-        <TextBox Grid.Row="3" Grid.ColumnSpan="2" ToolTip="操作日志" IsReadOnly="True" TextChanged="TextBox_TextChanged" Style="{StaticResource MutliLineBox}" Text="{Binding LogContent}"/>
+        <TextBox Grid.Row="3" Grid.ColumnSpan="2"
+                 ToolTip="操作日志" IsReadOnly="True" TextChanged="TextBox_TextChanged"
+                 Style="{StaticResource MutliLineBox}" Background="LightYellow" Foreground="DarkRed"
+                 Text="{Binding LogContent}"/>
     </Grid>
 </UserControl>
