@@ -167,7 +167,7 @@ namespace Just.ExtractTfs
                     item.IsExpanded = true;
                     LoadChildrenNode(item, toPath);
                 }
-                else if(item.ServerPath.Equals(toPath))
+                else if (item.ServerPath.Equals(toPath))
                 {
                     item.IsSelected = true;
                 }
@@ -524,22 +524,26 @@ namespace Just.ExtractTfs
             {
                 if (File.Exists(path)) return;
                 var source = Path.Combine(BinFolder, Path.GetFileName(path));
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
                 if (File.Exists(source))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
                     try
                     {
                         File.Copy(source, path);
                     }
                     catch (IOException ex)
                     {
-                        if(ex.HResult != -2147024816 && ex.HResult != -2147024713)//文件已存在
+                        if (ex.HResult != -2147024816 && ex.HResult != -2147024713)//文件已存在
                         {
                             throw;
                         }
                     }
-                    return;
                 }
+                else
+                {
+                    File.Create(path + "NotExists").Close();
+                }
+                return;
             }
             item.DownloadFile(path);
         }
