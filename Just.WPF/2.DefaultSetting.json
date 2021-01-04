@@ -48,6 +48,12 @@
       "Header": "09签名图迁移",
       "ClassName": "i09SignImg"
     },
+    {
+      "Id": "DistEditor",
+      "Parent": "iOffice10",
+      "Header": "dist文件更新",
+      "ClassName": "DistEditorCtrl"
+    },
     //BEGIN====开发工具
     {
       "Id": "DevTool",
