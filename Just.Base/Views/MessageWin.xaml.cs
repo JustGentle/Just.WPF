@@ -200,6 +200,8 @@ namespace Just.Base.Views
 
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
+            if (IsEditor)
+                InputValue = InputDocument.Text;
             this.DialogResult = true;
         }
 
