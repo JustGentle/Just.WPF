@@ -291,7 +291,7 @@ namespace Just.Base
                         HighlightingLoader.Load(reader, HighlightingManager.Instance);
                 }
             }
-            HighlightingManager.Instance.RegisterHighlighting("TSQL", new string[] { ".json" }, customHighlighting);
+            HighlightingManager.Instance.RegisterHighlighting("TSQL", new string[] { ".sql" }, customHighlighting);
 
             using (Stream s = this.GetType().Assembly.GetManifestResourceStream("Just.Base.Resources.Xml-Log.xshd"))
             {
@@ -303,7 +303,7 @@ namespace Just.Base
                         HighlightingLoader.Load(reader, HighlightingManager.Instance);
                 }
             }
-            HighlightingManager.Instance.RegisterHighlighting("Xml-Log", new string[] { ".json" }, customHighlighting);
+            HighlightingManager.Instance.RegisterHighlighting("Xml-Log", new string[] { ".xml" }, customHighlighting);
         }
         #endregion
     }

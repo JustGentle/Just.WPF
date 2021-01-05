@@ -88,5 +88,10 @@ namespace Just.Base.Utils
             }
             Directory.Delete(dirPath, true);
         }
+        public static void RemoveAttribute(string filePath, FileAttributes attr)
+        {
+            var old = File.GetAttributes(filePath);
+            File.SetAttributes(filePath, old | attr ^ attr);
+        }
     }
 }

@@ -899,7 +899,8 @@ namespace Just.MongoDB
                             IsEditor = true,
                             IsConfirm = true,
                             MessageAlignment = HorizontalAlignment.Left,
-                            Foreground = (SolidColorBrush)Application.Current.FindResource("MainForeBrush"),
+                            EditorForeground = new SolidColorBrush(Color.FromRgb(212, 212, 212)),
+                            EditorBackground = new SolidColorBrush(Color.FromRgb(30, 30, 30)),
                             Width = 500,
                             Owner = MainWindowVM.Instance.MainWindow
                         };

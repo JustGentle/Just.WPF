@@ -4,48 +4,103 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Just.DistEditor"
+             xmlns:cvt="clr-namespace:Just.Base.Converters;assembly=Just.Base"
+             xmlns:GenControls="clr-namespace:GenLibrary.GenControls;assembly=GenLibrary"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="UserControl_Loaded">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Just.Base;Component/Theme/Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <cvt:BoolToVisibilityConverter x:Key="ReverseBoolToVisibilityConverter" Reverse="True" />
         </ResourceDictionary>
     </UserControl.Resources>
+    <UserControl.InputBindings>
+        <KeyBinding
+            Key="C"
+            Command="{Binding CopyNode}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="F"
+            Command="{Binding FindDialog}"
+            Modifiers="Ctrl" />
+        <KeyBinding Key="F3" Command="{Binding FindNext}" />
+        <KeyBinding Key="F3" Modifiers="Alt" Command="{Binding FindPrev}" />
+    </UserControl.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="auto"/>
-        </Grid.ColumnDefinitions>
 
-        <TextBlock Text="文件路径：" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="0"/>
-        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FilePath}" IsReadOnly="True" />
-        <!--<Button
-                Grid.Column="2"
-                Margin="-1,0,0,0"
-                Padding="5,0"
-                Command="{Binding FolderBrowser}"
-                ToolTip="选择文件夹">
-            <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
-        </Button>-->
-        <Button Grid.Column="3"
-                Margin="-1,0,0,0"
-                ToolTip="选择文件"
-                Command="{Binding FileBrowser}">
-            <Path Style="{DynamicResource FilePath}" MaxWidth="16" MaxHeight="16"/>
-        </Button>
-        <Button Content="更新" Grid.Column="5"
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Text="站点目录：" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="0"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding InputWebsitePath}" Name="txt" />
+            <Button
+                    Grid.Column="2"
+                    Margin="-1,0,0,0"
+                    Padding="5,0"
+                    Command="{Binding FolderBrowser}"
+                    ToolTip="选择文件夹">
+                <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16"/>
+            </Button>
+            <Button
+                Grid.Column="3"
                 Margin="5,0,0,0"
-                Style="{StaticResource GreenButton}"
-                Command="{Binding UpdateFile}" />
+                Command="{Binding LoadRev}"
+                ToolTip="读取"
+                Content="读取"
+                Style="{StaticResource MainButton}"/>
+        </Grid>
+        
+        <Grid Grid.Row="1" Margin="0,5,0,0">
+            <WrapPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                <TextBlock>　查　找：</TextBlock>
+                <TextBox Width="280" Text="{Binding FindText,UpdateSourceTrigger=PropertyChanged}" ToolTip="请输入查找文本">
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding Find}" Key="Enter"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Style="{StaticResource BlueButton}" Margin="5,0,0,0" Command="{Binding Find}" ToolTip="从头查找（Ctrl+F）">查找</Button>
+                <Button Margin="5,0,0,0" Command="{Binding FindNext}" ToolTip="从当前选中位置向下查找（F3）">下一个</Button>
+                <Button Margin="5,0,0,0" Command="{Binding FindPrev}" ToolTip="从当前选中位置向上查找（Alt+F3）">上一个</Button>
+            </WrapPanel>
+        </Grid>
+        
+        <Grid Grid.Row="2" Margin="0,5,0,0">
+            <GenControls:TreeListView DataContext="{Binding RevFileTree}" Name="ItemTree">
+                <GenControls:TreeListView.Columns>
+                    <GridViewColumn Width="700" Header="文件名（双击编辑）">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Width="auto">
+                                    <Path Style="{DynamicResource FolderPath}" MaxWidth="16" MaxHeight="16" HorizontalAlignment="Left" Visibility="{Binding IsFile,Converter={StaticResource ReverseBoolToVisibilityConverter}}"/>
+                                    <Path Style="{DynamicResource FilePath}" MaxWidth="16" MaxHeight="16" HorizontalAlignment="Left" Visibility="{Binding IsFile,Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <TextBlock Margin="18,0,0,0" Text="{Binding Name}" ToolTip="{Binding Path}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GenControls:TreeListView.Columns>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseDoubleClick">
+                        <i:InvokeCommandAction Command="{Binding DataContext.ItemPathDoubleClick, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=UserControl}}" CommandParameter="{Binding ElementName=ItemTree}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </GenControls:TreeListView>
+        </Grid>
     </Grid>
 </UserControl>

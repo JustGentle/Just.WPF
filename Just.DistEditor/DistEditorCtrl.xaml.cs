@@ -19,5 +19,11 @@ namespace Just.DistEditor
         {
             _vm.WriteSetting();
         }
+
+        private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            //为了让快捷键生效
+            this.txt.Focus();
+        }
     }
 }

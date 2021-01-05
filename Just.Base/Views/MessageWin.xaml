@@ -11,14 +11,30 @@
         Title="提示"
         Width="300"
         MinHeight="160"
-        AllowsTransparency="True"
         FontSize="14"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
-        ResizeMode="NoResize"
         ShowInTaskbar="False"
-        Loaded="MessageWindow_Loaded">
+        ResizeMode="NoResize"
+        Loaded="MessageWindow_Loaded"
+        StateChanged="MessageWindow_StateChanged"
+        SizeChanged="MessageWindow_SizeChanged">
+    <Window.Style>
+        <!--  WindowStyle="None"时隐藏边框  -->
+        <Style TargetType="Window">
+            <Setter Property="WindowChrome.WindowChrome">
+                <Setter.Value>
+                    <WindowChrome
+                        CaptionHeight="0"
+                        CornerRadius="0"
+                        GlassFrameThickness="1"
+                        NonClientFrameEdges="None"
+                        ResizeBorderThickness="3" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Style>
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -30,6 +46,9 @@
             <cvt:BoolReverseConverter x:Key="BoolReverseConverter" />
         </ResourceDictionary>
     </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding Command="Find" Executed="CommandFind_Executed"/>
+    </Window.CommandBindings>
     <Border BorderBrush="{DynamicResource NormalBorderBrush}" BorderThickness="1" x:Name="LayoutRoot">
         <Grid>
             <Grid.RowDefinitions>
@@ -68,32 +87,60 @@
                         TextAlignment="{Binding MessageAlignment}"
                         TextWrapping="Wrap"
                         Visibility="{Binding Message, Converter={StaticResource ValueToBoolConverter}}" />
-                    <!--<TextBox
+                    <TextBox
                         x:Name="InputBox"
-                        Text="{Binding InputValue}"
-                        Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}" />-->
+                        Text="{Binding InputValue}">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsInput}" Value="true"/>
+                                            <Condition Binding="{Binding IsEditor}" Value="false"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
                     <editor:TextEditor
                         Name="codeEditor"
                         IsReadOnly="{Binding IsInput, Converter={StaticResource BoolReverseConverter}}"
                         FontFamily="Courier New" FontSize="14"
-                        Foreground="#D4D4D4" Background="#1E1E1E"
-                        SyntaxHighlighting="Json-Dark"
-                        ShowLineNumbers="True"
+                        Foreground="{Binding EditorForeground}" Background="{Binding EditorBackground}"
+                        BorderThickness="1" BorderBrush="{StaticResource NormalBorderBrush}"
+                        SyntaxHighlighting="{Binding Syntax}"
+                        ShowLineNumbers="{Binding EditorShowLineNumbers}"
                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                         Visibility="{Binding IsEditor, Converter={StaticResource BoolToVisibilityConverter}}"
                         Document="{Binding InputDocument}"
-                        TextChanged="codeEditor_TextChanged"
-                        >
-                        <!--Loaded="CodeEditor_Loaded"<editor:TextEditor.ContextMenu>
+                        TextChanged="codeEditor_TextChanged">
+                        <editor:TextEditor.ContextMenu>
                             <ContextMenu>
-                                <MenuItem
-                                    Header="全部收缩"
-                                    Click="MenuItemCollapse_Click"/>
-                                <MenuItem
-                                    Header="全部展开"
-                                    Click="MenuItemExpand_Click"/>
+                                <MenuItem Command="Cut" Header="剪切" Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <MenuItem Command="Copy" Header="复制"/>
+                                <MenuItem Command="Paste" Header="粘贴" Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <MenuItem Command="Delete" Header="删除" Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                <Separator Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                <MenuItem Command="SelectAll" Header="全选"/>
+
+                                <Separator Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                <MenuItem Command="Undo" Header="撤销" Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <MenuItem Command="Redo" Header="重做" Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                <Separator />
+
+                                <MenuItem Command="Find" Header="查找"/>
+                                <MenuItem Header="自动换行" IsCheckable="True" Checked="WrapMenuItem_Checked" Unchecked="WrapMenuItem_Unchecked" IsChecked="{Binding EditorWrap}"/>
                             </ContextMenu>
-                        </editor:TextEditor.ContextMenu>-->
+                        </editor:TextEditor.ContextMenu>
                     </editor:TextEditor>
                 </StackPanel>
             </ScrollViewer>
