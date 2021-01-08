@@ -98,7 +98,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <EmbeddedResource Include="Resources\Custom.xshd" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />

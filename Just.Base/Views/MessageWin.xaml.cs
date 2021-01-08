@@ -186,7 +186,7 @@ namespace Just.Base.Views
 
         // Using a DependencyProperty as the backing store for EditorShowLineNumbers.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty EditorShowLineNumbersProperty =
-            DependencyProperty.Register("EditorShowLineNumbers", typeof(bool), typeof(MessageWin), new PropertyMetadata(false));
+            DependencyProperty.Register("EditorShowLineNumbers", typeof(bool), typeof(MessageWin), new PropertyMetadata(true));
 
         public bool EditorWrap
         {

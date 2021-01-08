@@ -3,32 +3,52 @@
   <Color name="Digits" foreground="#3E9CCA" exampleText="3.14" />
   <Color name="Value" foreground="#CE9178" />
   <Color name="ParamName" foreground="#9CDCFE" />
+
+  <RuleSet name="BackslashSet">
+    <Span begin="\\" end="."/>
+  </RuleSet>
+  
   <RuleSet ignoreCase="true">
-    <Keywords color="Digits" >
+    <Keywords color="Digits">
       <Word>true</Word>
       <Word>false</Word>
       <Word>null</Word>
     </Keywords>
-    <Span color="ParamName">
+
+    <Span color="ParamName" multiline="false" ruleSet="BackslashSet">
       <Begin>"</Begin>
-      <End>"\s*(?=:)</End>
+      <End>"(?=\s*:)</End>
     </Span>
-    <Span color="ParamName">
+    <Span color="ParamName" ruleSet="BackslashSet">
       <Begin>'</Begin>
-      <End>'\s*(?=:)</End>
+      <End>'(?=\s*:)</End>
     </Span>
-    <Span color="Value">
-      <Begin>
-        (?&lt;=:)\s*"[^"]*
-      </Begin>
+
+    <Span color="Value" ruleSet="BackslashSet">
+      <Begin>(?&lt;=:)\s*"</Begin>
       <End>"</End>
     </Span>
-    <Span color="Value">
-      <Begin>
-        (?&lt;=:)\s*'[^']*
-      </Begin>
+    <Span color="Value" ruleSet="BackslashSet">
+      <Begin>(?&lt;=:)\s*'</Begin>
       <End>'</End>
     </Span>
+
+    <!--BSON-->
+    <Span color="Digits">
+      <Begin>\w+\(</Begin>
+      <End>\)</End>
+      <RuleSet>
+        <Span color="Value" ruleSet="BackslashSet">
+          <Begin>"</Begin>
+          <End>"</End>
+        </Span>
+        <Span color="Value" ruleSet="BackslashSet">
+          <Begin>'</Begin>
+          <End>'</End>
+        </Span>
+      </RuleSet>
+    </Span>
+
     <Rule color="Digits">\b0[xX][0-9a-fA-F]+|(\b\d+(\.[0-9]+)?|\.[0-9]+)([eE][+-]?[0-9]+)?</Rule>
   </RuleSet>
 </SyntaxDefinition>

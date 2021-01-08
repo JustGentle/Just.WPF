@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Xml;
 
 namespace Just.MongoDB
@@ -28,34 +29,17 @@ namespace Just.MongoDB
         };
         public MongoSyncCtrl()
         {
-            RegisterCustomHighlighting();
             InitializeComponent();
             this.DataContext = _vm;
             _vm.ReadSetting();
             _vm.OnJsonChanged += _vm_OnJsonChanged;
             _vm.FindNextText += _vm_FindNextText;
         }
-
-        private void RegisterCustomHighlighting()
-        {
-            // Load our custom highlighting definition
-            IHighlightingDefinition customHighlighting;
-            using (Stream s = this.GetType().Assembly.GetManifestResourceStream("Just.MongoDB.Resources.Custom.xshd"))
-            {
-                if (s == null)
-                    throw new InvalidOperationException("Could not find embedded resource");
-                using (XmlReader reader = new XmlTextReader(s))
-                {
-                    customHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.
-                        HighlightingLoader.Load(reader, HighlightingManager.Instance);
-                }
-            }
-            // and register it in the HighlightingManager
-            HighlightingManager.Instance.RegisterHighlighting("Custom", new string[] { ".json" }, customHighlighting);
-        }
         private void CodeEditor_Loaded(object sender, RoutedEventArgs e)
         {
+            codeEditor.TextArea.TextView.LinkTextForegroundBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3E9CCA"));
             _foldingManager = _foldingManager ?? FoldingManager.Install(codeEditor.TextArea);
+            txt.Focus();//使快捷键绑定生效
         }
         private void _vm_OnJsonChanged()
         {

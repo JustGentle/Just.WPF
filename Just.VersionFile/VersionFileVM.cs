@@ -376,6 +376,8 @@ namespace Just.VersionFile
                             Title = $"版本信息",
                             InputValue = json,
                             IsEditor = true,
+                            EditorForeground = new SolidColorBrush(Color.FromRgb(212, 212, 212)),
+                            EditorBackground = new SolidColorBrush(Color.FromRgb(30, 30, 30)),
                             MessageAlignment = HorizontalAlignment.Left,
                             Width = 500
                         };

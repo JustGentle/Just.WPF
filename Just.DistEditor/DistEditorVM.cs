@@ -202,7 +202,7 @@ namespace Just.DistEditor
                         InputValue = text,
                         OkContent = "更新",
                         CancelContent = "取消",
-                        Syntax = GetFileSyntax(node.Path),
+                        Syntax = MainWindowVM.GetFileSyntax(node.Path),
                         IsEditor = true,
                         IsInput = true,
                         IsConfirm = true,
@@ -220,95 +220,6 @@ namespace Just.DistEditor
                 });
                 return _ItemPathDoubleClick;
             }
-        }
-        private IHighlightingDefinition GetFileSyntax(string file)
-        {
-            var ext = Path.GetExtension(file).ToLower();
-            var hlManager = HighlightingManager.Instance;
-            if (hlManager == null || hlManager.HighlightingDefinitions == null)
-                return null;
-
-            var name = string.Empty;
-            switch (ext)
-            {
-                case ".asp":
-                case ".aspx":
-                case ".asax":
-                case ".asmx":
-                case ".ascx":
-                case ".master":
-                    name = "ASP/XHTML";
-                    break;
-                case ".boo":
-                    name = "Boo";
-                    break;
-                case ".atg":
-                    name = "Coco";
-                    break;
-                case ".c":
-                case ".h":
-                case ".cc":
-                case ".cpp":
-                case ".hpp":
-                    name = "C++";
-                    break;
-                case ".cs":
-                    name = "C#";
-                    break;
-                case ".css":
-                    name = "CSS";
-                    break;
-                case ".htm":
-                case ".html":
-                    name = "HTML";
-                    break;
-                case ".java":
-                    name = "Java";
-                    break;
-                case ".js":
-                    name = "JavaScript";
-                    break;
-                case ".json":
-                    name = "Json";
-                    break;
-                case ".md":
-                    name = "MarkDownWithFontSize";
-                    break;
-                case ".patch":
-                case ".diff":
-                    name = "Patch";
-                    break;
-                case ".php":
-                    name = "PHP";
-                    break;
-                case ".ps1":
-                case ".psm1":
-                case ".psd1":
-                    name = "PowerShell";
-                    break;
-                case ".py":
-                case ".pyw":
-                    name = "Python";
-                    break;
-                case ".tex":
-                    name = "TeX";
-                    break;
-                case ".sql":
-                    name = "TSQL";
-                    break;
-                case ".vb":
-                    name = "VB";
-                    break;
-                case ".xml":
-                    name = "XML";
-                    break;
-                default:
-                    break;
-            }
-            if (string.IsNullOrEmpty(name))
-                return null;
-
-            return hlManager.HighlightingDefinitions.FirstOrDefault(hl => hl.Name.Equals(name));
         }
         #endregion
 

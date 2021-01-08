@@ -59,7 +59,7 @@
             <TextBox
                 Grid.Column="1"
                 Margin="5,0,0,0"
-                Text="{Binding JsonPath}" />
+                Text="{Binding JsonPath}" Name="txt" />
             <Button
                 Grid.Column="2"
                 Margin="-1,0,0,0"
@@ -178,7 +178,7 @@
         <Grid Grid.Row="2" Margin="0,5,0,0">
             <WrapPanel HorizontalAlignment="Left" Orientation="Horizontal">
                 <TextBlock>　查　找:</TextBlock>
-                <TextBox Width="280" Margin="5,0,0,0" Text="{Binding FindText}" ToolTip="请输入查找文本">
+                <TextBox Width="280" Margin="5,0,0,0" Text="{Binding FindText, UpdateSourceTrigger=PropertyChanged}" ToolTip="请输入查找文本">
                     <TextBox.InputBindings>
                         <KeyBinding Command="{Binding Find}" Key="Enter"/>
                     </TextBox.InputBindings>
@@ -301,7 +301,7 @@
                 IsReadOnly="True"
                 FontFamily="Courier New" FontSize="14"
                 Foreground="#D4D4D4" Background="#1E1E1E"
-                SyntaxHighlighting="Custom"
+                SyntaxHighlighting="Json-Dark"
                 ShowLineNumbers="True"
                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                 Visibility="{Binding IsJsonView, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -315,6 +315,10 @@
                         <MenuItem
                         Header="全部展开"
                         Click="MenuItemExpand_Click"/>
+                        
+                        <Separator Visibility="{Binding IsInput, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <MenuItem Command="Copy" Header="复制"/>
+                        <MenuItem Command="SelectAll" Header="全选"/>
                     </ContextMenu>
                 </editor:TextEditor.ContextMenu>
             </editor:TextEditor>
