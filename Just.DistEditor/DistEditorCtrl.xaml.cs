@@ -1,4 +1,8 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using GenLibrary.GenControls;
+using Just.Base.Theme;
 
 namespace Just.DistEditor
 {
@@ -24,6 +28,24 @@ namespace Just.DistEditor
         {
             //为了让快捷键生效
             this.txt.Focus();
+        }
+
+        private void ItemTree_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Right) return;
+            if (sender is TreeListView tree)
+            {
+                //右键选中
+                var p = e.GetPosition(tree);
+                if (tree.InputHitTest(p) is DependencyObject item)
+                {
+                    if (VisualTreeHelperEx.FindAncestorByType(item, typeof(TreeListViewItem), true) is TreeListViewItem node)
+                    {
+                        node.IsSelected = true;
+                        return;
+                    }
+                }
+            }
         }
     }
 }

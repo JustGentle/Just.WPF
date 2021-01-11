@@ -78,10 +78,13 @@
                 <Button Margin="5,0,0,0" Command="{Binding FindNext}" ToolTip="从当前选中位置向下查找（F3）">下一个</Button>
                 <Button Margin="5,0,0,0" Command="{Binding FindPrev}" ToolTip="从当前选中位置向上查找（Alt+F3）">上一个</Button>
             </WrapPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <CheckBox Content="语法高亮" IsChecked="{Binding IsHightlight}"/>
+            </StackPanel>
         </Grid>
         
         <Grid Grid.Row="2" Margin="0,5,0,0">
-            <GenControls:TreeListView DataContext="{Binding RevFileTree}" Name="ItemTree">
+            <GenControls:TreeListView DataContext="{Binding RevFileTree}" Name="ItemTree" MouseDown="ItemTree_MouseDown">
                 <GenControls:TreeListView.Columns>
                     <GridViewColumn Width="700" Header="文件名（双击编辑）">
                         <GridViewColumn.CellTemplate>
@@ -100,6 +103,30 @@
                         <i:InvokeCommandAction Command="{Binding DataContext.ItemPathDoubleClick, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=UserControl}}" CommandParameter="{Binding ElementName=ItemTree}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
+                <GenControls:TreeListView.ContextMenu>
+                    <ContextMenu DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget}">
+                        <MenuItem
+                            Command="{Binding PlacementTarget.Parent.DataContext.ItemPathDoubleClick, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding}"
+                            Visibility="{Binding SelectedItem.HasChild,Converter={StaticResource ReverseBoolToVisibilityConverter}}"
+                            InputGestureText="双击">
+                            <MenuItem.Header>
+                                <TextBlock Text="编辑" FontWeight="Bold"/>
+                            </MenuItem.Header>
+                        </MenuItem>
+                        <Separator Visibility="{Binding SelectedItem.HasChild,Converter={StaticResource ReverseBoolToVisibilityConverter}}"/>
+                        <MenuItem
+                            Command="{Binding PlacementTarget.Parent.DataContext.CopyNode, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding SelectedItem}"
+                            Header="复制路径"
+                            InputGestureText="Ctrl+C"/>
+                        <MenuItem
+                            Command="{Binding PlacementTarget.Parent.DataContext.LocationTo, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding SelectedItem}"
+                            Header="打开文件位置"
+                            InputGestureText="Ctrl+L"/>
+                    </ContextMenu>
+                </GenControls:TreeListView.ContextMenu>
             </GenControls:TreeListView>
         </Grid>
     </Grid>

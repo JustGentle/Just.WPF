@@ -28,6 +28,7 @@ namespace Just.DistEditor
         public bool Doing { get; set; }
         public string InputWebsitePath { get; set; }//输入的目录
         public string WebsitePath { get; set; }//已读取的目录
+        public bool IsHightlight { get; set; } = true;
         public RevNodeItem RevFileTree { get; set; }
         #endregion
 
@@ -202,7 +203,7 @@ namespace Just.DistEditor
                         InputValue = text,
                         OkContent = "更新",
                         CancelContent = "取消",
-                        Syntax = MainWindowVM.GetFileSyntax(node.Path),
+                        Syntax = IsHightlight ? MainWindowVM.GetFileSyntax(node.Path) : null,
                         IsEditor = true,
                         IsInput = true,
                         IsConfirm = true,
@@ -220,6 +221,59 @@ namespace Just.DistEditor
                 });
                 return _ItemPathDoubleClick;
             }
+        }
+        private ICommand _CopyNode;
+        public ICommand CopyNode
+        {
+            get
+            {
+                _CopyNode = _CopyNode ?? new RelayCommand<RevNodeItem>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    if (_ == null) return;
+                    var text = _.Path;
+                    if (string.IsNullOrEmpty(text)) return;
+                    MainWindowVM.DispatcherInvoke(() =>
+                    {
+                        Clipboard.SetText(text);
+                    });
+                    NotifyWin.Info("已复制到剪贴板：" + text, "复制");
+                });
+                return _CopyNode;
+            }
+        }
+        private ICommand _LocationTo;
+        public ICommand LocationTo
+        {
+            get
+            {
+                _LocationTo = _LocationTo ?? new RelayCommand<RevNodeItem>(_ =>
+                {
+                    _ = _ ?? GetSelectedItem();
+                    if (_ == null) return;
+
+                    OpenFolder(_.Path, true);
+                });
+                return _LocationTo;
+            }
+        }
+        private bool OpenFolder(string folder, bool select = false)
+        {
+            if (string.IsNullOrEmpty(folder)) return false;
+            if (!Directory.Exists(folder) && !File.Exists(folder))
+            {
+                MainWindowVM.NotifyWarn(folder, "路径不存在");
+                return false;
+            }
+            if (select)
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"/e,/select,\"{folder}\"");
+            }
+            else
+            {
+                System.Diagnostics.Process.Start("explorer.exe", folder);
+            }
+            return true;
         }
         #endregion
 
@@ -420,29 +474,6 @@ namespace Just.DistEditor
         }
         #endregion
 
-        #region 复制
-        private ICommand _CopyNode;
-        public ICommand CopyNode
-        {
-            get
-            {
-                _CopyNode = _CopyNode ?? new RelayCommand<RevNodeItem>(_ =>
-                {
-                    _ = _ ?? GetSelectedItem();
-                    if (_ == null) return;
-                    var text = _.Path;
-                    if (string.IsNullOrEmpty(text)) return;
-                    MainWindowVM.DispatcherInvoke(() =>
-                    {
-                        Clipboard.SetText(text);
-                    });
-                    NotifyWin.Info("已复制到剪贴板：" + text, "复制");
-                });
-                return _CopyNode;
-            }
-        }
-        #endregion
-
         #region 查找
         public string FindText { get; set; } = string.Empty;
         private ICommand _Find;
@@ -640,11 +671,13 @@ namespace Just.DistEditor
         public void ReadSetting()
         {
             InputWebsitePath = WebsitePath = MainWindowVM.ReadSetting($"{nameof(DistEditorCtrl)}.{nameof(WebsitePath)}", WebsitePath);
+            IsHightlight = MainWindowVM.ReadSetting($"{nameof(DistEditorCtrl)}.{nameof(IsHightlight)}", IsHightlight);
             LoadRev.Execute(null);
         }
         public void WriteSetting()
         {
             MainWindowVM.WriteSetting($"{nameof(DistEditorCtrl)}.{nameof(WebsitePath)}", WebsitePath);
+            MainWindowVM.WriteSetting($"{nameof(DistEditorCtrl)}.{nameof(IsHightlight)}", IsHightlight);
         }
         #endregion
     }
