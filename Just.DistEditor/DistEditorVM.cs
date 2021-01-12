@@ -123,7 +123,7 @@ namespace Just.DistEditor
                 return string.Empty;
             }
             var homeText = File.ReadAllText(homeFileName, Encoding.UTF8);
-            var revFileName = Regex.Match(homeText, @"\brev-manifest-[0-9a-f]{10}\.json\b").Value;
+            var revFileName = Regex.Match(homeText, @"\brev-manifest-[0-9a-z]{10}\.json\b").Value;//a-z兼容手动重命名的情况
             return revFileName;
         }
         private RevNodeItem LoadRevNode(string file)
@@ -325,7 +325,7 @@ namespace Just.DistEditor
 
                             //生成新文件hash
                             MainWindowVM.ShowStatus("生成哈希值...");
-                            var renameReg = new Regex(@"-[0-9a-f]{10}\.");
+                            var renameReg = new Regex(@"-[0-9a-z]{10}\.");
                             var hash = MD5.GetTextHash(text).Replace("-", "").ToLower().Substring(0, 10);
                             var newname = filename;
                             if (renameReg.IsMatch(filename))
@@ -466,7 +466,7 @@ namespace Just.DistEditor
                 var map = maps[i];
                 if(i == maps.Length - 1)
                 {
-                    map = Regex.Replace(map, @"-[0-9a-f]{10}\.", ".");
+                    map = Regex.Replace(map, @"-[0-9a-z]{10}\.", ".");
                 }
                 token = token?[map.ToLower()];
             }
@@ -565,7 +565,10 @@ namespace Just.DistEditor
         private RevNodeItem FindNextItem(RevNodeItem item, string findText, bool previous = false)
         {
             item = item ?? RevFileTree;
-            RevNodeItem result = null;
+            if (item == null)
+                return null;
+
+            RevNodeItem result;
             if (previous)
             {
                 result = FindParentNext(item, findText, previous);
