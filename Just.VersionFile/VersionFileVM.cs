@@ -41,7 +41,7 @@ namespace Just.VersionFile
         public string MainVersionDescription { get; set; } = DateTime.Now.ToString("yyyy年MM月dd日 完整升级包");
 
         public bool IsPatch { get; set; }
-        public string PatchVersion { get; set; } = DateTime.Now.ToString("yyyyMMdd.HHmm");
+        public string PatchVersion { get; set; }
         public string PatchVersionDescription { get; set; } = $"范围：所有{Environment.NewLine}内容：功能优化{Environment.NewLine}基于{DateTime.Now:yyyyMMdd}版本";
 
         public bool HasVersionData
@@ -100,10 +100,15 @@ namespace Just.VersionFile
                             MainWindowVM.NotifyWarn("升级包路径不能为空");
                             return;
                         }
-                        if (string.IsNullOrWhiteSpace(MainVersion) || (IsPatch && string.IsNullOrWhiteSpace(PatchVersion)))
+                        if (string.IsNullOrWhiteSpace(MainVersion))
                         {
                             MainWindowVM.NotifyWarn("版本号不能为空");
                             return;
+                        }
+                        var patchVersion = PatchVersion;
+                        if(IsPatch && string.IsNullOrWhiteSpace(patchVersion))
+                        {
+                            patchVersion = DateTime.Now.ToString("yyyyMMdd.HHmm");
                         }
 
                         var pack = string.Empty;
@@ -114,7 +119,7 @@ namespace Just.VersionFile
                                 Title = "保存升级包",
                                 DefaultExtension = "i10",
                                 InitialDirectory = Dialog.GetInitialDirectory(PackFolder),//上级目录
-                                DefaultFileName = $"v{(IsPatch ? PatchVersion : MainVersion)} {(IsPatch ? "补丁包" : "完整包")}.i10"
+                                DefaultFileName = $"v{(IsPatch ? patchVersion : MainVersion)} {(IsPatch ? "补丁包" : "完整包")}.i10"
                             };
                             dlg.Filters.Add(new CommonFileDialogFilter("iOffice10升级包", "i10"));
                             if (MainWindowVM.DispatcherInvoke(dlg.ShowDialog) != CommonFileDialogResult.Ok)
@@ -152,7 +157,7 @@ namespace Just.VersionFile
                             };
                             if (IsPatch)
                             {
-                                file.Version.Add(KeyPatchVersion, new VersionInfo { Name = "补丁版本", Version = PatchVersion, Description = PatchVersionDescription });
+                                file.Version.Add(KeyPatchVersion, new VersionInfo { Name = "补丁版本", Version = patchVersion, Description = PatchVersionDescription });
                             }
                             if (HasCheckData)
                             {
@@ -188,7 +193,7 @@ namespace Just.VersionFile
                                 MainWindowVM.ShowStatus("打包...");
                                 MakePack(pack);
                             }
-                            MainWindowVM.NotifyInfo("生成成功");
+                            MainWindowVM.NotifyInfo("生成成功：" + (IsPatch ? patchVersion : MainVersion));
                         }
                         catch (Exception ex)
                         {
@@ -304,58 +309,71 @@ namespace Just.VersionFile
 
                     if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
                     {
-                        try
-                        {
-                            var encode = File.ReadAllText(dlg.FileName, Encoding.UTF8);
-                            var json = AES.Decrypt(encode);
-                            var file = JsonConvert.DeserializeObject<VersionFileInfo>(json);
-                            var baseVersion = string.Empty;
-                            if (file.Version.ContainsKey(KeyMainVersion))
-                            {
-                                MainVersion = file.Version[KeyMainVersion].Version;
-                                MainVersionDescription = file.Version[KeyMainVersion].Description;
-
-                                baseVersion = $"基于 {file.Version[KeyMainVersion].Version} 完整包";
-                            }
-                            if (file.Version.ContainsKey(KeyPatchVersion))
-                            {
-                                baseVersion = $"基于 {file.Version[KeyPatchVersion].Version} 补丁包";
-                            }
-                            if (!string.IsNullOrEmpty(baseVersion))
-                            {
-                                IsPatch = true;
-                                var descLines = PatchVersionDescription.Split(Environment.NewLine).ToList();
-                                var index = descLines.FindLastIndex(l => l.TrimStart().StartsWith("基于"));
-                                if (index >= 0)
-                                {
-                                    descLines[index] = baseVersion;
-                                }
-                                else
-                                {
-                                    descLines.Add(baseVersion);
-                                }
-                                PatchVersionDescription = string.Join(Environment.NewLine, descLines);
-                            }
-
-                            if (file.CheckData != null && file.CheckData.Count > 0)
-                            {
-                                HasCheckData = true;
-                            }
-                            else
-                            {
-                                HasCheckData = false;
-                            }
-                            _VersionFile = file;
-                            MainWindowVM.NotifyInfo("读取成功");
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error("读取版本文件错误", ex);
-                            MainWindowVM.NotifyError("读取错误：" + ex.Message);
-                        }
+                        ReadFileData(dlg.FileName);
                     }
                 });
                 return _ReadFile;
+            }
+        }
+        private void ReadFileData(string fileName)
+        {
+            try
+            {
+                var encode = File.ReadAllText(fileName, Encoding.UTF8);
+                var json = AES.Decrypt(encode);
+                var file = JsonConvert.DeserializeObject<VersionFileInfo>(json);
+                var baseVersion = string.Empty;
+                var baseScope = string.Empty;
+                if (file.Version.ContainsKey(KeyMainVersion))
+                {
+                    MainVersion = file.Version[KeyMainVersion].Version;
+                    MainVersionDescription = file.Version[KeyMainVersion].Description;
+
+                    baseVersion = $"基于 {file.Version[KeyMainVersion].Version} 完整包";
+                }
+                if (file.Version.ContainsKey(KeyPatchVersion))
+                {
+                    var descLines = file.Version[KeyPatchVersion].Description.Split(Environment.NewLine).ToList();
+                    baseScope = descLines.FirstOrDefault(l => l.TrimStart().StartsWith("范围："));
+                    baseVersion = $"基于 {file.Version[KeyPatchVersion].Version} 补丁包";
+                }
+                if (!string.IsNullOrEmpty(baseVersion))
+                {
+                    IsPatch = true;
+                    var descLines = PatchVersionDescription.Split(Environment.NewLine).ToList();
+                    //范围：所有
+                    var index = descLines.FindLastIndex(l => l.TrimStart().StartsWith("范围："));
+                    if (index >= 0)
+                    {
+                        descLines[index] = baseScope;
+                    }
+                    index = descLines.FindLastIndex(l => l.TrimStart().StartsWith("基于"));
+                    if (index >= 0)
+                    {
+                        descLines[index] = baseVersion;
+                    }
+                    else
+                    {
+                        descLines.Add(baseVersion);
+                    }
+                    PatchVersionDescription = string.Join(Environment.NewLine, descLines);
+                }
+
+                if (file.CheckData != null && file.CheckData.Count > 0)
+                {
+                    HasCheckData = true;
+                }
+                else
+                {
+                    HasCheckData = false;
+                }
+                _VersionFile = file;
+                MainWindowVM.NotifyInfo("读取成功");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("读取版本文件错误", ex);
+                MainWindowVM.NotifyError("读取错误：" + ex.Message);
             }
         }
 
@@ -390,7 +408,7 @@ namespace Just.VersionFile
         #endregion
 
         #region Setting
-        public void ReadSetting()
+        public void ReadSettings(string[] args)
         {
             HasCheckData = MainWindowVM.ReadSetting($"{nameof(VersionFileCtrl)}.{nameof(HasCheckData)}", HasCheckData);
             PackFolder = MainWindowVM.ReadSetting($"{nameof(VersionFileCtrl)}.{nameof(PackFolder)}", PackFolder);
@@ -406,6 +424,10 @@ namespace Just.VersionFile
             catch (Exception ex)
             {
                 Logger.Error("读取密码错误", ex);
+            }
+            if(args?.Any() == true)
+            {
+                ReadFileData(args.First());
             }
         }
         public void WriteSetting()

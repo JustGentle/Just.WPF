@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Xml;
 
@@ -22,6 +23,7 @@ namespace Just.Base
     public class MainWindowVM
     {
         public const string ResourcesBase = "/Just.MongoDB;Component";
+        public static string[] StartArgs { get; set; }
 
         #region 单例
         public Window MainWindow { get; set; }
@@ -57,73 +59,7 @@ namespace Just.Base
         {
             try
             {
-#if DEBUG
-                /*
-                var json = @"
-[
-  {
-    'Id': 'iOffice10',
-    'Header': 'iOffice10'
-  },
-  {
-    'Id': 'RevCleaner',
-    'Parent': 'iOffice10',
-    'Header': '补丁文件清理',
-    'ClassName': 'RevCleanerCtrl'
-  },
-  {
-    'Id': 'MongoSync',
-    'Parent': 'iOffice10',
-    'Header': 'MongoDB同步',
-    'ClassName': 'MongoSyncCtrl'
-  },
-  {
-    'Id': 'VersionFile',
-    'Parent': 'iOffice10',
-    'Header': '版本文件生成',
-    'ClassName': 'VersionFileCtrl'
-  },
-  {
-    'Id': 'WebsiteMklink',
-    'Parent': 'iOffice10',
-    'Header': '站点文件映射',
-    'ClassName': 'WebsiteMklinkCtrl'
-  },
-  {
-    'Id': 'ConfigManager',
-    'Parent': 'iOffice10',
-    'Header': '配置文件管理*',
-    'ClassName': 'ConfigManagerCtrl'
-  },
-  {
-    'Id': 'ScriptManager',
-    'Parent': 'iOffice10',
-    'Header': '常用脚本管理*',
-    'ClassName': 'ScriptManagerCtrl'
-  },
-  {
-    'Id': 'ChangesetGetter',
-    'Header': '变更集抽取*',
-    'ClassName': 'ChangesetGetterCtrl',
-    'Visible': true
-  },
-  {
-    'Id': 'RegexNet',
-    'Header': '正则表达式',
-    'ClassName': 'RegexNetCtrl'
-  },
-  {
-    "Id": "Sql",
-    "Header": "Sql工具",
-    "ClassName": "SqlCtrl"
-  }
-]
-";
-                var nodes = JsonConvert.DeserializeObject<List<MenuNode>>(json);*/
                 var nodes = ReadSetting(nameof(MainMenu), new List<MenuNode>());
-#else
-                var nodes = ReadSetting(nameof(MainMenu), new List<MenuNode>());
-#endif
                 foreach (var item in nodes)
                 {
                     MainMenu.Add(item);
@@ -134,7 +70,7 @@ namespace Just.Base
                 }
                 else
                 {
-                    StartOn = MainMenu.Where(m => m.StartOn).ToList();
+                    StartOn = MainMenu.Where(m => IsStartOn(m)).ToList();
                 }
             }
             catch (Exception ex)
@@ -142,6 +78,37 @@ namespace Just.Base
                 Logger.Error("加载主菜单错误", ex);
                 NotifyWin.Error("加载主菜单错误:" + ex.Message);
             }
+        }
+
+        //只匹配一次
+        private static bool _StartArgMatched = false;
+        private bool IsStartOn(MenuNode menu)
+        {
+            if (!_StartArgMatched && !string.IsNullOrEmpty(menu.StartArgMatch) && StartArgs?.Any() == true)
+            {
+                try
+                {
+                    foreach (var arg in StartArgs)
+                    {
+                        if (Regex.IsMatch(arg, menu.StartArgMatch, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                        {
+                            _StartArgMatched = true;
+                            return true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("主菜单参数启动匹配错误", ex);
+                }
+            }
+
+            menu.StartArgMatch = null;
+
+            if (menu.StartOn)
+                return true;
+
+            return false;
         }
         public MenuNode GetMenuItem(string id)
         {
@@ -405,5 +372,6 @@ namespace Just.Base
         public string ClassName { get; set; }
         public bool Visible { get; set; } = true;
         public bool StartOn { get; set; }
+        public string StartArgMatch { get; set; }
     }
 }

@@ -123,7 +123,7 @@
                    Text="　补丁版本："
                    Margin="{StaticResource LineMargin}"/>
         <TextBox Grid.Row="3" Grid.Column="1"
-                 ToolTip="版本号（例：20190927.1344）"
+                 ToolTip="版本号（默认按当前时间生成，例：20190927.1344）"
                  Margin="{StaticResource LineMargin}"
                  Text="{Binding PatchVersion}" IsEnabled="{Binding IsPatch}"/>
         <CheckBox Grid.Row="3" Grid.Column="2" 
@@ -132,9 +132,18 @@
                   ToolTip="是否补丁包"
                   IsChecked="{Binding IsPatch}" />
         <TextBox Grid.Row="4" Grid.Column="1"
-                 ToolTip="版本说明（例：某客户-某功能优化补丁-基于版本20190927）" 
-                 Style="{StaticResource MutliLineBox}" 
                  Margin="{StaticResource LineMargin}"
-                 Text="{Binding PatchVersionDescription}" IsEnabled="{Binding IsPatch}"/>
+                 Text="{Binding PatchVersionDescription}" IsEnabled="{Binding IsPatch}">
+            <TextBox.Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource MutliLineBox}">
+                    <Setter Property="ToolTip" xml:space="preserve">
+                        <Setter.Value>版本说明（例：
+范围：某客户
+内容：某功能优化补丁
+基于20190927版本）</Setter.Value>
+                    </Setter>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
     </Grid>
 </UserControl>

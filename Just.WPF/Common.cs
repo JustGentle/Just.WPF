@@ -27,16 +27,17 @@ namespace Just.WPF
         /// </summary>
         /// <param name="title">窗口标题</param>
         /// <param name="code">窗口权限代码(后缀为类名)</param>
-        public void ShowWindow(string title, string code, bool isReOpen = false)
+        public IChildView ShowWindow(string title, string code, bool isReOpen = false, bool readSettings = true)
         {
+            IChildView child = null;
             if (code == null || code == string.Empty)
-                return;
+                return null;
 
             var tab = GetTabItem(code);
             if (tab == null)
             {
                 var view = CreateView(code, title);
-                if (view == null) return;
+                if (view == null) return null;
                 tab = new TabItem
                 {
                     Tag = code,
@@ -48,6 +49,9 @@ namespace Just.WPF
                         Content = view
                     }
                 };
+                child = view as IChildView;
+                if (readSettings)
+                    child?.ReadSettings(null);
                 tbContent.Items.Add(tab);
             }
             else
@@ -57,15 +61,19 @@ namespace Just.WPF
                 {
 
                     var view = CreateView(code, title);
-                    if (view == null) return;
+                    if (view == null) return null;
                     tab.Content = new ContentControl
                     {
                         Margin = new Thickness(10),
                         Content = view
                     };
+                    child = view as IChildView;
+                    if (readSettings)
+                        child?.ReadSettings(null);
                 }
             }
             txtNoItem.Visibility = Visibility.Collapsed;
+            return child;
         }
         private UserControl CreateView(string className, string title)
         {

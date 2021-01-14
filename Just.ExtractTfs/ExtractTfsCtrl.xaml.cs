@@ -30,6 +30,10 @@ namespace Just.ExtractTfs
         {
             InitializeComponent();
             this.DataContext = _vm;
+        }
+
+        public void ReadSettings(string[] args)
+        {
             _vm.ReadSetting();
         }
 

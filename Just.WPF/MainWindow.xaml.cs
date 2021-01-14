@@ -61,7 +61,15 @@ namespace Just.WPF
             CreateMenu();
             foreach (var item in _vm.StartOn)
             {
-                ShowWindow(item.Header, item.ClassName);
+                var view = ShowWindow(item.Header, item.ClassName, false);
+                if(!string.IsNullOrEmpty(item.StartArgMatch) && view != null)
+                {
+                    view.ReadSettings(MainWindowVM.StartArgs);
+                }
+                else
+                {
+                    view.ReadSettings(null);
+                }
             }
         }
 
@@ -164,6 +172,9 @@ namespace Just.WPF
                     Name = "tv" + menu.Id,
                     Visibility = menu.Visible ? Visibility.Visible : Visibility.Collapsed
                 };
+#if DEBUG
+                item.Visibility = Visibility.Visible;
+#endif
                 var subMenus = _vm.MainMenu.Where(m => m.Parent == menu.Id);
                 CreateNode(subMenus, item);
                 item.IsExpanded = true;//主菜单默认展开
@@ -189,6 +200,9 @@ namespace Just.WPF
                     Name = "tv" + sub.Id,
                     Visibility = sub.Visible ? Visibility.Visible : Visibility.Collapsed
                 };
+#if DEBUG
+                node.Visibility = Visibility.Visible;
+#endif
                 node.MouseLeftButtonUp += Node_MouseUp;
                 item.Items.Add(node);
                 CreateNode(null, node);
@@ -250,9 +264,9 @@ namespace Just.WPF
             assembly = assembly ?? this.GetType().Assembly;
             _vm.ShowVersion(assembly, selectedTab?.Header.ToString());
         }
-        #endregion
+#endregion
 
-        #region 顶部菜单
+#region 顶部菜单
         private void Logo_MouseUp(object sender, MouseButtonEventArgs e)
         {
             System.Diagnostics.Process.Start("explorer.exe", AppDomain.CurrentDomain.BaseDirectory);
@@ -300,7 +314,7 @@ namespace Just.WPF
             //UserInfo.Account = UserInfo.UserName = UserInfo.DepartmentName = UserInfo.Token = string.Empty;
             this.Close();
         }
-        #endregion
+#endregion
 
     }
 }

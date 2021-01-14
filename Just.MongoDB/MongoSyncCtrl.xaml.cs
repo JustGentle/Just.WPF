@@ -31,7 +31,6 @@ namespace Just.MongoDB
         {
             InitializeComponent();
             this.DataContext = _vm;
-            _vm.ReadSetting();
             _vm.OnJsonChanged += _vm_OnJsonChanged;
             _vm.FindNextText += _vm_FindNextText;
         }
@@ -104,6 +103,11 @@ namespace Just.MongoDB
             codeEditor.Select(i, _vm.FindText.Length);
             codeEditor.ScrollToLine(codeEditor.Document.GetLineByOffset(i).LineNumber);
             return i;
+        }
+
+        public void ReadSettings(string[] args)
+        {
+            _vm.ReadSettings(args);
         }
     }
 }

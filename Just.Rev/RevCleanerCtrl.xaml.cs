@@ -18,7 +18,6 @@ namespace Just.Rev
         {
             InitializeComponent();
             this.DataContext = _vm;
-            _vm.ReadSetting();
         }
 
         private void TreeListView_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -42,6 +41,11 @@ namespace Just.Rev
         public void WriteSettings()
         {
             _vm.WriteSetting();
+        }
+
+        public void ReadSettings(string[] args)
+        {
+            _vm.ReadSetting();
         }
     }
 }

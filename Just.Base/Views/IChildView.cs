@@ -2,6 +2,7 @@
 {
     public interface IChildView : IDependency
     {
+        void ReadSettings(string[] args);
         void WriteSettings();
     }
 }

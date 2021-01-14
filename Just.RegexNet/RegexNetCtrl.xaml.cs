@@ -90,6 +90,10 @@ namespace Just.RegexNet
         {
         }
 
+        public void ReadSettings(string[] args)
+        {
+        }
+
         #endregion
     }
 }

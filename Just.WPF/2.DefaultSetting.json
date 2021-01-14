@@ -21,7 +21,8 @@
       "Id": "MongoSync",
       "Parent": "iOffice10",
       "Header": "MongoDB同步",
-      "ClassName": "MongoSyncCtrl"
+      "ClassName": "MongoSyncCtrl",
+      "StartArgMatch": ".*\\.json"
     },
     {
       "Id": "WebsiteMklink",
@@ -69,7 +70,8 @@
       "Id": "VersionFile",
       "Parent": "DevTool",
       "Header": "版本文件生成",
-      "ClassName": "VersionFileCtrl"
+      "ClassName": "VersionFileCtrl",
+      "StartArgMatch": ".*\\.ver"
     },
     //END====开发工具
     {

@@ -16,7 +16,6 @@ namespace Just.DistEditor
         {
             InitializeComponent();
             this.DataContext = _vm;
-            _vm.ReadSetting();
         }
 
         public void WriteSettings()
@@ -46,6 +45,11 @@ namespace Just.DistEditor
                     }
                 }
             }
+        }
+
+        public void ReadSettings(string[] args)
+        {
+            _vm.ReadSetting();
         }
     }
 }

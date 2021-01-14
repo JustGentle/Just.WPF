@@ -1231,7 +1231,7 @@ namespace Just.MongoDB
         #endregion
 
         #region Setting
-        public void ReadSetting()
+        public void ReadSettings(string[] args)
         {
             JsonPath = MainWindowVM.ReadSetting($"{nameof(MongoSyncCtrl)}.{nameof(JsonPath)}", JsonPath);
             MongoDBAddress = MainWindowVM.ReadSetting($"{nameof(MongoSyncCtrl)}.{nameof(MongoDBAddress)}", MongoDBAddress);
@@ -1240,6 +1240,12 @@ namespace Just.MongoDB
             IsRemoveDup = MainWindowVM.ReadSetting($"{nameof(MongoSyncCtrl)}.{nameof(IsRemoveDup)}", IsRemoveDup);
             //IsDeleteOver = MainWindowVM.ReadSetting($"{nameof(MongoSync)}.{nameof(IsDeleteOver)}", IsDeleteOver);
             IsShowSame = MainWindowVM.ReadSetting($"{nameof(MongoSyncCtrl)}.{nameof(IsShowSame)}", IsShowSame);
+
+            if(args?.Any() == true)
+            {
+                this.JsonPath = string.Join(FileSeparator, args);
+                this.ReadJson.Execute(null);
+            }
         }
         public void WriteSetting()
         {

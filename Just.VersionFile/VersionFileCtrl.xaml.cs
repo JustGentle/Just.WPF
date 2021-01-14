@@ -27,9 +27,12 @@ namespace Just.VersionFile
             InitializeComponent();
 
             this.DataContext = _vm;
-            _vm.ReadSetting();
         }
 
+        public void ReadSettings(string[] args)
+        {
+            _vm.ReadSettings(args);
+        }
         public void WriteSettings()
         {
             _vm.WriteSetting();

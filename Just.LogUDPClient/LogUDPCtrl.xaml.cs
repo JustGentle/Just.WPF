@@ -38,7 +38,6 @@ namespace Just.LogUDPClient
             InitializeComponent();
             _vm = new LogUDPVM();
             this.DataContext = _vm;
-            _vm.ReadSetting();
             _vm.AfterWrite += _vm_AfterWrite;
         }
         private void RegisterCustomHighlighting()
@@ -106,6 +105,11 @@ namespace Just.LogUDPClient
                 File.WriteAllBytes(fileName, Encoding.UTF8.GetBytes(codeEditor.Text));
                 MainWindowVM.NotifyInfo("保存完成", "日志另存为");
             }
+        }
+
+        public void ReadSettings(string[] args)
+        {
+            _vm.ReadSetting();
         }
     }
 }

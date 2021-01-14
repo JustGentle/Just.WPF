@@ -14,7 +14,6 @@ namespace Just.WebsiteMklink
             InitializeComponent();
             this.DataContext = _vm;
             _vm.LogAppended += _vm_LogAppended;
-            _vm.ReadSetting();
         }
 
         private void _vm_LogAppended(object sender, System.EventArgs e)
@@ -26,6 +25,11 @@ namespace Just.WebsiteMklink
         public void WriteSettings()
         {
             _vm.WriteSetting();
+        }
+
+        public void ReadSettings(string[] args)
+        {
+            _vm.ReadSetting();
         }
     }
 }
