@@ -55,6 +55,12 @@
       "Header": "dist文件更新",
       "ClassName": "DistEditorCtrl"
     },
+    {
+      "Id": "AES",
+      "Parent": "iOffice10",
+      "Header": "AES加密解密",
+      "ClassName": "AESCtrl"
+    },
     //BEGIN====开发工具
     {
       "Id": "DevTool",

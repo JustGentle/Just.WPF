@@ -343,7 +343,7 @@ namespace Just.VersionFile
                     var descLines = PatchVersionDescription.Split(Environment.NewLine).ToList();
                     //范围：所有
                     var index = descLines.FindLastIndex(l => l.TrimStart().StartsWith("范围："));
-                    if (index >= 0)
+                    if (index >= 0 && !string.IsNullOrEmpty(baseScope))
                     {
                         descLines[index] = baseScope;
                     }
