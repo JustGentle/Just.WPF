@@ -50,16 +50,16 @@
       "ClassName": "i09SignImg"
     },
     {
+      "Id": "i07SealImg",
+      "Parent": "iOffice10",
+      "Header": "07印章图迁移",
+      "ClassName": "i07SealImg"
+    },
+    {
       "Id": "DistEditor",
       "Parent": "iOffice10",
       "Header": "dist文件更新",
       "ClassName": "DistEditorCtrl"
-    },
-    {
-      "Id": "AES",
-      "Parent": "iOffice10",
-      "Header": "AES加密解密",
-      "ClassName": "AESCtrl"
     },
     //BEGIN====开发工具
     {
@@ -81,14 +81,26 @@
     },
     //END====开发工具
     {
+      "Id": "CommonTools",
+      "Header": "常用工具"
+    },
+    {
       "Id": "RegexNet",
+      "Parent": "CommonTools",
       "Header": "正则表达式",
       "ClassName": "RegexNetCtrl"
     },
     {
       "Id": "Sql",
+      "Parent": "CommonTools",
       "Header": "Sql工具",
       "ClassName": "SqlCtrl"
+    },
+    {
+      "Id": "AES",
+      "Parent": "CommonTools",
+      "Header": "AES加密解密",
+      "ClassName": "AESCtrl"
     }
   ],
   "VersionFileCtrl.IgnoreHashs": [

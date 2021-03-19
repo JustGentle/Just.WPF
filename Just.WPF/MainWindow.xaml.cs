@@ -161,6 +161,7 @@ namespace Just.WPF
         /// </summary>
         public void CreateMenu()
         {
+            var expandFirst = true;
             _vm.LoadMainMenu();
             var topMenus = _vm.MainMenu.Where(menu => menu.Parent == null);
             foreach (var menu in topMenus)
@@ -177,7 +178,8 @@ namespace Just.WPF
 #endif
                 var subMenus = _vm.MainMenu.Where(m => m.Parent == menu.Id);
                 CreateNode(subMenus, item);
-                item.IsExpanded = true;//主菜单默认展开
+                item.IsExpanded = expandFirst;//第一项主菜单默认展开
+                expandFirst = false;
                 item.MouseLeftButtonUp += Node_MouseUp;
                 tvMenu.Items.Add(item);
             }

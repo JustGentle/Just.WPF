@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using GenLibrary.MVVM.Base;
 using Just.Base;
+using Just.Base.Crypto;
 using PropertyChanged;
 using System;
 using System.Collections.Generic;
@@ -17,10 +18,11 @@ using System.Windows.Input;
 namespace Just.Data
 {
     [AddINotifyPropertyChangedInterface]
-    public class i09SignImgVM
+    public class i07SealImgVM
     {
-        public string ConnectionString09 { get; set; } = "Data Source =.; Initial Catalog = iOffice; User ID = sa; Password = asdASD!@#;";
+        public string ConnectionString07 { get; set; } = "Data Source =.; Initial Catalog = iOffice; User ID = sa; Password = asdASD!@#;";
         public string ConnectionString10 { get; set; } = "Data Source =.; Initial Catalog = iOffice10; User ID = sa; Password = asdASD!@#;";
+        public string SealNames { get; set; } = string.Empty;
         public bool IsOverwrite { get; set; } = false;
         public bool IsStopWhenError { get; set; } = true;
         public string LogContent { get; set; }
@@ -42,9 +44,9 @@ namespace Just.Data
                 {
                     if (!Doing)
                     {
-                        if (string.IsNullOrWhiteSpace(ConnectionString09))
+                        if (string.IsNullOrWhiteSpace(ConnectionString07))
                         {
-                            MainWindowVM.NotifyWarn("请先配置09链接字符串");
+                            MainWindowVM.NotifyWarn("请先配置07链接字符串");
                             return;
                         }
                         if (string.IsNullOrWhiteSpace(ConnectionString10))
@@ -83,7 +85,7 @@ namespace Just.Data
                         }
                     }, token);
 
-                    using (IDbConnection connection09 = new System.Data.SqlClient.SqlConnection(ConnectionString09))
+                    using (IDbConnection connection09 = new System.Data.SqlClient.SqlConnection(ConnectionString07))
                     {
                         using (IDbConnection connection10 = new System.Data.SqlClient.SqlConnection(ConnectionString10))
                         {
@@ -93,13 +95,18 @@ namespace Just.Data
                                 Directory.CreateDirectory(config.Path);
                             AddLog($"{DateTime.Now:HH:mm:ss.fff} 10附件目录：({config.StoreServerConfigID}){config.Path}");
 
-                            //分页查询签名图
+                            //分页查询印章图
+                            var names = SealNames.Replace(Environment.NewLine, ",").Replace("'", "''").Replace(",", "','");
+                            if (!string.IsNullOrEmpty(names))
+                            {
+                                names = " WHERE MarkName IN ('" + names + "')";
+                            }
                             var offset = 0;
                             while (true)
                             {
                                 if (token.IsCancellationRequested) return;
-                                AddLog($"{DateTime.Now:HH:mm:ss.fff} 查询09签名图 {offset + 1}-{offset + PageSize}");
-                                var sql = $"SELECT EmpID, EmpSign FROM dbo.ssEmpSign ORDER BY EmpID OFFSET {offset} ROWS FETCH NEXT {PageSize} ROWS ONLY";
+                                AddLog($"{DateTime.Now:HH:mm:ss.fff} 查询07印章图 {offset + 1}-{offset + PageSize}");
+                                var sql = $"SELECT MarkName, MarkBody, PassWord FROM dbo.ssMark {names} ORDER BY MarkID OFFSET {offset} ROWS FETCH NEXT {PageSize} ROWS ONLY";
                                 using (var reader = connection09.ExecuteReaderAsync(new CommandDefinition(sql, cancellationToken: token)).Result)
                                 {
                                     MainWindowVM.ShowStatus($"{DateTime.Now - start}");
@@ -107,19 +114,19 @@ namespace Just.Data
                                     if (token.IsCancellationRequested) return;
                                     if (reader.IsClosed || reader.FieldCount == 0)
                                     {
-                                        MainWindowVM.NotifyWarn("查询09签名图失败");
+                                        MainWindowVM.NotifyWarn("查询07印章图失败");
                                     }
 
                                     var table = new DataTable();
                                     table.Load(reader);
-                                    AddLog($"{DateTime.Now:HH:mm:ss.fff} 获取签名图数量：{table.Rows.Count}");
+                                    AddLog($"{DateTime.Now:HH:mm:ss.fff} 获取印章图数量：{table.Rows.Count}");
                                     if (table.Rows.Count == 0)
                                         break;
                                     foreach (DataRow row in table.Rows)
                                     {
                                         try
                                         {
-                                            UploadSignAttachment(connection10, config, row);
+                                            UploadSealAttachment(connection10, config, row);
                                         }
                                         catch (Exception ex)
                                         {
@@ -189,66 +196,72 @@ WHERE StoreServerConfigs.ID = @StoreServerConfigID";
             var config = connection10.Query<dynamic>(new CommandDefinition(sql, cancellationToken: token)).FirstOrDefault();
             return config;
         }
-        private int UploadSignAttachment(IDbConnection connection10, dynamic config, DataRow data)
+        private int UploadSealAttachment(IDbConnection connection10, dynamic config, DataRow data)
         {
-            if (data["EmpSign"] == DBNull.Value || data["EmpSign"] is null)
+            if (data["MarkBody"] == DBNull.Value || data["MarkBody"] is null)
                 return -1;
             string extension = "png", contentType = "image/png";
             string suffix = string.IsNullOrEmpty(config.Suffix) ? extension : config.Suffix;
             var fileRename = Guid.NewGuid().ToString();
-            var sign09 = new { EmpID = (int)data["EmpID"], EmpSign = (byte[])data["EmpSign"] };
+            var sign09 = new { MarkName = data["MarkName"].ToString().Replace("'", "''"), MarkBody = (byte[])data["MarkBody"], PassWord = data["PassWord"]?.ToString() };
             var fileName = Path.Combine(config.Path, fileRename + "." + suffix);
-            AddLog($"{DateTime.Now:HH:mm:ss.fff} >保存图片({sign09.EmpID})：{fileName}");
-            File.WriteAllBytes(fileName, sign09.EmpSign);
-            AddLog($"{DateTime.Now:HH:mm:ss.fff} >上传附件({sign09.EmpID})");
-            //新增签名图附件数据
+            AddLog($"{DateTime.Now:HH:mm:ss.fff} >保存图片({sign09.MarkName})：{fileName}");
+            File.WriteAllBytes(fileName, sign09.MarkBody);
+            AddLog($"{DateTime.Now:HH:mm:ss.fff} >上传附件({sign09.MarkName})");
+            //新增印章图附件数据
             var sql = $@"
-INSERT INTO [{AttachmentDBName}].[dbo].[AttachmentInfosPortal]([FileName], [Extension], [Size], [HashCode], [FileReName], [UploadTime]
+INSERT INTO [{AttachmentDBName}].[dbo].[AttachmentInfosDocument]([FileName], [Extension], [Size], [HashCode], [FileReName], [UploadTime]
 ,[UploaderID], [UploaderName], [Status], [ContentType], [ObjectID], [DirectoryID], [SortNum], [Compress])
-SELECT TOP(1) N'{sign09.EmpID}' -- FileName - nvarchar(300)
+SELECT N'{sign09.MarkName}' -- FileName - nvarchar(300)
 ,N'.{extension}' -- Extension - nvarchar(50)
-,{sign09.EmpSign.Length} -- Size - float
-,N'{GetFileMD5(sign09.EmpSign)}' -- HashCode - nchar(32)
+,{sign09.MarkBody.Length} -- Size - float
+,N'{GetFileMD5(sign09.MarkBody)}' -- HashCode - nchar(32)
 ,'{fileRename}' -- FileReName - uniqueidentifier
 ,GETDATE() -- UploadTime - datetime
-,PriUsers.ID -- UploaderID - nvarchar(50)
-,PriUsers.Name -- UploaderName - nvarchar(50)
+,1 -- UploaderID - nvarchar(50)
+,'administrator' -- UploaderName - nvarchar(50)
 ,2 -- Status - int
 ,'{contentType}' -- ContentType - varchar(100)
-,N'undeavatar' + CAST(PriUsers.ID AS varchar(50)) -- ObjectID - nvarchar(100)
+,N'Seal' -- ObjectID - nvarchar(100)
 ,{config.StoreServerConfigID} -- DirectoryID - int
 ,0 -- SortNum - int
 ,0 -- Compress - bit
-FROM [{PrivilegeDBName}].[dbo].[PriUsers]
-WHERE PriUsers.[09ID] = {sign09.EmpID}
-AND NOT EXISTS(SELECT 1 FROM [{AttachmentDBName}].[dbo].[AttachmentInfosPortal] WHERE ObjectID = 'undeavatar' + CAST(PriUsers.ID AS varchar(50)))";
+WHERE NOT EXISTS(SELECT 1 FROM [{AttachmentDBName}].[dbo].[AttachmentInfosDocument] WHERE ObjectID = 'Seal' AND [FileName]=N'{sign09.MarkName}')";
             if (IsOverwrite)
             {
-                //更新已有签名图附件数据
+                //更新已有印章图附件数据
                 sql += $@"
-UPDATE [{AttachmentDBName}].[dbo].[AttachmentInfosPortal]
-SET FileName = N'{sign09.EmpID}'
+UPDATE [{AttachmentDBName}].[dbo].[AttachmentInfosDocument]
+SET FileName = N'{sign09.MarkName}'
 , Extension = N'.{extension}'
-, [Size] = {sign09.EmpSign.Length}
-, HashCode = N'{GetFileMD5(sign09.EmpSign)}'
+, [Size] = {sign09.MarkBody.Length}
+, HashCode = N'{GetFileMD5(sign09.MarkBody)}'
 , FileReName = '{fileRename}'
 , UploadTime = GETDATE()
-, UploaderID = PriUsers.ID
-, UploaderName = PriUsers.Name
+, UploaderID = 1
+, UploaderName = 'administrator'
 , [Status] = 2
 , ContentType = '{contentType}'
 , DirectoryID = {config.StoreServerConfigID}
 , Compress = 0
 , SymmetricKey = NULL
 , InitializationVector = NULL
-FROM [{PrivilegeDBName}].[dbo].[PriUsers]
-WHERE PriUsers.[09ID] = {sign09.EmpID}
-AND AttachmentInfosPortal.ObjectID = 'undeavatar' + CAST(PriUsers.ID AS varchar(50))
+WHERE AttachmentInfosDocument.ObjectID = 'Seal' AND [FileName]=N'{sign09.MarkName}'
 ";
             }
+            sql += $@" INSERT INTO dbo.DocumentSeal(Name, Password, SealObjectId, CreateTime, CreatorID, Creator, [Key], SortID)
+SELECT N'{sign09.MarkName}' -- Name - nvarchar(50)
+,N'{Base.Crypto.MD5.GetTextHash(sign09.PassWord)}' -- Password - nvarchar(100)
+,(SELECT ID FROM [{AttachmentDBName}].dbo.AttachmentInfosDocument WHERE ObjectID = 'Seal' AND FileName = '{sign09.MarkName}') -- SealObjectId - int
+,GETDATE() -- CreateTime - datetime
+,1 -- CreatorID - int
+,N'administrator' -- Creator - nvarchar(50)
+,NULL -- Key - nvarchar(50)
+,0 -- SortID - int
+WHERE NOT EXISTS(SELECT 1 FROM dbo.DocumentSeal WHERE Name = N'{sign09.MarkName}')";
             var result = connection10.Execute(new CommandDefinition(sql, cancellationToken: token));
             if (result <= 0)
-                AddLog($"{DateTime.Now:HH:mm:ss.fff} >跳过附件，人员ID({sign09.EmpID})不存在{(IsOverwrite ? string.Empty : "或已有签名图")}");
+                AddLog($"{DateTime.Now:HH:mm:ss.fff} >跳过附件，印章({sign09.MarkName})未插入{(IsOverwrite ? string.Empty : "，或已有印章图")}");
             return result;
         }
         /// <summary>
@@ -261,7 +274,7 @@ AND AttachmentInfosPortal.ObjectID = 'undeavatar' + CAST(PriUsers.ID AS varchar(
             if (stream?.Any() != true) return string.Empty;
 
             //创建MD5实例
-            MD5 md5Hasher = MD5.Create();
+            var md5Hasher = System.Security.Cryptography.MD5.Create();
 
             //计算MD5
             byte[] data = md5Hasher.ComputeHash(stream);
@@ -283,23 +296,23 @@ AND AttachmentInfosPortal.ObjectID = 'undeavatar' + CAST(PriUsers.ID AS varchar(
         #region Setting
         public void ReadSetting()
         {
-            ConnectionString09 = MainWindowVM.ReadSetting($"{nameof(i09SignImg)}.{nameof(ConnectionString09)}", ConnectionString09);
-            ConnectionString10 = MainWindowVM.ReadSetting($"{nameof(i09SignImg)}.{nameof(ConnectionString10)}", ConnectionString10);
-            IsOverwrite = MainWindowVM.ReadSetting($"{nameof(i09SignImg)}.{nameof(IsOverwrite)}", IsOverwrite);
-            IsStopWhenError = MainWindowVM.ReadSetting($"{nameof(i09SignImg)}.{nameof(IsStopWhenError)}", IsStopWhenError);
-            PageSize = MainWindowVM.ReadSetting($"{nameof(i09SignImg)}.{nameof(PageSize)}", PageSize);
-            AttachmentDBName = MainWindowVM.ReadSetting($"{nameof(i09SignImg)}.{nameof(AttachmentDBName)}", AttachmentDBName);
-            PrivilegeDBName = MainWindowVM.ReadSetting($"{nameof(i09SignImg)}.{nameof(PrivilegeDBName)}", PrivilegeDBName);
+            ConnectionString07 = MainWindowVM.ReadSetting($"{nameof(i07SealImg)}.{nameof(ConnectionString07)}", ConnectionString07);
+            ConnectionString10 = MainWindowVM.ReadSetting($"{nameof(i07SealImg)}.{nameof(ConnectionString10)}", ConnectionString10);
+            IsOverwrite = MainWindowVM.ReadSetting($"{nameof(i07SealImg)}.{nameof(IsOverwrite)}", IsOverwrite);
+            IsStopWhenError = MainWindowVM.ReadSetting($"{nameof(i07SealImg)}.{nameof(IsStopWhenError)}", IsStopWhenError);
+            PageSize = MainWindowVM.ReadSetting($"{nameof(i07SealImg)}.{nameof(PageSize)}", PageSize);
+            AttachmentDBName = MainWindowVM.ReadSetting($"{nameof(i07SealImg)}.{nameof(AttachmentDBName)}", AttachmentDBName);
+            PrivilegeDBName = MainWindowVM.ReadSetting($"{nameof(i07SealImg)}.{nameof(PrivilegeDBName)}", PrivilegeDBName);
         }
         public void WriteSetting()
         {
-            MainWindowVM.WriteSetting($"{nameof(i09SignImg)}.{nameof(ConnectionString09)}", ConnectionString09);
-            MainWindowVM.WriteSetting($"{nameof(i09SignImg)}.{nameof(ConnectionString10)}", ConnectionString10);
-            MainWindowVM.WriteSetting($"{nameof(i09SignImg)}.{nameof(IsOverwrite)}", IsOverwrite);
-            MainWindowVM.WriteSetting($"{nameof(i09SignImg)}.{nameof(IsStopWhenError)}", IsStopWhenError);
-            MainWindowVM.WriteSetting($"{nameof(i09SignImg)}.{nameof(PageSize)}", PageSize);
-            MainWindowVM.WriteSetting($"{nameof(i09SignImg)}.{nameof(AttachmentDBName)}", AttachmentDBName);
-            MainWindowVM.WriteSetting($"{nameof(i09SignImg)}.{nameof(PrivilegeDBName)}", PrivilegeDBName);
+            MainWindowVM.WriteSetting($"{nameof(i07SealImg)}.{nameof(ConnectionString07)}", ConnectionString07);
+            MainWindowVM.WriteSetting($"{nameof(i07SealImg)}.{nameof(ConnectionString10)}", ConnectionString10);
+            MainWindowVM.WriteSetting($"{nameof(i07SealImg)}.{nameof(IsOverwrite)}", IsOverwrite);
+            MainWindowVM.WriteSetting($"{nameof(i07SealImg)}.{nameof(IsStopWhenError)}", IsStopWhenError);
+            MainWindowVM.WriteSetting($"{nameof(i07SealImg)}.{nameof(PageSize)}", PageSize);
+            MainWindowVM.WriteSetting($"{nameof(i07SealImg)}.{nameof(AttachmentDBName)}", AttachmentDBName);
+            MainWindowVM.WriteSetting($"{nameof(i07SealImg)}.{nameof(PrivilegeDBName)}", PrivilegeDBName);
         }
         #endregion
     }
