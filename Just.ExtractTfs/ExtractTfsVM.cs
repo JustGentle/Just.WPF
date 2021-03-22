@@ -539,7 +539,7 @@ namespace Just.ExtractTfs
                         }
                     }
                 }
-                else
+                else if (!File.Exists((path + "NotExists")))
                 {
                     File.Create(path + "NotExists").Close();
                 }
