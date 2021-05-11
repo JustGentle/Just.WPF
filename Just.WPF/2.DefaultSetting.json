@@ -61,6 +61,12 @@
       "Header": "dist文件更新",
       "ClassName": "DistEditorCtrl"
     },
+    {
+      "Id": "HeartbeatMsg",
+      "Parent": "iOffice10",
+      "Header": "站点状态监测",
+      "ClassName": "HeartbeatMsgCtrl"
+    },
     //BEGIN====开发工具
     {
       "Id": "DevTool",
