@@ -49,7 +49,12 @@ namespace Just.Base.Views
                 }
                 else
                 {
-                    var items = Items.Where(i => i.Item1?.Contains(value, StringComparison.OrdinalIgnoreCase) ?? false);
+                    var filters = value.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    IEnumerable<Tuple<string, object>> items = null;
+                    foreach (var filter in filters)
+                    {
+                        items = (items ?? Items).Where(i => i.Item1?.Contains(filter, StringComparison.OrdinalIgnoreCase) ?? false);
+                    }
                     SetValue(ItemsProperty, new ObservableCollection<Tuple<string, object>>(items));
                 }
             }
