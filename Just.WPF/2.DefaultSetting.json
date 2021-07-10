@@ -62,6 +62,12 @@
       "ClassName": "DistEditorCtrl"
     },
     {
+      "Id": "HeartbeatMsg",
+      "Parent": "iOffice10",
+      "Header": "站点状态监测",
+      "ClassName": "HeartbeatMsgCtrl"
+    },
+    {
       "Id": "JQueryVer",
       "Parent": "iOffice10",
       "Header": "JQuery版本替换",

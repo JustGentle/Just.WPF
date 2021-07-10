@@ -84,16 +84,18 @@
   <ItemGroup>
     <Compile Include="BraceFoldingStrategy.cs" />
     <Compile Include="CacheSysProfileMode.cs" />
+    <Compile Include="HeartbeatMsgCtrl.xaml.cs">
+      <DependentUpon>HeartbeatMsgCtrl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="HeartbeatMsgVM.cs" />
     <Compile Include="MongoDBHelper.cs" />
     <Compile Include="MongoNode.cs" />
-    <Compile Include="MongoSMSCtrl.xaml.cs">
-      <DependentUpon>MongoSMSCtrl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MongoSyncCtrl.xaml.cs">
       <DependentUpon>MongoSyncCtrl.xaml</DependentUpon>
     </Compile>
     <Compile Include="MongoSyncVM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShortMessageSend.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -110,7 +112,7 @@
     <Resource Include="Images\obj.png" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="MongoSMSCtrl.xaml">
+    <Page Include="HeartbeatMsgCtrl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
