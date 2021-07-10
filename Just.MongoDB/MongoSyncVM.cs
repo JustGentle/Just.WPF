@@ -349,10 +349,13 @@ namespace Just.MongoDB
                         {
                             //查询原数据
                             var timeoutMS = 3000;
-                            mongo = new MongoDBHelper(
-                                $"mongodb://{MongoDBAddress}/?serverSelectionTimeoutMS={timeoutMS};connectTimeoutMS={timeoutMS};socketTimeoutMS={timeoutMS}",
-                                "iOffice10Cache",
-                                nameof(CacheSysProfileMode));
+                            var cnnstr = "mongodb://" + MongoDBAddress;
+                            if (!cnnstr.Contains("/?"))
+                                cnnstr += "/?";
+                            else if(!cnnstr.EndsWith(";"))
+                                cnnstr += ";";
+                            cnnstr += $"serverSelectionTimeoutMS={timeoutMS};connectTimeoutMS={timeoutMS};socketTimeoutMS={timeoutMS}";
+                            mongo = new MongoDBHelper(cnnstr, "iOffice10Cache", nameof(CacheSysProfileMode));
                             var collection = mongo.Find<CacheSysProfileMode>();
                             //备份
                             if (!HasBackup || IsBackup)

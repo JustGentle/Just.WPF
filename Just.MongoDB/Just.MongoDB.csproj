@@ -86,6 +86,9 @@
     <Compile Include="CacheSysProfileMode.cs" />
     <Compile Include="MongoDBHelper.cs" />
     <Compile Include="MongoNode.cs" />
+    <Compile Include="MongoSMSCtrl.xaml.cs">
+      <DependentUpon>MongoSMSCtrl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MongoSyncCtrl.xaml.cs">
       <DependentUpon>MongoSyncCtrl.xaml</DependentUpon>
     </Compile>
@@ -107,6 +110,10 @@
     <Resource Include="Images\obj.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="MongoSMSCtrl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MongoSyncCtrl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
