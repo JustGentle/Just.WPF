@@ -61,6 +61,12 @@
       "Header": "dist文件更新",
       "ClassName": "DistEditorCtrl"
     },
+    {
+      "Id": "JQueryVer",
+      "Parent": "iOffice10",
+      "Header": "JQuery版本替换",
+      "ClassName": "JQueryVerCtrl"
+    },
     //BEGIN====开发工具
     {
       "Id": "DevTool",

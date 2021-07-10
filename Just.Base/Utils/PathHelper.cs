@@ -75,6 +75,18 @@ namespace Just.Base.Utils
                 }
             }
         }
+        public static void MoveFile(string source, string target)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(target));
+            if (File.Exists(target))
+                DeleteFileWithNormal(target);
+            File.Move(source, target);
+        }
+        public static void CopyFile(string source, string target)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(target));
+            File.Copy(source, target, true);
+        }
         public static void DeleteFileWithNormal(string filePath)
         {
             File.SetAttributes(filePath, FileAttributes.Normal);
