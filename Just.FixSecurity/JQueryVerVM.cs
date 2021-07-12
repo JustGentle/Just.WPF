@@ -260,7 +260,7 @@ namespace Just.FixSecurity
         //jquery.js jquery-2.1.4.js jquery-2.1.4.min.js
         private readonly Regex r_JQFile = new Regex(@"\bjquery\b([\W_][1-9]\b.*)?\.js$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
         //v2.1.4 jquery:"2.1.4" version = "2.1.4" core_version = "2.1.4" m="2.1.4"
-        private readonly Regex r_JQVersion = new Regex(@"(?<=""|'|v)([0-9]+(\.[0-9]+)+)(?=""|'|\b)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        private readonly Regex r_JQVersion = new Regex(@"(?<=""|'|v)([0-9]+(\.[0-9]+){2})(?=""|'|\b)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
         private JQFileItem DoOne(string file)
         {
             var fileName = Path.GetFileName(file);
