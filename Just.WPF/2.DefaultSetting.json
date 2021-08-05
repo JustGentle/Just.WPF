@@ -44,16 +44,27 @@
       "Visible": false
     },
     {
-      "Id": "i09SignImg",
+      "Id": "TransData",
       "Parent": "iOffice10",
+      "Header": "数据迁移"
+    },
+    {
+      "Id": "i07SealImg",
+      "Parent": "TransData",
+      "Header": "07印章图迁移",
+      "ClassName": "i07SealImg"
+    },
+    {
+      "Id": "i09SignImg",
+      "Parent": "TransData",
       "Header": "09签名图迁移",
       "ClassName": "i09SignImg"
     },
     {
-      "Id": "i07SealImg",
-      "Parent": "iOffice10",
-      "Header": "07印章图迁移",
-      "ClassName": "i07SealImg"
+      "Id": "i09Science",
+      "Parent": "TransData",
+      "Header": "09科研迁移",
+      "ClassName": "i09ScienceCtrl"
     },
     {
       "Id": "DistEditor",

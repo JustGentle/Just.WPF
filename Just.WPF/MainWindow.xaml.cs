@@ -207,7 +207,8 @@ namespace Just.WPF
 #endif
                 node.MouseLeftButtonUp += Node_MouseUp;
                 item.Items.Add(node);
-                CreateNode(null, node);
+                var subMenus = _vm.MainMenu.Where(m => m.Parent == sub.Id);
+                CreateNode(subMenus, node);
             }
         }
 

@@ -1,0 +1,148 @@
+﻿<UserControl x:Class="Just.WebService.i09ScienceCtrl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Just.WebService" xmlns:cvt="clr-namespace:Just.Base.Converters;assembly=Just.Base" xmlns:GenControls="clr-namespace:GenLibrary.GenControls;assembly=GenLibrary"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Just.Base;Component/Theme/Default.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <cvt:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <cvt:BoolToVisibilityConverter x:Key="BoolReverseToVisibilityConverter" Reverse="True" />
+            <cvt:BoolReverseConverter x:Key="BoolReverseConverter" />
+            <cvt:ValueToBoolConverter x:Key="ValueToBoolConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="09数据库："/>
+            <TextBox Grid.Column="1" Text="{Binding ConnectionString09}" />
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="服务地址："/>
+            <TextBox Grid.Column="1" Text="{Binding ServiceUrl}" />
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <WrapPanel Orientation="Horizontal">
+                <WrapPanel.Resources>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                        <Setter Property="Margin" Value="10,10,0,0" />
+                    </Style>
+                    <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                        <Setter Property="Width" Value="100" />
+                        <Setter Property="Margin" Value="0,10,0,0" />
+                    </Style>
+                    <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                        <Setter Property="Margin" Value="10,10,0,0" />
+                    </Style>
+                </WrapPanel.Resources>
+                <TextBlock Text="发起人工号：" />
+                <TextBox ToolTip="二选一" Text="{Binding UserCode}"/>
+                <TextBlock Text="发起人账号：" />
+                <TextBox ToolTip="二选一" Text="{Binding UserLoginName}"/>
+                <TextBlock Text="发起人部门编码：" Visibility="Collapsed" />
+                <TextBox ToolTip="可选" Text="{Binding CreateUserDepCodes}" Visibility="Collapsed"/>
+                <TextBlock Text="流程模板ID或编码：" />
+                <TextBox ToolTip="必填" Text="{Binding TemplateIdOrCode}"/>
+                <TextBlock Text="流程模板标题：" Visibility="Collapsed" />
+                <TextBox ToolTip="可选" Text="{Binding TemplateTitle}" Visibility="Collapsed"/>
+                <CheckBox Content="自动处理" IsChecked="{Binding bSumitFlag}" VerticalAlignment="Center" Visibility="Collapsed"/>
+            </WrapPanel>
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="表单模板："/>
+            <TextBox Grid.Column="1" Text="{Binding FilePath}" />
+            <Button
+                Grid.Column="2"
+                Margin="-1,0,0,0"
+                Padding="5,0"
+                Command="{Binding FileBrowser}"
+                ToolTip="选择文件">
+                <Path Style="{DynamicResource FilePath}" MaxWidth="16" MaxHeight="16"/>
+            </Button>
+            <Button Grid.Column="3" Margin="10,0,0,0"
+                    Style="{StaticResource MainButton}"
+                    Content="执行"
+                    Command="{Binding DoAction}"/>
+        </Grid>
+
+        <Grid Grid.Row="4">
+            <GenControls:TreeListView 
+                Grid.ColumnSpan="2"
+                DataContext="{Binding Tree}">
+                <GenControls:TreeListView.Columns>
+                    <GridViewColumn
+                        Width="250"
+                        DisplayMemberBinding="{Binding Name}"
+                        Header="字段名"/>
+                    <GridViewColumn
+                        Width="150"
+                        DisplayMemberBinding="{Binding Code}"
+                        Header="表单字段" />
+                    <GridViewColumn
+                        Width="150"
+                        DisplayMemberBinding="{Binding Type}"
+                        Header="字段类型" />
+                    <GridViewColumn Width="150" Header="关联数据">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Path=Data, Mode=TwoWay, NotifyOnSourceUpdated=True}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="150" Header="父级字段">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Path=ParentField, Mode=TwoWay, NotifyOnSourceUpdated=True}">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Type}" Value="Table">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GenControls:TreeListView.Columns>
+            </GenControls:TreeListView>
+        </Grid>
+    </Grid>
+</UserControl>
